@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="About" xml:space="preserve"><value>About</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>Access denied</value></data>
+  <data name="AccessDeniedDescription" xml:space="preserve"><value>You are not authorized to access this resource.</value></data>
+  <data name="Auth" xml:space="preserve"><value>Authentication</value></data>
+  <data name="Authenticated" xml:space="preserve"><value>You are authenticated</value></data>
+  <data name="AuthRequired" xml:space="preserve"><value>Auth required</value></data>
+  <data name="ClickMe" xml:space="preserve"><value>Click me</value></data>
+  <data name="Counter" xml:space="preserve"><value>Counter</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>Current count: {0}</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>Development mode</value></data>
+  <data name="DevelopmentModeDescription" xml:space="preserve"><value>Switching to the Development environment displays more detailed information about errors that occurred.</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>The deployed application should not enable the Development environment.</value></data>
+  <data name="DevelopmentWarningDetails" xml:space="preserve"><value>This may result in displaying sensitive information from exceptions to end users. For local debugging, set the ASPNETCORE_ENVIRONMENT environment variable to Development and restart the application.</value></data>
+  <data name="Error" xml:space="preserve"><value>Error</value></data>
+  <data name="ErrorHeading" xml:space="preserve"><value>Error.</value></data>
+  <data name="HelloUser" xml:space="preserve"><value>Hello, {0}!</value></data>
+  <data name="HelloWorld" xml:space="preserve"><value>Hello, world!</value></data>
+  <data name="Home" xml:space="preserve"><value>Home</value></data>
+  <data name="InvalidLogin" xml:space="preserve"><value>Error: Login failed.</value></data>
+  <data name="LocalAccountLogin" xml:space="preserve"><value>Use a local account to log in.</value></data>
+  <data name="LockedOut" xml:space="preserve"><value>Account locked out</value></data>
+  <data name="LockedOutDescription" xml:space="preserve"><value>This account has been locked out, please try again later.</value></data>
+  <data name="Login" xml:space="preserve"><value>Log in</value></data>
+  <data name="Logout" xml:space="preserve"><value>Log out</value></data>
+  <data name="NavigationMenu" xml:space="preserve"><value>Navigation menu</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Reload" xml:space="preserve"><value>Reload</value></data>
+  <data name="RememberMe" xml:space="preserve"><value>Remember me</value></data>
+  <data name="RequestId" xml:space="preserve"><value>Request ID:</value></data>
+  <data name="RequestProcessingError" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
+  <data name="Weather" xml:space="preserve"><value>Weather</value></data>
+  <data name="Welcome" xml:space="preserve"><value>Welcome to your new app.</value></data>
+  <data name="Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+</root>

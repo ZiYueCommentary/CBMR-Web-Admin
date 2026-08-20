@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="About" xml:space="preserve"><value>关于</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>拒绝访问</value></data>
+  <data name="AccessDeniedDescription" xml:space="preserve"><value>你无权访问此资源。</value></data>
+  <data name="Auth" xml:space="preserve"><value>身份验证</value></data>
+  <data name="Authenticated" xml:space="preserve"><value>你已通过身份验证</value></data>
+  <data name="AuthRequired" xml:space="preserve"><value>需要登录</value></data>
+  <data name="ClickMe" xml:space="preserve"><value>点击我</value></data>
+  <data name="Counter" xml:space="preserve"><value>计数器</value></data>
+  <data name="CurrentCount" xml:space="preserve"><value>当前计数：{0}</value></data>
+  <data name="DevelopmentMode" xml:space="preserve"><value>开发模式</value></data>
+  <data name="DevelopmentModeDescription" xml:space="preserve"><value>切换到开发环境后，将显示有关所发生错误的更多详细信息。</value></data>
+  <data name="DevelopmentWarning" xml:space="preserve"><value>已部署的应用程序不应启用开发环境。</value></data>
+  <data name="DevelopmentWarningDetails" xml:space="preserve"><value>这可能会向最终用户显示异常中的敏感信息。本地调试时，请将 ASPNETCORE_ENVIRONMENT 环境变量设置为 Development，然后重新启动应用。</value></data>
+  <data name="Error" xml:space="preserve"><value>错误</value></data>
+  <data name="ErrorHeading" xml:space="preserve"><value>错误。</value></data>
+  <data name="HelloUser" xml:space="preserve"><value>你好，{0}！</value></data>
+  <data name="HelloWorld" xml:space="preserve"><value>你好，世界！</value></data>
+  <data name="Home" xml:space="preserve"><value>首页</value></data>
+  <data name="InvalidLogin" xml:space="preserve"><value>错误：登录失败。</value></data>
+  <data name="LocalAccountLogin" xml:space="preserve"><value>使用本地账户登录。</value></data>
+  <data name="LockedOut" xml:space="preserve"><value>账户已锁定</value></data>
+  <data name="LockedOutDescription" xml:space="preserve"><value>此账户已被锁定，请稍后重试。</value></data>
+  <data name="Login" xml:space="preserve"><value>登录</value></data>
+  <data name="Logout" xml:space="preserve"><value>退出登录</value></data>
+  <data name="NavigationMenu" xml:space="preserve"><value>导航菜单</value></data>
+  <data name="Password" xml:space="preserve"><value>密码</value></data>
+  <data name="Reload" xml:space="preserve"><value>重新加载</value></data>
+  <data name="RememberMe" xml:space="preserve"><value>记住我</value></data>
+  <data name="RequestId" xml:space="preserve"><value>请求 ID：</value></data>
+  <data name="RequestProcessingError" xml:space="preserve"><value>处理请求时发生错误。</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>发生了未处理的错误。</value></data>
+  <data name="Weather" xml:space="preserve"><value>天气</value></data>
+  <data name="Welcome" xml:space="preserve"><value>欢迎使用你的新应用。</value></data>
+  <data name="Username" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+</root>
