@@ -9,12 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Reference Include="CCB">
-        <HintPath>..\CCB.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
+      <PackageReference Include="ccb" Version="0.1.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0-preview.7.26381.103" />
     </ItemGroup>
 

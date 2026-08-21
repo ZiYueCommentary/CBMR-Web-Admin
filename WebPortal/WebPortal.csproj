@@ -133,7 +133,6 @@
       <AdditionalFiles Include="Components\Pages\Counter.razor" />
       <AdditionalFiles Include="Components\Pages\Error.razor" />
       <AdditionalFiles Include="Components\Pages\Home.razor" />
-      <AdditionalFiles Include="Components\Pages\Weather.razor" />
       <AdditionalFiles Include="Components\Routes.razor" />
       <AdditionalFiles Include="Components\_Imports.razor" />
       <AdditionalFiles Include="Resources\SharedResource.resx" />

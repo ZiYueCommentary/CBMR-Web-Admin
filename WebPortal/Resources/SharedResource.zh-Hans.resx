@@ -35,8 +35,6 @@
   <data name="RequestId" xml:space="preserve"><value>请求 ID：</value></data>
   <data name="RequestProcessingError" xml:space="preserve"><value>处理请求时发生错误。</value></data>
   <data name="UnhandledError" xml:space="preserve"><value>发生了未处理的错误。</value></data>
-  <data name="Weather" xml:space="preserve"><value>天气</value></data>
-  <data name="Welcome" xml:space="preserve"><value>欢迎使用你的新应用。</value></data>
   <data name="Username" xml:space="preserve">
     <value>用户名</value>
   </data>

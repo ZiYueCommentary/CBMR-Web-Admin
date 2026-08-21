@@ -1,4 +1,4 @@
-// Copyright 2026 ZiYueCommentary
+﻿// Copyright 2026 ZiYueCommentary
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using CCB;
+using MessagePack;
 
-namespace CbmrWebAdmin.ServerBinding;
+namespace CbmrWebAdmin.Shared;
 
-public record Config(string? WebPortalPath)
+[MessagePackObject]
+public class SharedPlayer
 {
-    public const string Name = "webadmin.json";
+    [Key(0)]
+    public int Index { get; set; }
+    [Key(1)]
+    public string SteamId { get; set; } = string.Empty;
 
-    public const ConfigFileType Type = ConfigFileType.Json;
+    [Key(2)]
+    public string Name { get; set; } = string.Empty;
 
-    public static Config Default { get; } = new Config(WebPortalPath: null);
 }

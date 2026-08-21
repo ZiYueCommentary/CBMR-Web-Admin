@@ -1,3 +1,17 @@
+// Copyright 2026 ZiYueCommentary
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 using MessagePack;
 
 namespace CbmrWebAdmin.Shared;
@@ -13,7 +27,8 @@ public enum PipeMessageType : byte
 {
     Ack,
     FixElevator,
-    Players
+    Players,
+    KickPlayer
 }
 
 [MessagePackObject]
@@ -21,23 +36,17 @@ public sealed class PipeEnvelope
 {
     public const byte CurrentVersion = 1;
 
-    [Key(0)]
-    public byte Version { get; init; }
+    [Key(0)] public byte Version { get; init; }
 
-    [Key(1)]
-    public Guid RequestId { get; init; }
+    [Key(1)] public Guid RequestId { get; init; }
 
-    [Key(2)]
-    public PipeEnvelopeKind Kind { get; init; }
+    [Key(2)] public PipeEnvelopeKind Kind { get; init; }
 
-    [Key(3)]
-    public PipeMessageType MessageType { get; init; }
+    [Key(3)] public PipeMessageType MessageType { get; init; }
 
-    [Key(4)]
-    public byte[]? Payload { get; init; }
+    [Key(4)] public byte[]? Payload { get; init; }
 
-    [Key(5)]
-    public string? Error { get; init; }
+    [Key(5)] public string? Error { get; init; }
 
     public static PipeEnvelope CreateRequest<T>(PipeMessageType messageType, T payload)
     {
@@ -86,12 +95,9 @@ public sealed class PipeEnvelope
 
     public T DeserializePayload<T>()
     {
-        if (Payload is null)
-        {
-            throw new InvalidDataException($"Pipe envelope '{MessageType}' does not contain a payload.");
-        }
-
-        return MessagePackSerializer.Deserialize<T>(Payload);
+        return Payload is null
+            ? throw new InvalidDataException($"Pipe envelope '{MessageType}' does not contain a payload.")
+            : MessagePackSerializer.Deserialize<T>(Payload);
     }
 
     private static PipeEnvelope CreateResponse(PipeEnvelope request, byte[]? payload)

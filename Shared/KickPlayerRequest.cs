@@ -12,18 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Threading.Channels;
-using CbmrWebAdmin.Shared;
+using MessagePack;
 
-namespace CbmrWebAdmin.WebPortal;
+namespace CbmrWebAdmin.Shared;
 
-public class PipeMessageQueue
+[MessagePackObject]
+public sealed class KickPlayerRequest
 {
-    public Channel<PipeRequest> Channel { get; } =
-        System.Threading.Channels.Channel.CreateUnbounded<PipeRequest>(new UnboundedChannelOptions
-        {
-            SingleReader = true
-        });
-}
+    [Key(0)]
+    public int Index { get; init; }
 
-public sealed record PipeRequest(PipeEnvelope Envelope, TaskCompletionSource<PipeEnvelope> Completion);
+    [Key(1)]
+    public string SteamId { get; init; } = string.Empty;
+}

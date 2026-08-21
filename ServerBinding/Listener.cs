@@ -21,9 +21,11 @@ namespace CbmrWebAdmin.ServerBinding;
 
 public static class Listener
 {
-    public static async Task StartListenAsync(NamedPipeServerStream pipeServer)
+    public static async Task StartListenAsync(
+        NamedPipeServerStream pipeServer,
+        CancellationToken cancellationToken = default)
     {
-        while (await PipeProtocol.ReadAsync(pipeServer) is { } request)
+        while (await PipeProtocol.ReadAsync(pipeServer, cancellationToken) is { } request)
         {
             PipeEnvelope response;
             try
@@ -38,6 +40,7 @@ public static class Listener
                     PipeMessageType.Ack => HandleAck(request),
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
+                    PipeMessageType.KickPlayer => HandleKickPlayer(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -46,7 +49,7 @@ public static class Listener
                 response = PipeEnvelope.CreateError(request, exception.Message);
             }
 
-            await PipeProtocol.WriteAsync(pipeServer, response);
+            await PipeProtocol.WriteAsync(pipeServer, response, cancellationToken);
         }
     }
 
@@ -84,9 +87,9 @@ public static class Listener
 
     private static PipeEnvelope HandlePlayers(PipeEnvelope request)
     {
-        List<WebPlayer> webPlayers = MainThreadContext.RunOnMainThread(() =>
+        List<SharedPlayer> webPlayers = MainThreadContext.RunOnMainThread(() =>
             Player.List()
-                .Select(player => new WebPlayer
+                .Select(player => new SharedPlayer
                 {
                     Index = player.GetIndex(),
                     Name = player.GetName(),
@@ -95,5 +98,18 @@ public static class Listener
                 .ToList());
 
         return PipeEnvelope.CreateResponse(request, webPlayers);
+    }
+
+    private static PipeEnvelope HandleKickPlayer(PipeEnvelope request)
+    {
+        KickPlayerRequest kickPlayerRequest = request.DeserializePayload<KickPlayerRequest>();
+        string? error = MainThreadContext.RunOnMainThread(() =>
+        {
+            Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == kickPlayerRequest.SteamId);
+            if (player.Handle.Pointer == 0) return "Cannot find the player.";
+            player.Kick(9, "");
+            return null;
+        });
+        return error is not null ? throw new InvalidDataException(error) : PipeEnvelope.CreateResponse(request);
     }
 }

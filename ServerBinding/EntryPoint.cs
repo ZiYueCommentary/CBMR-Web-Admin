@@ -24,44 +24,69 @@ namespace CbmrWebAdmin.ServerBinding;
 public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> configProvider) : ILoad, IUnload
 {
     private readonly Config _config = configProvider.GetConfig();
-    public Process? Child;
-    public NamedPipeServerStream? PipeServer;
+    private CancellationTokenSource? _listenerCancellation;
+    private Thread? _listenerThread;
+
+    private NamedPipeServerStream? _pipeServer;
 
     public void Load()
     {
-        // if (_config.WebPortalPath is null)
-        // {
-            // logger.LogError("Config does not declare Web Portal's executable file path!");
-            // return;
-        // }
-
-        int pid = Environment.ProcessId;
-        string pipeName = $"CbmrWebAdmin"; // _{pid}
-
-        PipeServer = new NamedPipeServerStream(pipeName, PipeDirection.InOut, 1);
-        ProcessStartInfo startInfo = new ProcessStartInfo
+        _listenerCancellation = new CancellationTokenSource();
+        _listenerThread = new Thread(() =>
+                ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
         {
-            FileName = _config.WebPortalPath,
-            Arguments = $"--PipeName=\"CbmrWebAdmin\"", // _{pid.ToString()}
-            UseShellExecute = false
+            IsBackground = true,
+            Name = "CbmrWebAdmin pipe listener"
         };
-
-        //Child = Process.Start(startInfo);
-        //if (Child is null)
-        //{
-        //    logger.LogError("Can't launch Web Portal, is the path valid? path: {}", _config.WebPortalPath);
-        //}
-
-        PipeServer.WaitForConnection();
-
-        logger.LogInformation("Server connected to Web Portal successfully.");
-
-        new Thread(() => Listener.StartListenAsync(PipeServer).GetAwaiter().GetResult()).Start();
+        _listenerThread.Start();
     }
 
     public void Unload()
     {
-        Child?.WaitForExit();
-        PipeServer?.Disconnect();
+        _listenerCancellation?.Cancel();
+        _pipeServer?.Dispose();
+        _listenerThread?.Join(TimeSpan.FromSeconds(5));
+        _listenerCancellation?.Dispose();
+    }
+
+    private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await using NamedPipeServerStream pipeServer = new NamedPipeServerStream(
+                "CbmrWebAdmin",
+                PipeDirection.InOut,
+                1,
+                PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous);
+            _pipeServer = pipeServer;
+
+            try
+            {
+                await pipeServer.WaitForConnectionAsync(cancellationToken);
+                logger.LogInformation("Server connected to Web Portal successfully.");
+                await Listener.StartListenAsync(pipeServer, cancellationToken);
+                logger.LogInformation("Web Portal disconnected; waiting for a new pipe connection.");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception exception)
+            {
+                logger.LogWarning(exception, "Pipe connection was damaged; waiting for a new connection.");
+            }
+            finally
+            {
+                if (ReferenceEquals(_pipeServer, pipeServer))
+                {
+                    _pipeServer = null;
+                }
+            }
+        }
     }
 }

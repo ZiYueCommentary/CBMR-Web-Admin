@@ -1,0 +1,85 @@
+﻿@page "/players"
+@using Serilog
+
+@attribute [Authorize]
+
+<PageTitle>Players</PageTitle>
+
+<h1>Player List</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (_webPlayers == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Index</th>
+            <th>Name</th>
+            <th>SteamID</th>
+            <th>Operations</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (SharedPlayer player in _webPlayers)
+        {
+            <tr>
+                <td>@player.Index</td>
+                <td>@player.Name</td>
+                <td>@player.SteamId</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <button type="button"
+                                class="btn btn-danger"
+                                disabled="@_pendingKicks.Contains(player.SteamId)"
+                                @onclick="() => KickPlayerAsync(player)">
+                            Kick
+                        </button>
+                        <button type="button" class="btn btn-warning">Middle</button>
+                        <button type="button" class="btn btn-success">Right</button>
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<SharedPlayer>? _webPlayers;
+    private readonly HashSet<string> _pendingKicks = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _webPlayers = await ServerBinding.SendAsync<List<SharedPlayer>>(PipeMessageType.Players);
+    }
+
+    private async Task KickPlayerAsync(SharedPlayer player)
+    {
+        if (!_pendingKicks.Add(player.SteamId))
+        {
+            return;
+        }
+
+        try
+        {
+            KickPlayerRequest request = new KickPlayerRequest
+            {
+                Index = player.Index,
+                SteamId = player.SteamId
+            };
+            var response = await ServerBinding.SendAsync<KickPlayerRequest, PipeEnvelope>(PipeMessageType.KickPlayer, request);
+            if (response.Kind == PipeEnvelopeKind.Error) Log.Error("Error on kicking player: {}", response.Error);
+        }
+        finally
+        {
+            _pendingKicks.Remove(player.SteamId);
+        }
+    }
+}
