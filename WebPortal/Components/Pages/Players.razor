@@ -27,7 +27,7 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (SharedPlayer player in _webPlayers)
+        @foreach (WebPlayer player in _webPlayers)
         {
             <tr>
                 <td>@player.Index</td>
@@ -52,15 +52,15 @@ else
 }
 
 @code {
-    private List<SharedPlayer>? _webPlayers;
+    private List<WebPlayer>? _webPlayers;
     private readonly HashSet<string> _pendingKicks = [];
 
     protected override async Task OnInitializedAsync()
     {
-        _webPlayers = await ServerBinding.SendAsync<List<SharedPlayer>>(PipeMessageType.Players);
+        _webPlayers = await ServerBinding.SendAsync<List<WebPlayer>>(PipeMessageType.Players);
     }
 
-    private async Task KickPlayerAsync(SharedPlayer player)
+    private async Task KickPlayerAsync(WebPlayer player)
     {
         if (!_pendingKicks.Add(player.SteamId))
         {

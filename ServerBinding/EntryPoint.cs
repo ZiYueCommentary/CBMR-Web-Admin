@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Diagnostics;
 using System.IO.Pipes;
 using CCB.Abstractions;
 using CCB.Attributes;
@@ -36,7 +35,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
                 ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
         {
             IsBackground = true,
-            Name = "CbmrWebAdmin pipe listener"
+            Name = "CbmrWebAdmin.ServerBinding pipe listener"
         };
         _listenerThread.Start();
     }
@@ -54,7 +53,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         while (!cancellationToken.IsCancellationRequested)
         {
             await using NamedPipeServerStream pipeServer = new NamedPipeServerStream(
-                "CbmrWebAdmin",
+                "CbmrWebAdmin", //todo dyna
                 PipeDirection.InOut,
                 1,
                 PipeTransmissionMode.Byte,

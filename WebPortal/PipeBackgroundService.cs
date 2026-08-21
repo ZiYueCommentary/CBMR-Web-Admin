@@ -17,7 +17,7 @@ using CbmrWebAdmin.Shared;
 
 namespace CbmrWebAdmin.WebPortal;
 
-public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroundService> logger) : BackgroundService
+public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroundService> logger, IConfiguration configuration) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -27,7 +27,7 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
             {
                 await using NamedPipeClientStream pipe = new NamedPipeClientStream(
                     ".",
-                    "CbmrWebAdmin",
+                    configuration["PipeName"] ?? "CbmrWebAdmin",
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous);
 

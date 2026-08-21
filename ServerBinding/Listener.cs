@@ -87,9 +87,9 @@ public static class Listener
 
     private static PipeEnvelope HandlePlayers(PipeEnvelope request)
     {
-        List<SharedPlayer> webPlayers = MainThreadContext.RunOnMainThread(() =>
+        List<WebPlayer> webPlayers = MainThreadContext.RunOnMainThread(() =>
             Player.List()
-                .Select(player => new SharedPlayer
+                .Select(player => new WebPlayer
                 {
                     Index = player.GetIndex(),
                     Name = player.GetName(),
