@@ -56,7 +56,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 
         logger.LogInformation("Server connected to Web Portal successfully.");
 
-        new Thread(() => Listener.StartListen(PipeServer)).Start();
+        new Thread(() => Listener.StartListenAsync(PipeServer).GetAwaiter().GetResult()).Start();
     }
 
     public void Unload()

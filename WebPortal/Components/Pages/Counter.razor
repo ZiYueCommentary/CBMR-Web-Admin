@@ -1,10 +1,16 @@
 ﻿@page "/counter"
+@using CbmrWebAdmin.Shared
 
 <PageTitle>@Localizer["Counter"]</PageTitle>
 
 <h1>@Localizer["Counter"]</h1>
 
-<button class="btn btn-primary" @onclick="ServerBinding.HelloWorld">@Localizer["ClickMe"]</button>
+<button class="btn btn-primary" @onclick="HelloWorld">@Localizer["ClickMe"]</button>
 
 @code {
+
+    private async Task HelloWorld()
+    {
+        await ServerBinding.SendAsync(PipeMessageType.FixElevator);
+    }
 }

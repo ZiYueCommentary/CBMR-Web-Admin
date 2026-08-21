@@ -14,7 +14,6 @@
 
 using CbmrWebAdmin.WebPortal.Components.Account;
 using CbmrWebAdmin.WebPortal.Components;
-using CbmrWebAdmin.WebPortal.Components.Account;
 using CbmrWebAdmin.WebPortal.Data;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -53,8 +52,9 @@ public class Program
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager();
 
-        builder.Services.AddSingleton<PipeQueueService>();
-        builder.Services.AddHostedService(sp => sp.GetRequiredService<PipeQueueService>());
+        builder.Services.AddSingleton<PipeMessageQueue>();
+        builder.Services.AddHostedService<PipeBackgroundService>();
+        builder.Services.AddSingleton<PipeGateway>();
 
         string[] supportedCultures = ["en", "zh-Hans"];
         RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions().SetDefaultCulture("en")
