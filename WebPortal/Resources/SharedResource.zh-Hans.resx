@@ -11,7 +11,6 @@
   <data name="Authenticated" xml:space="preserve"><value>你已通过身份验证</value></data>
   <data name="AuthRequired" xml:space="preserve"><value>需要登录</value></data>
   <data name="ClickMe" xml:space="preserve"><value>点击我</value></data>
-  <data name="Counter" xml:space="preserve"><value>计数器</value></data>
   <data name="CurrentCount" xml:space="preserve"><value>当前计数：{0}</value></data>
   <data name="DevelopmentMode" xml:space="preserve"><value>开发模式</value></data>
   <data name="DevelopmentModeDescription" xml:space="preserve"><value>切换到开发环境后，将显示有关所发生错误的更多详细信息。</value></data>

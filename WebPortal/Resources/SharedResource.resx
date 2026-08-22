@@ -11,7 +11,6 @@
   <data name="Authenticated" xml:space="preserve"><value>You are authenticated</value></data>
   <data name="AuthRequired" xml:space="preserve"><value>Auth required</value></data>
   <data name="ClickMe" xml:space="preserve"><value>Click me</value></data>
-  <data name="Counter" xml:space="preserve"><value>Counter</value></data>
   <data name="CurrentCount" xml:space="preserve"><value>Current count: {0}</value></data>
   <data name="DevelopmentMode" xml:space="preserve"><value>Development mode</value></data>
   <data name="DevelopmentModeDescription" xml:space="preserve"><value>Switching to the Development environment displays more detailed information about errors that occurred.</value></data>
@@ -75,5 +74,8 @@ If you are server admin, please log in first.</value></data>
   </data>
   <data name="BroadcastContent" xml:space="preserve">
     <value>Broadcast content</value>
+  </data>
+  <data name="CentralConsole" xml:space="preserve">
+    <value>Central Console</value>
   </data>
 </root>
