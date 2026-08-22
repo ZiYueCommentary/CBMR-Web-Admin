@@ -13,8 +13,8 @@
                        Placeholder="@Localizer["BroadcastContent"]"/>
     </BodyTemplate>
     <FooterTemplate>
-        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
-        <Button Color="ButtonColor.Primary" @onclick="SendBroadcast">Save changes</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@Localizer["Close"]</Button>
+        <Button Color="ButtonColor.Primary" @onclick="SendBroadcast">@Localizer["Send"]</Button>
     </FooterTemplate>
 </Modal>
 
@@ -37,7 +37,7 @@
     private async Task SendBroadcast()
     {
         await _modal.HideAsync();
-        await ServerBinding.SendAsync(PipeMessageType.Boardcast,
+        await ServerBinding.SendAsync(PipeMessageType.Broadcast,
             new BroadcastRequest
             {
                 Title = _showAdminName ? Localizer["AdminBoardcast", _adminName] : Localizer["ServerBoardcast"],

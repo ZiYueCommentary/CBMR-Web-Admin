@@ -78,4 +78,10 @@ If you are server admin, please log in first.</value></data>
   <data name="CentralConsole" xml:space="preserve">
     <value>Central Console</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
 </root>

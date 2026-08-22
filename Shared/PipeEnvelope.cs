@@ -29,7 +29,7 @@ public enum PipeMessageType : byte
     FixElevator,
     Players,
     KickPlayer,
-    Boardcast
+    Broadcast,
 }
 
 [MessagePackObject]

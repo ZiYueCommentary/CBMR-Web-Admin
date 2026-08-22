@@ -46,7 +46,7 @@ public static class Listener
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),
-                    PipeMessageType.Boardcast => HandleBroadcast(request),
+                    PipeMessageType.Broadcast => HandleBroadcast(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
