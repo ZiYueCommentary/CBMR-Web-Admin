@@ -27,7 +27,6 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
         builder.Services.AddLocalization();
@@ -56,7 +55,10 @@ public class Program
         builder.Services.AddHostedService<PipeBackgroundService>();
         builder.Services.AddSingleton<PipeGateway>();
 
-        string[] supportedCultures = ["en", "zh-Hans"];
+        string[] supportedCultures =
+        [
+            "en", "cs", "de", "fa", "fr", "hu", "it", "ja", "ko", "pl", "pt-BR", "ru", "tr", "uk", "zh-Hans", "zh-Hant"
+        ];
         RequestLocalizationOptions localizationOptions = new RequestLocalizationOptions().SetDefaultCulture("en")
             .AddSupportedCultures(supportedCultures)
             .AddSupportedUICultures(supportedCultures)

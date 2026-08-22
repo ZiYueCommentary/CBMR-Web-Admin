@@ -19,9 +19,13 @@ namespace CbmrWebAdmin.WebPortal;
 
 public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroundService> logger, IConfiguration configuration) : BackgroundService
 {
+    private const int DefaultReconnectDelaySeconds = 5;
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        TimeSpan reconnectDelay = GetReconnectDelay();
+
+        while (true)
         {
             try
             {
@@ -33,29 +37,7 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
 
                 await pipe.ConnectAsync(stoppingToken);
 
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    PipeRequest request = await queue.Channel.Reader.ReadAsync(stoppingToken);
-                    try
-                    {
-                        await PipeProtocol.WriteAsync(pipe, request.Envelope, stoppingToken);
-                        PipeEnvelope response = await PipeProtocol.ReadAsync(pipe, stoppingToken)
-                                                ?? throw new EndOfStreamException("The server closed the pipe without a response.");
-
-                        if (response.RequestId != request.Envelope.RequestId)
-                        {
-                            throw new InvalidDataException(
-                                $"Received response {response.RequestId} for request {request.Envelope.RequestId}.");
-                        }
-
-                        request.Completion.TrySetResult(response);
-                    }
-                    catch (Exception exception)
-                    {
-                        request.Completion.TrySetException(exception);
-                        throw;
-                    }
-                }
+                await ProcessRequestsAsync(pipe, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -63,9 +45,50 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
             }
             catch (Exception exception)
             {
-                logger.LogWarning(exception, "Pipe connection failed; reconnecting in 5 seconds.");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                logger.LogWarning(exception, "Pipe connection failed; retrying in {ReconnectDelay}.", reconnectDelay);
+            }
+
+            try
+            {
+                await Task.Delay(reconnectDelay, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
             }
         }
+    }
+
+    private async Task ProcessRequestsAsync(NamedPipeClientStream pipe, CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            PipeRequest request = await queue.Channel.Reader.ReadAsync(stoppingToken);
+            try
+            {
+                await PipeProtocol.WriteAsync(pipe, request.Envelope, stoppingToken);
+                PipeEnvelope response = await PipeProtocol.ReadAsync(pipe, stoppingToken)
+                                        ?? throw new EndOfStreamException("The server closed the pipe without a response.");
+
+                if (response.RequestId != request.Envelope.RequestId)
+                {
+                    throw new InvalidDataException(
+                        $"Received response {response.RequestId} for request {request.Envelope.RequestId}.");
+                }
+
+                request.Completion.TrySetResult(response);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
+            {
+                request.Completion.TrySetException(exception);
+                throw;
+            }
+        }
+    }
+
+    private TimeSpan GetReconnectDelay()
+    {
+        int seconds = configuration.GetValue("PipeReconnectDelaySeconds", DefaultReconnectDelaySeconds);
+        return TimeSpan.FromSeconds(Math.Max(1, seconds));
     }
 }
