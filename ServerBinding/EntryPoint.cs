@@ -25,11 +25,15 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private readonly Config _config = configProvider.GetConfig();
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
+    private ServerOutputWriter? _serverOutputWriter;
 
     private NamedPipeServerStream? _pipeServer;
 
     public void Load()
     {
+        _serverOutputWriter = new ServerOutputWriter(Console.Out);
+        Console.SetOut(_serverOutputWriter);
+
         _listenerCancellation = new CancellationTokenSource();
         _listenerThread = new Thread(() =>
                 ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
@@ -46,6 +50,13 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _pipeServer?.Dispose();
         _listenerThread?.Join(TimeSpan.FromSeconds(5));
         _listenerCancellation?.Dispose();
+
+        if (_serverOutputWriter is not null && ReferenceEquals(Console.Out, _serverOutputWriter))
+        {
+            Console.SetOut(_serverOutputWriter.OriginalWriter);
+        }
+
+        _serverOutputWriter = null;
     }
 
     private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
@@ -64,7 +75,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             {
                 await pipeServer.WaitForConnectionAsync(cancellationToken);
                 logger.LogInformation("Server connected to Web Portal successfully.");
-                await Listener.StartListenAsync(pipeServer, cancellationToken);
+                await Listener.StartListenAsync(logger, pipeServer, cancellationToken);
                 logger.LogInformation("Web Portal disconnected; waiting for a new pipe connection.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

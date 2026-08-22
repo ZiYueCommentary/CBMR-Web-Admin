@@ -17,12 +17,14 @@ using CbmrWebAdmin.Shared;
 using CbmrWebAdmin.Shared.Requests;
 using CCB.Extensions;
 using CCB.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace CbmrWebAdmin.ServerBinding;
 
 public static class Listener
 {
     public static async Task StartListenAsync(
+        ILogger<Metadata> logger,
         NamedPipeServerStream pipeServer,
         CancellationToken cancellationToken = default)
     {
@@ -36,12 +38,15 @@ public static class Listener
                     throw new InvalidDataException($"Expected a request envelope, received {request.Kind}.");
                 }
 
+                logger.LogInformation("Received Web Admin request: {}", request);
+
                 response = request.MessageType switch
                 {
                     PipeMessageType.Ack => HandleAck(request),
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),
+                    PipeMessageType.Boardcast => HandleBroadcast(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -112,5 +117,17 @@ public static class Listener
             return null;
         });
         return error is not null ? throw new InvalidDataException(error) : PipeEnvelope.CreateResponse(request);
+    }
+
+    private static PipeEnvelope HandleBroadcast(PipeEnvelope request)
+    {
+        BroadcastRequest broadcastRequest = request.DeserializePayload<BroadcastRequest>();
+        MainThreadContext.RunOnMainThread(() =>
+        {
+            GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
+            GlobalProperties.Chat.Send($"&colr[255 165 0]{broadcastRequest.Title}: {broadcastRequest.Message}");
+            GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
+        });
+        return PipeEnvelope.CreateResponse(request);
     }
 }

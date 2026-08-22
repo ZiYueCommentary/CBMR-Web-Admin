@@ -52,4 +52,28 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayersInTotal" xml:space="preserve">
     <value>Total online: {0}</value>
   </data>
+  <data name="ServerBoardcast" xml:space="preserve">
+    <value>Server boardcast</value>
+  </data>
+  <data name="AdminBoardcast" xml:space="preserve">
+    <value>Boardcast from admin {0}</value>
+  </data>
+  <data name="FixElevator" xml:space="preserve">
+    <value>Fix Elevator</value>
+  </data>
+  <data name="Broadcast" xml:space="preserve">
+    <value>Broadcast</value>
+  </data>
+  <data name="SendBroadcast" xml:space="preserve">
+    <value>Send broadcast to server</value>
+  </data>
+  <data name="ShowAdminName" xml:space="preserve">
+    <value>Show admin name</value>
+  </data>
+  <data name="AdminName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BroadcastContent" xml:space="preserve">
+    <value>Broadcast content</value>
+  </data>
 </root>

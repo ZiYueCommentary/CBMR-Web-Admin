@@ -12,9 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using MessagePack;
+
 namespace CbmrWebAdmin.Shared.Requests;
 
-public class BroadcastRequest
+[MessagePackObject]
+public sealed class BroadcastRequest
 {
+    [Key(0)] public string Message { get; init; } = string.Empty;
 
+    [Key(1)] public string Title { get; init; } = string.Empty;
 }

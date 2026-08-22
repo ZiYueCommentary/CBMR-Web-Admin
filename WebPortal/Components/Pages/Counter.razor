@@ -1,16 +1,59 @@
 ﻿@page "/counter"
+@using CbmrWebAdmin.Shared.Requests
+
+<Modal @ref="modal" Title="@Localizer["SendBroadcast"]" UseStaticBackdrop="true" CloseOnEscape="false">
+    <BodyTemplate>
+        <div class="d-flex p-2 align-items-center">
+            <CheckboxInput Label="@Localizer["ShowAdminName"]" @bind-Value="showAdminName"/>
+            <TextInput Style="margin-left: 0.25rem" Disabled="@(!@showAdminName)" @bind-Value="@enteredText"
+                       Placeholder="@Localizer["AdminName"]"/>
+        </div>
+        <TextAreaInput @bind-Value="@enteredText2" Rows="3" Disabled="false"
+                       Placeholder="@Localizer["BroadcastContent"]"/>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+        <Button Color="ButtonColor.Primary" @onclick="SendBroadcast">Save changes</Button>
+    </FooterTemplate>
+</Modal>
 
 <PageTitle>@Localizer["Counter"]</PageTitle>
 
 <h1>@Localizer["Counter"]</h1>
 
-<button class="btn btn-primary" @onclick="HelloWorld">@Localizer["ClickMe"]</button>
+<button class="btn btn-primary" @onclick="HelloWorld">@Localizer["FixElevator"]</button>
+<button class="btn btn-primary" @onclick="ShowBroadcastModal">@Localizer["Broadcast"]</button>
 
 @code {
+    private TextAreaInput? textAreaInputRef;
+    private bool showAdminName = false;
+    private string? enteredText = null;
+    private string? enteredText2 = null;
+    private Modal modal = default!;
+
+    private async Task ShowBroadcastModal()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private async Task SendBroadcast()
+    {
+        await modal.HideAsync();
+        await ServerBinding.SendAsync(PipeMessageType.Boardcast,
+            new BroadcastRequest { Title = showAdminName ? Localizer["AdminBoardcast", enteredText] : Localizer["ServerBoardcast"],
+                Message = enteredText2 });
+        ToastService.Notify(new(ToastType.Success, "Succeed!"));
+    }
 
     private async Task HelloWorld()
     {
         await ServerBinding.SendAsync(PipeMessageType.FixElevator);
         ToastService.Notify(new(ToastType.Success, "Elevators at Gate A and B has been opened."));
     }
+
 }
