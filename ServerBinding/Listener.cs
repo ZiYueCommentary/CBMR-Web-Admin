@@ -14,6 +14,7 @@
 
 using System.IO.Pipes;
 using CbmrWebAdmin.Shared;
+using CbmrWebAdmin.Shared.Requests;
 using CCB.Extensions;
 using CCB.Internal;
 

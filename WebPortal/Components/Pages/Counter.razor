@@ -11,5 +11,6 @@
     private async Task HelloWorld()
     {
         await ServerBinding.SendAsync(PipeMessageType.FixElevator);
+        ToastService.Notify(new(ToastType.Success, "Elevators at Gate A and B has been opened."));
     }
 }

@@ -14,7 +14,7 @@
 
 using MessagePack;
 
-namespace CbmrWebAdmin.Shared;
+namespace CbmrWebAdmin.Shared.Requests;
 
 [MessagePackObject]
 public sealed class KickPlayerRequest

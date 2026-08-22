@@ -54,6 +54,7 @@ public class Program
         builder.Services.AddSingleton<PipeMessageQueue>();
         builder.Services.AddHostedService<PipeBackgroundService>();
         builder.Services.AddSingleton<PipeGateway>();
+        builder.Services.AddBlazorBootstrap();
 
         string[] supportedCultures =
         [

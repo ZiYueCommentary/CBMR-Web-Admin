@@ -1,18 +1,19 @@
 ﻿@page "/players"
+@using CbmrWebAdmin.Shared.Requests
 @using Serilog
 
 @attribute [Authorize]
 
-<PageTitle>Players</PageTitle>
+<PageTitle>@Localizer["Players"]</PageTitle>
 
-<h1>Player List</h1>
+<h1>@Localizer["Players"]</h1>
 
-<p>This component demonstrates showing data.</p>
+<p>@Localizer["PlayersOnline"]</p>
 
 @if (_webPlayers == null)
 {
     <p>
-        <em>Loading...</em>
+        <em>@Localizer["Loading"]</em>
     </p>
 }
 else
@@ -48,6 +49,11 @@ else
             </tr>
         }
         </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="4">@Localizer["PlayersInTotal", _webPlayers.Count]</td>
+        </tr>
+        </tfoot>
     </table>
 }
 
