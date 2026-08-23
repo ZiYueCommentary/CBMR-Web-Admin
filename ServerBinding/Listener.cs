@@ -123,10 +123,19 @@ public static class Listener
     private static PipeEnvelope HandleBroadcast(PipeEnvelope request)
     {
         BroadcastRequest broadcastRequest = request.DeserializePayload<BroadcastRequest>();
+        string[] lines = broadcastRequest.Message.Split('\n');
         MainThreadContext.RunOnMainThread(() =>
         {
             GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
-            GlobalProperties.Chat.Send($"&colr[255 165 0]{broadcastRequest.Title}: {broadcastRequest.Message}");
+            GlobalProperties.Chat.Send($"&colr[255 165 0]{broadcastRequest.Title}: {lines[0]}");
+            if (lines.Length > 1)
+            {
+                foreach (string line in lines[1..])
+                {
+                    GlobalProperties.Chat.Send($"&colr[255 165 0]{line}");
+                }
+            }
+
             GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
         });
         return PipeEnvelope.CreateResponse(request);
