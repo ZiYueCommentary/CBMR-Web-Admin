@@ -88,9 +88,18 @@ If you are server admin, please log in first.</value></data>
     <value>No connection with server. You can't use Web Portal properly now. Please contact server owner.</value>
   </data>
   <data name="ChatPerformanceIssue" xml:space="preserve">
-    <value>Due to performance impact, this page won't refresh to show new messages automatically.</value>
+    <value>For performance, this page will refresh to show new messages every five (5) seconds.</value>
   </data>
-  <data name="ChatBar" xml:space="preserve">
-    <value>Chat bar</value>
+  <data name="ChatBox" xml:space="preserve">
+    <value>Chat box</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>Player</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Message</value>
   </data>
 </root>

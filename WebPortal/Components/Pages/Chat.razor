@@ -1,11 +1,12 @@
 @page "/Chat"
+@implements IAsyncDisposable
 
 <Alert Color="AlertColor.Primary">
     <Icon Name="IconName.InfoCircleFill" class="me-2"></Icon>@Localizer["ChatPerformanceIssue"]</Alert>
 
-<PageTitle>@Localizer["ChatBar"]</PageTitle>
+<PageTitle>@Localizer["ChatBox"]</PageTitle>
 
-<h1>@Localizer["Chat bar"]</h1>
+<h1>@Localizer["ChatBox"]</h1>
 
 @if (_outputs is null)
 {
@@ -16,19 +17,20 @@
 else
 {
     <Grid TItem="WebChat"
+          @key="_gridVersion"
           AllowSorting="true"
           Class="table table-hover table-bordered table-striped"
           DataProvider="EmployeesDataProvider"
           Responsive="true">
 
         <GridColumns>
-            <GridColumn TItem="WebChat" HeaderText="Time" SortKeySelector="item => item.When">
+            <GridColumn TItem="WebChat" HeaderText="@Localizer["Time"]" SortKeySelector="item => item.When">
                 @context.When.ToString("HH:mm:ss")
             </GridColumn>
-            <GridColumn TItem="WebChat" HeaderText="Player name">
+            <GridColumn TItem="WebChat" HeaderText="@Localizer["Player"]">
                 @context.PlayerName
             </GridColumn>
-            <GridColumn TItem="WebChat" HeaderText="Message">
+            <GridColumn TItem="WebChat" HeaderText="@Localizer["Message"]">
                 @context.Message
             </GridColumn>
         </GridColumns>
@@ -40,6 +42,10 @@ else
 @code {
 
     private List<WebChat>? _outputs;
+    private readonly CancellationTokenSource _refreshCancellationTokenSource = new();
+    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(5));
+    private Task? _refreshTask;
+    private int _gridVersion;
 
     private async Task<GridDataProviderResult<WebChat>> EmployeesDataProvider(GridDataProviderRequest<WebChat> request)
     {
@@ -48,8 +54,46 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        _outputs = await ServerBinding.SendAsync<List<WebChat>>(PipeMessageType.Chats);
-        _outputs.Reverse();
+        await RefreshAsync(_refreshCancellationTokenSource.Token);
+        _refreshTask = RefreshPeriodicallyAsync(_refreshCancellationTokenSource.Token);
+    }
+
+    private async Task RefreshPeriodicallyAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (await _refreshTimer.WaitForNextTickAsync(cancellationToken))
+            {
+                await RefreshAsync(cancellationToken);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private async Task RefreshAsync(CancellationToken cancellationToken)
+    {
+        List<WebChat> outputs = await ServerBinding.SendAsync<List<WebChat>>(
+            PipeMessageType.Chats,
+            cancellationToken);
+        outputs.Reverse();
+        _outputs = outputs;
+        _gridVersion++;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _refreshCancellationTokenSource.CancelAsync();
+        _refreshTimer.Dispose();
+
+        if (_refreshTask is not null)
+        {
+            await _refreshTask;
+        }
+
+        _refreshCancellationTokenSource.Dispose();
     }
 
 }
