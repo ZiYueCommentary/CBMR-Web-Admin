@@ -1,0 +1,55 @@
+@page "/Chat"
+
+<Alert Color="AlertColor.Primary">
+    <Icon Name="IconName.InfoCircleFill" class="me-2"></Icon>@Localizer["ChatPerformanceIssue"]</Alert>
+
+<PageTitle>@Localizer["ChatBar"]</PageTitle>
+
+<h1>@Localizer["Chat bar"]</h1>
+
+@if (_outputs is null)
+{
+    <p>
+        <em>@Localizer["Loading"]</em>
+    </p>
+}
+else
+{
+    <Grid TItem="WebChat"
+          AllowSorting="true"
+          Class="table table-hover table-bordered table-striped"
+          DataProvider="EmployeesDataProvider"
+          Responsive="true">
+
+        <GridColumns>
+            <GridColumn TItem="WebChat" HeaderText="Time" SortKeySelector="item => item.When">
+                @context.When.ToString("HH:mm:ss")
+            </GridColumn>
+            <GridColumn TItem="WebChat" HeaderText="Player name">
+                @context.PlayerName
+            </GridColumn>
+            <GridColumn TItem="WebChat" HeaderText="Message">
+                @context.Message
+            </GridColumn>
+        </GridColumns>
+
+    </Grid>
+
+}
+
+@code {
+
+    private List<WebChat>? _outputs;
+
+    private async Task<GridDataProviderResult<WebChat>> EmployeesDataProvider(GridDataProviderRequest<WebChat> request)
+    {
+        return await Task.FromResult(request.ApplyTo(_outputs));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _outputs = await ServerBinding.SendAsync<List<WebChat>>(PipeMessageType.Chats);
+        _outputs.Reverse();
+    }
+
+}

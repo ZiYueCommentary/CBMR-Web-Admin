@@ -47,6 +47,7 @@ public static class Listener
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),
                     PipeMessageType.Broadcast => HandleBroadcast(request),
+                    PipeMessageType.Chats => HandleChats(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -129,5 +130,10 @@ public static class Listener
             GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
         });
         return PipeEnvelope.CreateResponse(request);
+    }
+
+    private static PipeEnvelope HandleChats(PipeEnvelope request)
+    {
+        return PipeEnvelope.CreateResponse(request, EntryPoint.ServerChatList.GetItems().ToList());
     }
 }

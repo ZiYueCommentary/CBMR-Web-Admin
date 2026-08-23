@@ -87,4 +87,10 @@ If you are server admin, please log in first.</value></data>
   <data name="NoConnectionWithServer" xml:space="preserve">
     <value>No connection with server. You can't use Web Portal properly now. Please contact server owner.</value>
   </data>
+  <data name="ChatPerformanceIssue" xml:space="preserve">
+    <value>Due to performance impact, this page won't refresh to show new messages automatically.</value>
+  </data>
+  <data name="ChatBar" xml:space="preserve">
+    <value>Chat bar</value>
+  </data>
 </root>

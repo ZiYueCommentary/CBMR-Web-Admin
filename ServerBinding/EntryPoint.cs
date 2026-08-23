@@ -15,6 +15,7 @@
 using System.IO.Pipes;
 using CCB.Abstractions;
 using CCB.Attributes;
+using CCB.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace CbmrWebAdmin.ServerBinding;
@@ -25,15 +26,11 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private readonly Config _config = configProvider.GetConfig();
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
-    internal static ServerOutputWriter? _serverOutputWriter;
-
     private NamedPipeServerStream? _pipeServer;
+    internal static readonly ServerChatList ServerChatList = new();
 
     public void Load()
     {
-        _serverOutputWriter = new ServerOutputWriter(Console.Out);
-        Console.SetOut(_serverOutputWriter);
-
         _listenerCancellation = new CancellationTokenSource();
         _listenerThread = new Thread(() =>
                 ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
@@ -42,6 +39,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             Name = "CbmrWebAdmin.ServerBinding pipe listener"
         };
         _listenerThread.Start();
+        EventRegistry.PlayerChat += OnPlayerChat;
     }
 
     public void Unload()
@@ -50,13 +48,13 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _pipeServer?.Dispose();
         _listenerThread?.Join(TimeSpan.FromSeconds(5));
         _listenerCancellation?.Dispose();
+        EventRegistry.PlayerChat -= OnPlayerChat;
+        ServerChatList.Clear();
+    }
 
-        if (_serverOutputWriter is not null && ReferenceEquals(Console.Out, _serverOutputWriter))
-        {
-            Console.SetOut(_serverOutputWriter.OriginalWriter);
-        }
-
-        _serverOutputWriter = null;
+    private static void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
+    {
+        ServerChatList.Add(eventArg.Player, eventArg.Text);
     }
 
     private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
