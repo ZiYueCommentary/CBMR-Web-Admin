@@ -19,6 +19,7 @@ namespace CbmrWebAdmin.WebPortal;
 
 public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroundService> logger, IConfiguration configuration) : BackgroundService
 {
+    protected internal static NamedPipeClientStream ServerBindingPipe;
     private const int DefaultReconnectDelaySeconds = 5;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,15 +30,15 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
         {
             try
             {
-                await using NamedPipeClientStream pipe = new NamedPipeClientStream(
+                ServerBindingPipe = new NamedPipeClientStream(
                     ".",
                     configuration["PipeName"] ?? "CbmrWebAdmin",
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous);
 
-                await pipe.ConnectAsync(stoppingToken);
+                await ServerBindingPipe.ConnectAsync(stoppingToken);
 
-                await ProcessRequestsAsync(pipe, stoppingToken);
+                await ProcessRequestsAsync(ServerBindingPipe, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {

@@ -9,10 +9,15 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">@Localizer["About"]</a>
+            <a href="https://github.com/ZiYueCommentary/CBMR-Web-Admin/" target="_blank">@Localizer["About"]</a>
         </div>
 
         <article class="content px-4">
+            @if (!PipeBackgroundService.ServerBindingPipe.IsConnected)
+            {
+                <Alert Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@Localizer["NoConnectionWithServer"]</Alert>
+            }
+
             @Body
         </article>
     </main>

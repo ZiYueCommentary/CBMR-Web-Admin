@@ -84,4 +84,7 @@ If you are server admin, please log in first.</value></data>
   <data name="Send" xml:space="preserve">
     <value>Send</value>
   </data>
+  <data name="NoConnectionWithServer" xml:space="preserve">
+    <value>No connection with server. You can't use Web Portal properly now. Please contact server owner.</value>
+  </data>
 </root>

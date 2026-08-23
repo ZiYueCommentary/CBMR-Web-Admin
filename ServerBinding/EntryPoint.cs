@@ -25,7 +25,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private readonly Config _config = configProvider.GetConfig();
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
-    private ServerOutputWriter? _serverOutputWriter;
+    internal static ServerOutputWriter? _serverOutputWriter;
 
     private NamedPipeServerStream? _pipeServer;
 
