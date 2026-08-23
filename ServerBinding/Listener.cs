@@ -38,7 +38,7 @@ public static class Listener
                     throw new InvalidDataException($"Expected a request envelope, received {request.Kind}.");
                 }
 
-                logger.LogInformation("Received Web Admin request: {}", request);
+                logger.LogInformation("Received Web Admin request: {}", request.MessageType);
 
                 response = request.MessageType switch
                 {
