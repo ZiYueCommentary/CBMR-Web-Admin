@@ -124,4 +124,22 @@
   <data name="PlayersInTotal" xml:space="preserve">
     <value>在线人数: {0}</value>
   </data>
+  <data name="NoConnectionWithServer" xml:space="preserve">
+    <value>未与游戏服务器连接，你现在无法正常使用 Web Portal。请联系服主。</value>
+  </data>
+  <data name="ChatPerformanceIssue" xml:space="preserve">
+    <value>出于性能原因，该页面会每 5 秒刷新一次，以显示新的聊天消息。</value>
+  </data>
+  <data name="ChatBox" xml:space="preserve">
+    <value>聊天框</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>玩家</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>消息</value>
+  </data>
 </root>
