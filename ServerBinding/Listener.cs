@@ -72,7 +72,7 @@ public static class Listener
         {
             Door? door1 = null, door2 = null;
             Room gateAb = GlobalProperties.World.GetRoomByName("gate_a_b");
-            if (gateAb.Handle.Pointer != 0)
+            if (gateAb.Opaque.Pointer != 0)
             {
                 door1 = gateAb.GetDoor(0);
                 door2 = gateAb.GetDoor(1);
@@ -81,8 +81,8 @@ public static class Listener
             {
                 Room gateA = GlobalProperties.World.GetRoomByName("gate_a");
                 Room gateB = GlobalProperties.World.GetRoomByName("gate_b");
-                if (gateA.Handle.Pointer != 0) door1 = gateA.GetDoor(1);
-                if (gateB.Handle.Pointer != 0) door2 = gateB.GetDoor(1);
+                if (gateA.Opaque.Pointer != 0) door1 = gateA.GetDoor(1);
+                if (gateB.Opaque.Pointer != 0) door2 = gateB.GetDoor(1);
             }
 
             door1?.SetOpen(true);
@@ -113,7 +113,7 @@ public static class Listener
         string? error = MainThreadContext.RunOnMainThread(() =>
         {
             Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == kickPlayerRequest.SteamId);
-            if (player.Handle.Pointer == 0) return "Cannot find the player.";
+            if (player.Opaque.Pointer == 0) return "Cannot find the player.";
             player.Kick(9, "");
             return null;
         });
