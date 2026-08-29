@@ -48,6 +48,7 @@ public static class Listener
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),
                     PipeMessageType.Broadcast => HandleBroadcast(request),
                     PipeMessageType.Chats => HandleChats(request),
+                    PipeMessageType.ClearItems => HandleClearItems(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -144,5 +145,17 @@ public static class Listener
     private static PipeEnvelope HandleChats(PipeEnvelope request)
     {
         return PipeEnvelope.CreateResponse(request, EntryPoint.ServerChatList.GetItems().ToList());
+    }
+
+    private static PipeEnvelope HandleClearItems(PipeEnvelope request)
+    {
+        MainThreadContext.RunOnMainThread(() =>
+        {
+            foreach (var item in Items.List().Where(item => !item.IsPicked()))
+            {
+                item.Remove();
+            }
+        });
+        return PipeEnvelope.CreateResponse(request);
     }
 }

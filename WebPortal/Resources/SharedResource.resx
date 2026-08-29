@@ -102,4 +102,7 @@ If you are server admin, please log in first.</value></data>
   <data name="Message" xml:space="preserve">
     <value>Message</value>
   </data>
+  <data name="ClearItems" xml:space="preserve">
+    <value>Clear ground items</value>
+  </data>
 </root>

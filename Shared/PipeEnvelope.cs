@@ -30,7 +30,8 @@ public enum PipeMessageType : byte
     Players,
     KickPlayer,
     Broadcast,
-    Chats
+    Chats,
+    ClearItems
 }
 
 [MessagePackObject]
