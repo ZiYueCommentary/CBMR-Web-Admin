@@ -21,10 +21,10 @@ else
     <table class="table">
         <thead>
         <tr>
-            <th>Index</th>
-            <th>Name</th>
-            <th>SteamID</th>
-            <th>Operations</th>
+            <th>@Localizer["Index"]</th>
+            <th>@Localizer["Name"]</th>
+            <th>@Localizer["SteamID"]</th>
+            <th>@Localizer["Operations"]</th>
         </tr>
         </thead>
         <tbody>
@@ -40,7 +40,7 @@ else
                                 class="btn btn-warning"
                                 disabled="@_pendingKicks.Contains(player.SteamId)"
                                 @onclick="() => KickPlayerAsync(player)">
-                            Kick
+                            @Localizer["Kick"]
                         </button>
                         <button type="button" class="btn btn-warning">Middle</button>
                         <button type="button" class="btn btn-success">Right</button>

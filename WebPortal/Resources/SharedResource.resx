@@ -105,4 +105,25 @@ If you are server admin, please log in first.</value></data>
   <data name="ClearItems" xml:space="preserve">
     <value>Clear ground items</value>
   </data>
+  <data name="ElevatorOpened" xml:space="preserve">
+    <value>Elevators at Gate A and B has been opened.</value>
+  </data>
+  <data name="ItemsCleared" xml:space="preserve">
+    <value>All items not picked has been cleared.</value>
+  </data>
+  <data name="Index" xml:space="preserve">
+    <value>Index</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SteamID" xml:space="preserve">
+    <value>SteamID</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operations</value>
+  </data>
+  <data name="Kick" xml:space="preserve">
+    <value>Kick</value>
+  </data>
 </root>

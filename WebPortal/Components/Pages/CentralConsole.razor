@@ -13,12 +13,12 @@
     private async Task FixElevator()
     {
         await ServerBinding.SendAsync(PipeMessageType.FixElevator);
-        ToastService.Notify(new(ToastType.Success, "Elevators at Gate A and B has been opened."));
+        ToastService.Notify(new(ToastType.Success, Localizer["ElevatorOpened"]));
     }
     
     private async Task ClearItems()
     {
         await ServerBinding.SendAsync(PipeMessageType.ClearItems);
-        ToastService.Notify(new(ToastType.Success, "All items not picked has been cleared."));
+        ToastService.Notify(new(ToastType.Success, Localizer["ItemsCleared"]));
     }
 }
