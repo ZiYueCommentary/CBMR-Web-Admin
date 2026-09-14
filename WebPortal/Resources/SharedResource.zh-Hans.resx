@@ -142,4 +142,28 @@
   <data name="Message" xml:space="preserve">
     <value>消息</value>
   </data>
+  <data name="ClearItems" xml:space="preserve">
+    <value>清理地面物品</value>
+  </data>
+  <data name="ElevatorOpened" xml:space="preserve">
+    <value>A门与B门的电梯门已打开。</value>
+  </data>
+  <data name="ItemsCleared" xml:space="preserve">
+    <value>所有未被捡起的物品已经清除。</value>
+  </data>
+  <data name="Index" xml:space="preserve">
+    <value>索引</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="SteamID" xml:space="preserve">
+    <value>SteamID</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Kick" xml:space="preserve">
+    <value>踢出</value>
+  </data>
 </root>
