@@ -166,4 +166,34 @@
   <data name="Kick" xml:space="preserve">
     <value>踢出</value>
   </data>
+  <data name="ForceRestartServer" xml:space="preserve">
+    <value>强制重启服务器？</value>
+  </data>
+  <data name="ForceRestartDescription" xml:space="preserve">
+    <value>这会立刻杀死服务器进程，并且不会向玩家发送重启原因。该功能主要用于在服务器已崩溃或未响应时重启。</value>
+  </data>
+  <data name="DoYouWantProceed" xml:space="preserve">
+    <value>你想要继续吗？</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>危险区</value>
+  </data>
+  <data name="ForceRestart" xml:space="preserve">
+    <value>强制重启</value>
+  </data>
+  <data name="Restart" xml:space="preserve">
+    <value>重启</value>
+  </data>
+  <data name="RestartReason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="RestartServer" xml:space="preserve">
+    <value>重启服务器</value>
+  </data>
 </root>
