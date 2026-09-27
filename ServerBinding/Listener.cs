@@ -42,7 +42,7 @@ public static class Listener
 
                 response = request.MessageType switch
                 {
-                    PipeMessageType.Ack => HandleAck(request),
+                    PipeMessageType.WhereAreYou => HandleWhereAreYou(request),
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),
@@ -61,10 +61,12 @@ public static class Listener
         }
     }
 
-    private static PipeEnvelope HandleAck(PipeEnvelope request)
+    private static PipeEnvelope HandleWhereAreYou(PipeEnvelope request)
     {
-        MainThreadContext.RunOnMainThread(() => GlobalProperties.Chat.Send("Hello World!"));
-        return PipeEnvelope.CreateResponse(request);
+        return PipeEnvelope.CreateResponse(request, new ServerLocation
+        {
+            Path = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName
+        });
     }
 
     private static PipeEnvelope HandleFixElevator(PipeEnvelope request)

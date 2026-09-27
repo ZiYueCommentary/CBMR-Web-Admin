@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using CbmrWebAdmin.Shared;
 using CbmrWebAdmin.WebPortal.Components.Account;
 using CbmrWebAdmin.WebPortal.Components;
 using CbmrWebAdmin.WebPortal.Data;
@@ -52,6 +53,7 @@ public class Program
             .AddSignInManager();
 
         builder.Services.AddSingleton<PipeMessageQueue>();
+        builder.Services.AddSingleton<ServerLocation>();
         builder.Services.AddHostedService<PipeBackgroundService>();
         builder.Services.AddSingleton<PipeGateway>();
         builder.Services.AddBlazorBootstrap();

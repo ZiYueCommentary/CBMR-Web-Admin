@@ -1,0 +1,65 @@
+@using System.Diagnostics
+@inject ServerLocation Location
+<ConfirmDialog @ref="dialog" />
+
+<button class="btn btn-danger" @onclick="ShowConfirmationAsync">@Localizer["ForceRestart"]</button>
+
+@code {
+    private ConfirmDialog dialog = default!;
+
+    private async Task ShowConfirmationAsync()
+    {
+        bool confirmation = await dialog.ShowAsync(
+            title: Localizer["ForceRestartServer"],
+            message1: Localizer["ForceRestartDescription"],
+            message2: Localizer["DoYouWantProceed"],
+            new ConfirmDialogOptions
+            {
+                AutoFocusYesButton = false,
+                Dismissable = true,
+                NoButtonText = Localizer["No"],
+                YesButtonText = Localizer["Yes"]
+            });
+
+        if (confirmation)
+        {
+            KillProcessByPath(Location.Path);
+            ToastService.Notify(new(ToastType.Success, "Succeed!"));
+        }
+    }
+
+    private static void KillProcessByPath(string targetPath)
+    {
+        if (string.IsNullOrWhiteSpace(targetPath)) return;
+        string targetStandardPath = Path.GetFullPath(targetPath).Trim().ToLower();
+
+        Process[] processes = Process.GetProcesses();
+
+        foreach (Process process in processes)
+        {
+            try
+            {
+                if (process.MainModule == null) continue;
+                string currentPath = Path.GetFullPath(process.MainModule.FileName).Trim().ToLower();
+
+                if (currentPath != targetStandardPath) continue;
+                process.Kill(entireProcessTree: true);
+                process.WaitForExit();
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"检查进程时出错: {ex.Message}");
+            }
+            finally
+            {
+                process.Dispose();
+            }
+        }
+    }
+}

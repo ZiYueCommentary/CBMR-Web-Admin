@@ -25,7 +25,7 @@ public enum PipeEnvelopeKind : byte
 
 public enum PipeMessageType : byte
 {
-    Ack,
+    WhereAreYou,
     FixElevator,
     Players,
     KickPlayer,

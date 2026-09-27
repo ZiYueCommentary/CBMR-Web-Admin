@@ -20,7 +20,7 @@ else
           @key="_gridVersion"
           AllowSorting="true"
           Class="table table-hover table-bordered table-striped"
-          DataProvider="EmployeesDataProvider"
+          DataProvider="ChatDataProvider"
           Responsive="true">
 
         <GridColumns>
@@ -47,7 +47,7 @@ else
     private Task? _refreshTask;
     private int _gridVersion;
 
-    private async Task<GridDataProviderResult<WebChat>> EmployeesDataProvider(GridDataProviderRequest<WebChat> request)
+    private async Task<GridDataProviderResult<WebChat>> ChatDataProvider(GridDataProviderRequest<WebChat> request)
     {
         return await Task.FromResult(request.ApplyTo(_outputs));
     }

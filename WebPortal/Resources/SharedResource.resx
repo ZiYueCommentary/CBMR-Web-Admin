@@ -126,4 +126,34 @@ If you are server admin, please log in first.</value></data>
   <data name="Kick" xml:space="preserve">
     <value>Kick</value>
   </data>
+  <data name="ForceRestartServer" xml:space="preserve">
+    <value>Force restart server?</value>
+  </data>
+  <data name="ForceRestartDescription" xml:space="preserve">
+    <value>This will instantly kill the server process and will not send reason to players. It is designed to restart server when it is already crashed or unresponded.</value>
+  </data>
+  <data name="DoYouWantProceed" xml:space="preserve">
+    <value>Do you want to proceed?</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>Danger Zone</value>
+  </data>
+  <data name="ForceRestart" xml:space="preserve">
+    <value>Force Restart</value>
+  </data>
+  <data name="Restart" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="RestartReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="RestartServer" xml:space="preserve">
+    <value>Restart server</value>
+  </data>
 </root>

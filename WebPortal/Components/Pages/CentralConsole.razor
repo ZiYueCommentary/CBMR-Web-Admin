@@ -8,7 +8,10 @@
 <button class="btn btn-primary" @onclick="FixElevator">@Localizer["FixElevator"]</button>
 <BroadcastModalButton/>
 <button class="btn btn-primary" @onclick="ClearItems">@Localizer["ClearItems"]</button>
-
+<br/><br/>
+<h3>@Localizer["DangerZone"]</h3>
+<RestartServerModalButton/>
+<ForceRestartServerButton/>
 @code {
     private async Task FixElevator()
     {

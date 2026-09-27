@@ -1,0 +1,42 @@
+@using CbmrWebAdmin.Shared.Requests
+
+<button class="btn btn-warning" @onclick="ShowModal">@Localizer["Restart"]</button>
+
+<Modal @ref="_modal" Title="@Localizer["RestartServer"]">
+    <BodyTemplate>
+        <TextAreaInput @bind-Value="@_message" Rows="3" Disabled="false"
+                       Placeholder="@Localizer["RestartReason"]"/>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@Localizer["Close"]</Button>
+        <Button Color="ButtonColor.Primary" @onclick="SendBroadcast">@Localizer["Send"]</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    private Modal _modal = null!;
+    private string? _message;
+
+    private async Task ShowModal()
+    {
+        await _modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await _modal.HideAsync();
+    }
+
+    private async Task SendBroadcast()
+    {
+        await _modal.HideAsync();
+        await ServerBinding.SendAsync(PipeMessageType.Broadcast,
+            new BroadcastRequest
+            {
+                Message = _message!
+            });
+        _message = null;
+        ToastService.Notify(new(ToastType.Success, "Succeed!"));
+    }
+
+}

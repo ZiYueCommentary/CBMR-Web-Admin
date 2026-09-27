@@ -17,7 +17,11 @@ using CbmrWebAdmin.Shared;
 
 namespace CbmrWebAdmin.WebPortal;
 
-public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroundService> logger, IConfiguration configuration) : BackgroundService
+public class PipeBackgroundService(
+    PipeMessageQueue queue,
+    ServerLocation serverLocation,
+    ILogger<PipeBackgroundService> logger,
+    IConfiguration configuration) : BackgroundService
 {
     protected internal static NamedPipeClientStream ServerBindingPipe;
     private const int DefaultReconnectDelaySeconds = 5;
@@ -38,6 +42,7 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
 
                 await ServerBindingPipe.ConnectAsync(stoppingToken);
 
+                await RequestServerLocationAsync(ServerBindingPipe, stoppingToken);
                 await ProcessRequestsAsync(ServerBindingPipe, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -85,6 +90,34 @@ public class PipeBackgroundService(PipeMessageQueue queue, ILogger<PipeBackgroun
                 throw;
             }
         }
+    }
+
+    private async Task RequestServerLocationAsync(NamedPipeClientStream pipe, CancellationToken cancellationToken)
+    {
+        PipeEnvelope request = PipeEnvelope.CreateRequest(PipeMessageType.WhereAreYou);
+        await PipeProtocol.WriteAsync(pipe, request, cancellationToken);
+
+        PipeEnvelope response = await PipeProtocol.ReadAsync(pipe, cancellationToken)
+                                ?? throw new EndOfStreamException("The server closed the pipe without responding to WhereAreYou.");
+
+        if (response.RequestId != request.RequestId)
+        {
+            throw new InvalidDataException(
+                $"Received response {response.RequestId} for request {request.RequestId}.");
+        }
+
+        if (response.Kind == PipeEnvelopeKind.Error)
+        {
+            throw new InvalidOperationException(response.Error ?? "The server could not provide its location.");
+        }
+
+        if (response.Kind != PipeEnvelopeKind.Response || response.MessageType != PipeMessageType.WhereAreYou)
+        {
+            throw new InvalidDataException("Expected a WhereAreYou response envelope.");
+        }
+
+        serverLocation.Path = response.DeserializePayload<ServerLocation>().Path;
+        logger.LogInformation("Connected to server at {ServerPath}.", serverLocation.Path);
     }
 
     private TimeSpan GetReconnectDelay()
