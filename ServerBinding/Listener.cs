@@ -38,7 +38,7 @@ public static class Listener
                     throw new InvalidDataException($"Expected a request envelope, received {request.Kind}.");
                 }
 
-                logger.LogInformation("Received Web Admin request: {}", request.MessageType);
+                logger.LogInformation("Received Web Admin request: {RequestMessageType}", request.MessageType);
 
                 response = request.MessageType switch
                 {
@@ -49,6 +49,7 @@ public static class Listener
                     PipeMessageType.Broadcast => HandleBroadcast(request),
                     PipeMessageType.Chats => HandleChats(request),
                     PipeMessageType.ClearItems => HandleClearItems(request),
+                    PipeMessageType.RestartServer => HandleRestartServer(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -157,6 +158,20 @@ public static class Listener
             {
                 item.Remove();
             }
+        });
+        return PipeEnvelope.CreateResponse(request);
+    }
+    
+    private static PipeEnvelope HandleRestartServer(PipeEnvelope request)
+    {
+        RestartServerRequest restartServerRequest = request.DeserializePayload<RestartServerRequest>();
+        MainThreadContext.RunOnMainThread(() =>
+        {
+            foreach (Player player in Player.List())
+            {
+                player.Kick(12, restartServerRequest.Reason);
+            }
+            GlobalProperties.Server.Restart();
         });
         return PipeEnvelope.CreateResponse(request);
     }

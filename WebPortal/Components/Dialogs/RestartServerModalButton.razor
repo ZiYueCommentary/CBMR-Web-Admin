@@ -4,18 +4,18 @@
 
 <Modal @ref="_modal" Title="@Localizer["RestartServer"]">
     <BodyTemplate>
-        <TextAreaInput @bind-Value="@_message" Rows="3" Disabled="false"
+        <TextAreaInput @bind-Value="@_reason" Rows="3" Disabled="false"
                        Placeholder="@Localizer["RestartReason"]"/>
     </BodyTemplate>
     <FooterTemplate>
         <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@Localizer["Close"]</Button>
-        <Button Color="ButtonColor.Primary" @onclick="SendBroadcast">@Localizer["Send"]</Button>
+        <Button Color="ButtonColor.Primary" @onclick="SendRestartRequest">@Localizer["Send"]</Button>
     </FooterTemplate>
 </Modal>
 
 @code {
     private Modal _modal = null!;
-    private string? _message;
+    private string? _reason;
 
     private async Task ShowModal()
     {
@@ -27,15 +27,15 @@
         await _modal.HideAsync();
     }
 
-    private async Task SendBroadcast()
+    private async Task SendRestartRequest()
     {
         await _modal.HideAsync();
-        await ServerBinding.SendAsync(PipeMessageType.Broadcast,
-            new BroadcastRequest
+        await ServerBinding.SendAsync(PipeMessageType.RestartServer,
+            new RestartServerRequest
             {
-                Message = _message!
+                Reason = _reason!
             });
-        _message = null;
+        _reason = null;
         ToastService.Notify(new(ToastType.Success, "Succeed!"));
     }
 
