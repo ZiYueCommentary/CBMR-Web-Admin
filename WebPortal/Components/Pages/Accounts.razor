@@ -1,0 +1,222 @@
+@page "/accounts"
+@attribute [Authorize]
+@using CbmrWebAdmin.WebPortal.Data
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>@Localizer["AccountManagement"]</PageTitle>
+
+@if (_isPrimaryAdmin)
+{
+    <h1>@Localizer["AccountManagement"]</h1>
+    <StatusMessage Message="@_message" IsError="@_hasError"/>
+
+    <EditForm Model="_input" OnValidSubmit="SaveAccount" FormName="account">
+        <DataAnnotationsValidator/>
+        <ValidationSummary class="text-danger"/>
+        <div class="row g-3 align-items-end mb-4">
+            <div class="col-md-4">
+                <label for="account-name" class="form-label">@Localizer["Username"]</label>
+                <InputText id="account-name" @bind-Value="_input.UserName" class="form-control" autocomplete="off"/>
+                <ValidationMessage For="() => _input.UserName" class="text-danger"/>
+            </div>
+            <div class="col-md-4">
+                <label for="account-password" class="form-label">@Localizer["Password"]</label>
+                <div class="input-group">
+                    <InputText id="account-password" type="password" @bind-Value="_input.Password" class="form-control"
+                               autocomplete="new-password"/>
+                    <button type="button" class="btn btn-outline-secondary"
+                            @onclick="GeneratePassword">@Localizer["GeneratePassword"]</button>
+                </div>
+                <ValidationMessage For="() => _input.Password" class="text-danger"/>
+            </div>
+            <div class="col-auto">
+                <button type="submit"
+                        class="btn btn-primary">@(_editingUserId is null ? Localizer["AddAccount"] : Localizer["Save"])</button>
+                @if (_editingUserId is not null)
+                {
+                    <button type="button" class="btn btn-secondary ms-2"
+                            @onclick="CancelEdit">@Localizer["Cancel"]</button>
+                }
+            </div>
+        </div>
+    </EditForm>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>@Localizer["Username"]</th>
+                <th>@Localizer["Operations"]</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (ApplicationUser user in _users)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                @onclick="() => BeginEdit(user)">@Localizer["Edit"]</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                @onclick="() => DeleteAccount(user)">@Localizer["Delete"]</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <h1>@Localizer["AccessDenied"]</h1>
+}
+
+@code {
+    private readonly AccountInput _input = new();
+    private List<ApplicationUser> _users = [];
+    private string? _editingUserId;
+    private string? _message;
+    private bool _hasError;
+    private bool _isPrimaryAdmin;
+
+    protected override async Task OnInitializedAsync()
+    {
+        AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ApplicationUser? currentUser = await UserManager.GetUserAsync(state.User);
+        _isPrimaryAdmin = currentUser?.IsPrimaryAdmin == true;
+        if (_isPrimaryAdmin)
+        {
+            await LoadUsers();
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        _users = await UserManager.Users.OrderBy(user => user.UserName).ToListAsync();
+    }
+
+    private async Task SaveAccount()
+    {
+        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin())
+        {
+            SetMessage(Localizer["AccessDenied"], true);
+            return;
+        }
+
+        IdentityResult result;
+        if (_editingUserId is null)
+        {
+            if (string.IsNullOrWhiteSpace(_input.Password))
+            {
+                SetMessage(Localizer["PasswordRequired"], true);
+                return;
+            }
+
+            ApplicationUser user = new() { UserName = _input.UserName.Trim() };
+            result = await UserManager.CreateAsync(user, _input.Password);
+        }
+        else
+        {
+            ApplicationUser? user = await UserManager.FindByIdAsync(_editingUserId);
+            if (user is null || user.IsPrimaryAdmin)
+            {
+                SetMessage(Localizer["AccountOperationFailed"], true);
+                return;
+            }
+
+            user.UserName = _input.UserName.Trim();
+            result = await UserManager.UpdateAsync(user);
+            if (result.Succeeded && !string.IsNullOrEmpty(_input.Password))
+            {
+                string token = await UserManager.GeneratePasswordResetTokenAsync(user);
+                result = await UserManager.ResetPasswordAsync(user, token, _input.Password);
+            }
+        }
+
+        if (!result.Succeeded)
+        {
+            SetMessage(string.Join(" ", result.Errors.Select(error => error.Description)), true);
+            return;
+        }
+
+        CancelEdit();
+        await LoadUsers();
+        SetMessage(Localizer["AccountSaved"], false);
+    }
+
+    private void BeginEdit(ApplicationUser user)
+    {
+        if (user.IsPrimaryAdmin) return;
+        _editingUserId = user.Id;
+        _input.UserName = user.UserName ?? string.Empty;
+        _input.Password = string.Empty;
+        _message = null;
+    }
+
+    private async Task DeleteAccount(ApplicationUser user)
+    {
+        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin() || user.IsPrimaryAdmin)
+        {
+            SetMessage(Localizer["AccountOperationFailed"], true);
+            return;
+        }
+
+        IdentityResult result = await UserManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            SetMessage(string.Join(" ", result.Errors.Select(error => error.Description)), true);
+            return;
+        }
+
+        if (_editingUserId == user.Id) CancelEdit();
+        await LoadUsers();
+        SetMessage(Localizer["AccountDeleted"], false);
+    }
+
+    private async Task<bool> IsCurrentUserPrimaryAdmin()
+    {
+        AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ApplicationUser? user = await UserManager.GetUserAsync(state.User);
+        return user?.IsPrimaryAdmin == true;
+    }
+
+    private void CancelEdit()
+    {
+        _editingUserId = null;
+        _input.UserName = string.Empty;
+        _input.Password = string.Empty;
+    }
+
+    private void GeneratePassword()
+    {
+        _input.Password = IdentitySeeder.GeneratePassword(16);
+    }
+
+    private void SetMessage(string message, bool isError)
+    {
+        _message = message;
+        _hasError = isError;
+    }
+
+    private sealed class AccountInput
+    {
+        [Required]
+        [StringLength(256, MinimumLength = 1)]
+        public string UserName { get; set; } = string.Empty;
+
+        [StringLength(128, MinimumLength = 6)]
+        [OptionalPasswordMinimumLength(6)]
+        public string Password { get; set; } = string.Empty;
+    }
+
+    private sealed class OptionalPasswordMinimumLengthAttribute(int minimumLength)
+        : ValidationAttribute($"Password must be at least {minimumLength} characters.")
+    {
+        public override bool IsValid(object? value) =>
+            value is not string password || password.Length == 0 || password.Length >= minimumLength;
+    }
+
+}

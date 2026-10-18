@@ -26,6 +26,17 @@
   <data name="LockedOut" xml:space="preserve"><value>Account locked out</value></data>
   <data name="LockedOutDescription" xml:space="preserve"><value>This account has been locked out, please try again later.</value></data>
   <data name="Login" xml:space="preserve"><value>Log in</value></data>
+  <data name="AccountManagement" xml:space="preserve"><value>Account management</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="AccountSaved" xml:space="preserve"><value>Account saved.</value></data>
+  <data name="AccountDeleted" xml:space="preserve"><value>Account deleted.</value></data>
+  <data name="AccountOperationFailed" xml:space="preserve"><value>The account operation failed.</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="PasswordRequired" xml:space="preserve"><value>A password is required for a new account.</value></data>
+  <data name="GeneratePassword" xml:space="preserve"><value>Generate password</value></data>
   <data name="Logout" xml:space="preserve"><value>Log out</value></data>
   <data name="NavigationMenu" xml:space="preserve"><value>Navigation menu</value></data>
   <data name="Password" xml:space="preserve"><value>Password</value></data>

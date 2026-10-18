@@ -14,37 +14,36 @@
 
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace CbmrWebAdmin.WebPortal.Data;
 
 public static class IdentitySeeder
 {
     private const string AdminUserName = "admin";
-    private const string AdminEmail = "admin@localhost";
     private const int PasswordLength = 24;
-    private const string PasswordCharacters =
-        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!#$%&*+-=?@";
+    private const string PasswordCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!#$%&*+-=?@";
 
     public static async Task SeedAdminAsync(IServiceProvider services)
     {
         await using AsyncServiceScope scope = services.CreateAsyncScope();
-        ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        await dbContext.Database.MigrateAsync();
-
         UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         ApplicationUser? admin = await userManager.FindByNameAsync(AdminUserName);
         if (admin is not null)
         {
-            return;
+            if (admin.IsPrimaryAdmin) return;
+            admin.IsPrimaryAdmin = true;
+            IdentityResult updateResult = await userManager.UpdateAsync(admin);
+            if (updateResult.Succeeded) return;
+            string errors = string.Join(", ", updateResult.Errors.Select(error => error.Description));
+            throw new InvalidOperationException($"Could not mark the initial admin account: {errors}");
+
         }
 
-        string password = CreateRandomPassword();
+        string password = GeneratePassword();
         admin = new ApplicationUser
         {
             UserName = AdminUserName,
-            Email = AdminEmail,
-            EmailConfirmed = true
+            IsPrimaryAdmin = true
         };
 
         IdentityResult result = await userManager.CreateAsync(admin, password);
@@ -62,9 +61,14 @@ public static class IdentitySeeder
             password);
     }
 
-    private static string CreateRandomPassword()
+    public static string GeneratePassword(int length = PasswordLength)
     {
-        return string.Create(PasswordLength, PasswordCharacters, static (password, characters) =>
+        if (length < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length), "Password length must be positive.");
+        }
+
+        return string.Create(length, PasswordCharacters, static (password, characters) =>
         {
             for (int index = 0; index < password.Length; index++)
             {

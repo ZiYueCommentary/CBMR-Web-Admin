@@ -56,6 +56,17 @@
   </data>
   <data name="Login" xml:space="preserve"><value>登录</value>
   </data>
+  <data name="AccountManagement" xml:space="preserve"><value>账户管理</value></data>
+  <data name="AddAccount" xml:space="preserve"><value>添加账户</value></data>
+  <data name="AccountSaved" xml:space="preserve"><value>账户已保存。</value></data>
+  <data name="AccountDeleted" xml:space="preserve"><value>账户已删除。</value></data>
+  <data name="AccountOperationFailed" xml:space="preserve"><value>账户操作失败。</value></data>
+  <data name="Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="PasswordRequired" xml:space="preserve"><value>新账户必须设置密码。</value></data>
+  <data name="GeneratePassword" xml:space="preserve"><value>生成密码</value></data>
   <data name="Logout" xml:space="preserve"><value>退出登录</value>
   </data>
   <data name="NavigationMenu" xml:space="preserve"><value>导航菜单</value>

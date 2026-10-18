@@ -37,6 +37,14 @@
 
         <AuthorizeView>
             <Authorized>
+                @if (context.User.Identity?.Name is not null && context.User.HasClaim("primary-admin", "true"))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="accounts">
+                            <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> @Localizer["AccountManagement"]
+                        </NavLink>
+                    </div>
+                }
                 <div class="nav-item px-3">
                     <span class="nav-link">
                         <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @context.User.Identity?.Name

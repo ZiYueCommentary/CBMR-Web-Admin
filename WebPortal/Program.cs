@@ -46,11 +46,10 @@ public class Program
                                       "Connection string 'DefaultConnection' not found.");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
-        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
         builder.Services.AddIdentityCore<ApplicationUser>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddSignInManager();
+            .AddSignInManager()
+            .AddClaimsPrincipalFactory<PrimaryAdminClaimsPrincipalFactory>();
 
         builder.Services.AddSingleton<PipeMessageQueue>();
         builder.Services.AddSingleton<ServerLocation>();
@@ -69,14 +68,10 @@ public class Program
 
         WebApplication app = builder.Build();
 
-        IdentitySeeder.SeedAdminAsync(app.Services).GetAwaiter().GetResult();
+        await DatabaseInitializer.InitializeAsync(app.Services);
         app.UseRequestLocalization(localizationOptions);
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseMigrationsEndPoint();
-        }
-        else
+        if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
             app.UseHsts();
@@ -85,6 +80,8 @@ public class Program
         app.UseHttpsRedirection();
         app.MapStaticAssets();
 
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.UseAntiforgery();
 
         app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
