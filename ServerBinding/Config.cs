@@ -22,5 +22,7 @@ public record Config(string? PipeName)
 
     public const ConfigFileType Type = ConfigFileType.Json;
 
+    public string DatabasePath { get; init; } = "Data/webportal.db";
+
     public static Config Default { get; } = new Config("CbmrWebAdmin");
 }

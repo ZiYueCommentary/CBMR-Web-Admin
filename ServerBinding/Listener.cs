@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.IO.Pipes;
+using CbmrWebAdmin.ServerBinding.Data;
 using CbmrWebAdmin.Shared;
 using CbmrWebAdmin.Shared.Requests;
 using CCB.Extensions;
@@ -26,6 +27,7 @@ public static class Listener
     public static async Task StartListenAsync(
         ILogger<Metadata> logger,
         NamedPipeServerStream pipeServer,
+        string databasePath,
         CancellationToken cancellationToken = default)
     {
         while (await PipeProtocol.ReadAsync(pipeServer, cancellationToken) is { } request)
@@ -50,6 +52,7 @@ public static class Listener
                     PipeMessageType.Chats => HandleChats(request),
                     PipeMessageType.ClearItems => HandleClearItems(request),
                     PipeMessageType.RestartServer => HandleRestartServer(request),
+                    PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, cancellationToken),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -114,14 +117,65 @@ public static class Listener
     private static PipeEnvelope HandleKickPlayer(PipeEnvelope request)
     {
         KickPlayerRequest kickPlayerRequest = request.DeserializePayload<KickPlayerRequest>();
-        string? error = MainThreadContext.RunOnMainThread(() =>
+        MainThreadContext.RunOnMainThread(() =>
         {
             Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == kickPlayerRequest.SteamId);
-            if (player.Opaque.Pointer == 0) return "Cannot find the player.";
-            player.Kick(9, "");
-            return null;
+            if (player.Opaque.Pointer != 0) player.Kick(9, "");
         });
-        return error is not null ? throw new InvalidDataException(error) : PipeEnvelope.CreateResponse(request);
+        return PipeEnvelope.CreateResponse(request);
+    }
+
+    private static async Task<PipeEnvelope> HandleBanPlayerAsync(
+        PipeEnvelope request, string databasePath, CancellationToken cancellationToken)
+    {
+        BanPlayerRequest banPlayerRequest = request.DeserializePayload<BanPlayerRequest>();
+        DateTime startedAt = DateTime.UtcNow;
+        if (string.IsNullOrWhiteSpace(banPlayerRequest.SteamId) || banPlayerRequest.SteamId.Length > 64)
+            throw new InvalidDataException("A SteamID of at most 64 characters is required.");
+        if (string.IsNullOrWhiteSpace(banPlayerRequest.Reason))
+            throw new InvalidDataException("A ban reason is required.");
+        if (banPlayerRequest.ExpiresAtUtc is not null &&
+            (banPlayerRequest.ExpiresAtUtc.Value.Kind != DateTimeKind.Utc || banPlayerRequest.ExpiresAtUtc <= startedAt))
+            throw new InvalidDataException("The ban expiration must be a future UTC date and time.");
+
+        await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
+        Ban ban = new Ban
+        {
+            SteamId = banPlayerRequest.SteamId.Trim(),
+            Reason = banPlayerRequest.Reason.Trim(),
+            StartedAt = startedAt,
+            Duration = banPlayerRequest.ExpiresAtUtc - startedAt
+        };
+        database.Bans.Add(ban);
+        await database.SaveChangesAsync(cancellationToken);
+
+        MainThreadContext.RunOnMainThread(() =>
+        {
+            Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == ban.SteamId);
+            string playerName = player.Opaque.Pointer != 0
+                ? player.GetName()
+                : banPlayerRequest.PlayerName ?? ban.SteamId;
+            string duration = ban.Duration is null
+                ? "永久"
+                : $"{ban.Duration.Value.Days}天{ban.Duration.Value.Hours}小时{ban.Duration.Value.Minutes}分钟{ban.Duration.Value.Seconds}秒";
+
+            if (player.Opaque.Pointer != 0)
+            {
+                player.Kick(9, $"你已被服务器封禁！\n原因：{ban.Reason}\n封禁时长：{duration}");
+            }
+
+            GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
+            GlobalProperties.Chat.Send($"&colr[255 165 0]玩家 {playerName.ReplaceLineEndings(" ")} 已被封禁");
+            GlobalProperties.Chat.Send($"&colr[255 165 0]SteamID：{ban.SteamId}");
+            foreach (string line in ban.Reason.ReplaceLineEndings("\n").Split('\n'))
+            {
+                GlobalProperties.Chat.Send($"&colr[255 165 0]原因：{line}");
+            }
+            GlobalProperties.Chat.Send($"&colr[255 165 0]封禁时长：{duration}");
+            GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
+        });
+
+        return PipeEnvelope.CreateResponse(request);
     }
 
     private static PipeEnvelope HandleBroadcast(PipeEnvelope request)

@@ -1,8 +1,9 @@
 ﻿@page "/players"
 @using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Components.Dialogs
 @using Serilog
 
-@attribute [Authorize]
+@* @attribute [Authorize] *@
 
 <PageTitle>@Localizer["Players"]</PageTitle>
 
@@ -36,13 +37,13 @@ else
                 <td>@player.SteamId</td>
                 <td>
                     <div class="btn-group" role="group">
+                        <BanPlayerModalButton @key="player.SteamId" Player="player"/>
                         <button type="button"
                                 class="btn btn-warning"
                                 disabled="@_pendingKicks.Contains(player.SteamId)"
                                 @onclick="() => KickPlayerAsync(player)">
                             @Localizer["Kick"]
                         </button>
-                        <button type="button" class="btn btn-warning">Middle</button>
                         <button type="button" class="btn btn-success">Right</button>
                     </div>
                 </td>

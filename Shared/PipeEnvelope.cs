@@ -32,7 +32,8 @@ public enum PipeMessageType : byte
     Broadcast,
     Chats,
     ClearItems,
-    RestartServer
+    RestartServer,
+    BanPlayer
 }
 
 [MessagePackObject]

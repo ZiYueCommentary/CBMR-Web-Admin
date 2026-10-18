@@ -17,6 +17,7 @@ using CCB.Abstractions;
 using CCB.Attributes;
 using CCB.Internal;
 using Microsoft.Extensions.Logging;
+using CbmrWebAdmin.ServerBinding.Data;
 
 namespace CbmrWebAdmin.ServerBinding;
 
@@ -31,6 +32,11 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 
     public void Load()
     {
+        using (WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath))
+        {
+            database.Initialize();
+        }
+
         _listenerCancellation = new CancellationTokenSource();
         _listenerThread = new Thread(() =>
                 ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
@@ -40,6 +46,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         };
         _listenerThread.Start();
         EventRegistry.PlayerChat += OnPlayerChat;
+        EventRegistry.IncomingConnection += OnConnectionInComing;
     }
 
     public void Unload()
@@ -49,7 +56,26 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _listenerThread?.Join(TimeSpan.FromSeconds(5));
         _listenerCancellation?.Dispose();
         EventRegistry.PlayerChat -= OnPlayerChat;
+        EventRegistry.IncomingConnection -= OnConnectionInComing;
         ServerChatList.Clear();
+    }
+
+    private void OnConnectionInComing(EventRegistry.IncomingConnectionEventArg eventArg)
+    {
+        using WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath);
+        Ban? ban = database.FindActiveBan(eventArg.Conn.GetSteamID(), DateTime.UtcNow);
+        if (ban is null)
+        {
+            eventArg.Conn.Accept();
+            return;
+        }
+        string remaining = "永久";
+        if (ban.Duration is { } duration)
+        {
+            TimeSpan timeLeft = ban.StartedAt + duration - DateTime.UtcNow;
+            remaining = $"{timeLeft.Days}天{timeLeft.Hours}小时{timeLeft.Minutes}分钟";
+        }
+        eventArg.Conn.Cancel($"你已被服务器封禁！\n原因：{ban.Reason}\n剩余时长：{remaining}");
     }
 
     private static void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
@@ -73,7 +99,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             {
                 await pipeServer.WaitForConnectionAsync(cancellationToken);
                 logger.LogInformation("Server connected to Web Portal successfully.");
-                await Listener.StartListenAsync(logger, pipeServer, cancellationToken);
+                await Listener.StartListenAsync(logger, pipeServer, _config.DatabasePath, cancellationToken);
                 logger.LogInformation("Web Portal disconnected; waiting for a new pipe connection.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

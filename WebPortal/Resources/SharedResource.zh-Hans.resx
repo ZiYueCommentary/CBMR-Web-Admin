@@ -196,4 +196,28 @@
   <data name="RestartServer" xml:space="preserve">
     <value>重启服务器</value>
   </data>
+  <data name="Ban" xml:space="preserve">
+    <value>封禁</value>
+  </data>
+  <data name="BanPlayer" xml:space="preserve">
+    <value>封禁玩家</value>
+  </data>
+  <data name="BanUntil" xml:space="preserve">
+    <value>封禁到：</value>
+  </data>
+  <data name="PermanentBan" xml:space="preserve">
+    <value>永久封禁</value>
+  </data>
+  <data name="BanReason" xml:space="preserve">
+    <value>封禁原因</value>
+  </data>
+  <data name="InvalidBanExpiration" xml:space="preserve">
+    <value>请选择有效且晚于当前时间的日期和时间，避免夏令时切换时的歧义时间。</value>
+  </data>
+  <data name="PlayerBanned" xml:space="preserve">
+    <value>玩家封禁记录已保存。</value>
+  </data>
+  <data name="BanFailed" xml:space="preserve">
+    <value>无法确认封禁记录是否已保存，请检查服务器连接和日志。</value>
+  </data>
 </root>

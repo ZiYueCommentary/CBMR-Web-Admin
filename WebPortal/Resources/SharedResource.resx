@@ -156,4 +156,28 @@ If you are server admin, please log in first.</value></data>
   <data name="RestartServer" xml:space="preserve">
     <value>Restart server</value>
   </data>
+  <data name="Ban" xml:space="preserve">
+    <value>Ban</value>
+  </data>
+  <data name="BanPlayer" xml:space="preserve">
+    <value>Ban player</value>
+  </data>
+  <data name="BanUntil" xml:space="preserve">
+    <value>Ban until:</value>
+  </data>
+  <data name="PermanentBan" xml:space="preserve">
+    <value>Permanent ban</value>
+  </data>
+  <data name="BanReason" xml:space="preserve">
+    <value>Ban reason</value>
+  </data>
+  <data name="InvalidBanExpiration" xml:space="preserve">
+    <value>Select a valid, unambiguous future date and time.</value>
+  </data>
+  <data name="PlayerBanned" xml:space="preserve">
+    <value>The player ban has been saved.</value>
+  </data>
+  <data name="BanFailed" xml:space="preserve">
+    <value>Could not confirm the ban was saved. Check the server connection and logs.</value>
+  </data>
 </root>
