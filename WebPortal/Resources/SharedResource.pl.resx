@@ -88,4 +88,211 @@
   <data name="Send" xml:space="preserve">
     <value>Wyślij</value>
   </data>
+  <data name="No" xml:space="preserve">
+    <value>Nie</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Tak</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edytuj</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Usuń</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Zapisz</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Anuluj</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Hasło</value>
+  </data>
+  <data name="Reload" xml:space="preserve">
+    <value>Odśwież</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Zapamiętaj</value>
+  </data>
+  <data name="Ban" xml:space="preserve">
+    <value>Ban</value>
+  </data>
+  <data name="BanPlayer" xml:space="preserve">
+    <value>Zbanuj gracza</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>Na temat</value>
+  </data>
+  <data name="AddAccount" xml:space="preserve">
+    <value>Dodaj konto</value>
+  </data>
+  <data name="AccountSaved" xml:space="preserve">
+    <value>Konto zapisane.</value>
+  </data>
+  <data name="AccountDeleted" xml:space="preserve">
+    <value>Konto usunięte.</value>
+  </data>
+  <data name="GeneratePassword" xml:space="preserve">
+    <value>Wygeneruj hasło</value>
+  </data>
+  <data name="Kick" xml:space="preserve">
+    <value>Wyrzuć</value>
+  </data>
+  <data name="AdminName" xml:space="preserve">
+    <value>Nazwa</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Dom</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Czas</value>
+  </data>
+  <data name="Player" xml:space="preserve">
+    <value>Gracz</value>
+  </data>
+  <data name="Message" xml:space="preserve">
+    <value>Wiadomość</value>
+  </data>
+  <data name="SteamID" xml:space="preserve">
+    <value>SteamID</value>
+  </data>
+  <data name="BanReason" xml:space="preserve">
+    <value>Powód bana</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nazwa</value>
+  </data>
+  <data name="PermanentBan" xml:space="preserve">
+    <value>Permanentny ban</value>
+  </data>
+  <data name="RequestId" xml:space="preserve">
+    <value>ID żądania:</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Nazwa</value>
+  </data>
+  <data name="Players" xml:space="preserve">
+    <value>Gracze</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Ładowanie...</value>
+  </data>
+  <data name="RestartReason" xml:space="preserve">
+    <value>Powód</value>
+  </data>
+  <data name="Authenticated" xml:space="preserve">
+    <value>Jesteś upoważniony</value>
+  </data>
+  <data name="AccessDeniedDescription" xml:space="preserve">
+    <value>Nie jesteś upoważniony do dostępu do tego zasobu.</value>
+  </data>
+  <data name="AuthRequired" xml:space="preserve">
+    <value>Wymagane Uwierzytelnienie</value>
+  </data>
+  <data name="CurrentCount" xml:space="preserve">
+    <value>Aktualna ilość: {0}</value>
+  </data>
+  <data name="DevelopmentMode" xml:space="preserve">
+    <value>Tryb programistyczny</value>
+  </data>
+  <data name="InvalidLogin" xml:space="preserve">
+    <value>Błąd: Logowanie się nie powiodło.</value>
+  </data>
+  <data name="NavigationMenu" xml:space="preserve">
+    <value>Menu nawigacji</value>
+  </data>
+  <data name="Index" xml:space="preserve">
+    <value>Indeks</value>
+  </data>
+  <data name="AccountManagement" xml:space="preserve">
+    <value>Zarządzanie kontem</value>
+  </data>
+  <data name="CentralConsole" xml:space="preserve">
+    <value>Konsola Centralna</value>
+  </data>
+  <data name="ShowAdminName" xml:space="preserve">
+    <value>Pokaż nazwę admina</value>
+  </data>
+  <data name="BanUntil" xml:space="preserve">
+    <value>Ban do:</value>
+  </data>
+  <data name="FixElevator" xml:space="preserve">
+    <value>Napraw Windę</value>
+  </data>
+  <data name="ChatBox" xml:space="preserve">
+    <value>Okienko czatu</value>
+  </data>
+  <data name="PlayerBanned" xml:space="preserve">
+    <value>Ban gracza został zapisany.</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>Wystąpił nieobsłużony błąd.</value>
+  </data>
+  <data name="LockedOut" xml:space="preserve">
+    <value>Konto zablokowane</value>
+  </data>
+  <data name="LockedOutDescription" xml:space="preserve">
+    <value>To konto zostało zablokowane, prosimy spróbować poźniej.</value>
+  </data>
+  <data name="LocalAccountLogin" xml:space="preserve">
+    <value>Użyj lokalnego konta, aby się zalogować.</value>
+  </data>
+  <data name="HelloWorld" xml:space="preserve">
+    <value>Witaj, świecie!</value>
+  </data>
+  <data name="PlayersInTotal" xml:space="preserve">
+    <value>Łącznie online: {0}</value>
+  </data>
+  <data name="ClearItems" xml:space="preserve">
+    <value>Usuń przedmioty z ziemi</value>
+  </data>
+  <data name="ElevatorOpened" xml:space="preserve">
+    <value>Windy w Bramie A i B zostały otwarte.</value>
+  </data>
+  <data name="ItemsCleared" xml:space="preserve">
+    <value>Wszystkie niepodniesione przedmioty zostały usunięte.</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Hasło jest wymagane dla nowego konta.</value>
+  </data>
+  <data name="AccountOperationFailed" xml:space="preserve">
+    <value>Operacja konta się nie powiodła.</value>
+  </data>
+  <data name="ServerBoardcast" xml:space="preserve">
+    <value>Komunikat serwera</value>
+  </data>
+  <data name="AdminBoardcast" xml:space="preserve">
+    <value>Komunikat od admina {0}</value>
+  </data>
+  <data name="Broadcast" xml:space="preserve">
+    <value>Komunikat</value>
+  </data>
+  <data name="SendBroadcast" xml:space="preserve">
+    <value>Wyślij komunikat do serwera</value>
+  </data>
+  <data name="BroadcastContent" xml:space="preserve">
+    <value>Komunikuj treść</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operacje</value>
+  </data>
+  <data name="RestartServer" xml:space="preserve">
+    <value>Zrestartuj serwer</value>
+  </data>
+  <data name="Restart" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="ForceRestart" xml:space="preserve">
+    <value>Wymuś Restart</value>
+  </data>
+  <data name="DangerZone" xml:space="preserve">
+    <value>Strefa Zagrożenia</value>
+  </data>
+  <data name="ForceRestartServer" xml:space="preserve">
+    <value>Wymusić restart serwera?</value>
+  </data>
+  <data name="RequestProcessingError" xml:space="preserve">
+    <value>Wystąpił błąd podczas przetwarzania żądania.</value>
+  </data>
 </root>
