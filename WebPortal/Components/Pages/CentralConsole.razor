@@ -3,6 +3,7 @@
 @using CbmrWebAdmin.WebPortal.Components.Dialogs
 @using CbmrWebAdmin.Shared.Requests
 @using System.Globalization
+@using CbmrWebAdmin.WebPortal.Data
 
 <PageTitle>@Localizer["CentralConsole"]</PageTitle>
 
@@ -60,6 +61,7 @@
         {
             await ServerBinding.SendAsync(PipeMessageType.SetPlayerLanguage, new SetPlayerLanguageRequest { Culture = culture });
             _playerLanguage = culture;
+            await AuditLogger.WriteAsync(AuditActions.SetPlayerLanguage, details: culture);
             ToastService.Notify(new(ToastType.Success, Localizer["PlayerLanguageSaved"]));
         }
         catch (Exception)
@@ -75,12 +77,14 @@
     private async Task FixElevator()
     {
         await ServerBinding.SendAsync(PipeMessageType.FixElevator);
+        await AuditLogger.WriteAsync(AuditActions.FixElevator);
         ToastService.Notify(new(ToastType.Success, Localizer["ElevatorOpened"]));
     }
     
     private async Task ClearItems()
     {
         await ServerBinding.SendAsync(PipeMessageType.ClearItems);
+        await AuditLogger.WriteAsync(AuditActions.ClearItems);
         ToastService.Notify(new(ToastType.Success, Localizer["ItemsCleared"]));
     }
 }

@@ -1,4 +1,5 @@
 @using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Data
 
 <button class="btn btn-primary" @onclick="ShowModal">@Localizer["Broadcast"]</button>
 
@@ -37,12 +38,13 @@
     private async Task SendBroadcast()
     {
         await _modal.HideAsync();
-        await ServerBinding.SendAsync(PipeMessageType.Broadcast,
-            new BroadcastRequest
-            {
-                Title = _showAdminName ? Localizer["AdminBoardcast", _adminName] : Localizer["ServerBoardcast"],
-                Message = _message!
-            });
+        BroadcastRequest request = new BroadcastRequest
+        {
+            Title = _showAdminName ? Localizer["AdminBoardcast", _adminName] : Localizer["ServerBoardcast"],
+            Message = _message!
+        };
+        await ServerBinding.SendAsync(PipeMessageType.Broadcast, request);
+        await AuditLogger.WriteAsync(AuditActions.Broadcast, details: $"{request.Title}: {request.Message}");
         _message = null;
         ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
     }

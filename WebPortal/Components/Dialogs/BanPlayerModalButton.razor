@@ -1,5 +1,6 @@
 @using CbmrWebAdmin.Shared.Requests
 @using Serilog
+@using CbmrWebAdmin.WebPortal.Data
 
 <button type="button" class="btn btn-danger" disabled="@_sending" @onclick="ShowModal">@Localizer[Player is null ? "BanOfflinePlayer" : "Ban"]</button>
 
@@ -91,6 +92,9 @@
                 ExpiresAtUtc = expiresAtUtc,
                 Reason = _reason.Trim()
             });
+            await AuditLogger.WriteAsync(AuditActions.BanPlayer,
+                Player is null ? steamId : $"{Player.Name} ({steamId})",
+                $"{(expiresAtUtc is null ? "permanent" : $"until {expiresAtUtc:u}")}: {_reason.Trim()}");
             await _modal.HideAsync();
             _banDate = null;
             _banTime = null;

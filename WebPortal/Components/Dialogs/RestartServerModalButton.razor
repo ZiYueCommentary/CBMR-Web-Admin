@@ -1,4 +1,5 @@
 @using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Data
 
 <button class="btn btn-warning" @onclick="ShowModal">@Localizer["Restart"]</button>
 
@@ -35,6 +36,7 @@
             {
                 Reason = _reason!
             });
+        await AuditLogger.WriteAsync(AuditActions.RestartServer, details: _reason);
         _reason = null;
         ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
     }

@@ -3,6 +3,7 @@
 @using CbmrWebAdmin.Shared.Requests
 @using CbmrWebAdmin.WebPortal.Components.Dialogs
 @using Serilog
+@using CbmrWebAdmin.WebPortal.Data
 
 @* @attribute [Authorize] *@
 
@@ -100,6 +101,7 @@ else if (_webPlayers is not null)
                 SteamId = player.SteamId
             };
             await ServerBinding.SendAsync(PipeMessageType.KickPlayer, request);
+            await AuditLogger.WriteAsync(AuditActions.KickPlayer, $"{player.Name} ({player.SteamId})");
         }
         catch (Exception exception)
         {

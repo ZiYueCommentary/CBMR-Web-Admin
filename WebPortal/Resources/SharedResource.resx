@@ -235,4 +235,27 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerVoiceMuted" xml:space="preserve"><value>The player's voice has been muted.</value></data>
   <data name="PlayerChatMuted" xml:space="preserve"><value>The player's chat has been muted.</value></data>
   <data name="MuteFailed" xml:space="preserve"><value>Could not mute the player. Game server support may not be implemented. Check the server connection and logs.</value></data>
+||||||| parent of 012c851 (Add audit log of admin actions with audit log page)
+  <data name="AuditLog" xml:space="preserve"><value>Audit log</value></data>
+  <data name="AuditLogDescription" xml:space="preserve"><value>Actions performed by administrators through this website, newest first. Times are shown in the server time zone.</value></data>
+  <data name="AuditAction" xml:space="preserve"><value>Action</value></data>
+  <data name="AuditTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="AuditDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="AuditActionLogin" xml:space="preserve"><value>Logged in</value></data>
+  <data name="AuditActionLoginFailed" xml:space="preserve"><value>Failed login</value></data>
+  <data name="AuditActionLockedOut" xml:space="preserve"><value>Locked out</value></data>
+  <data name="AuditActionLogout" xml:space="preserve"><value>Logged out</value></data>
+  <data name="AuditActionFixElevator" xml:space="preserve"><value>Fixed elevator</value></data>
+  <data name="AuditActionClearItems" xml:space="preserve"><value>Cleared items</value></data>
+  <data name="AuditActionBroadcast" xml:space="preserve"><value>Sent broadcast</value></data>
+  <data name="AuditActionKickPlayer" xml:space="preserve"><value>Kicked player</value></data>
+  <data name="AuditActionBanPlayer" xml:space="preserve"><value>Banned player</value></data>
+  <data name="AuditActionRestartServer" xml:space="preserve"><value>Restarted server</value></data>
+  <data name="AuditActionForceRestartServer" xml:space="preserve"><value>Force restarted server</value></data>
+  <data name="AuditActionSetPlayerLanguage" xml:space="preserve"><value>Changed player language</value></data>
+  <data name="AuditActionCreateAccount" xml:space="preserve"><value>Created account</value></data>
+  <data name="AuditActionUpdateAccount" xml:space="preserve"><value>Updated account</value></data>
+  <data name="AuditActionDeleteAccount" xml:space="preserve"><value>Deleted account</value></data>
+  <data name="AuditActionMuteVoice" xml:space="preserve"><value>Muted voice</value></data>
+  <data name="AuditActionMuteChat" xml:space="preserve"><value>Muted chat</value></data>
 </root>

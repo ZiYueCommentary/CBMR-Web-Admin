@@ -77,16 +77,19 @@ limitations under the License.
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
+            await AuditLogger.WriteAsync(AuditActions.Login, userName: Input.UserName);
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
         {
             Logger.LogWarning("User account locked out.");
+            await AuditLogger.WriteAsync(AuditActions.LockedOut, userName: Input.UserName);
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
             errorMessage = Localizer["InvalidLogin"];
+            await AuditLogger.WriteAsync(AuditActions.LoginFailed, userName: Input.UserName);
         }
     }
 

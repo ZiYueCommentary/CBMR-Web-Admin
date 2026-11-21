@@ -1,4 +1,5 @@
 @using System.Diagnostics
+@using CbmrWebAdmin.WebPortal.Data
 @inject ServerLocation Location
 <ConfirmDialog @ref="dialog" />
 
@@ -24,6 +25,7 @@
         if (confirmation)
         {
             KillProcessByPath(Location.Path);
+            await AuditLogger.WriteAsync(AuditActions.ForceRestartServer, Location.Path);
             ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
         }
     }

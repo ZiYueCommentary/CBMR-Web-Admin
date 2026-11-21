@@ -53,6 +53,7 @@ public class Program
             .AddDefaultTokenProviders()
             .AddClaimsPrincipalFactory<PrimaryAdminClaimsPrincipalFactory>();
 
+        builder.Services.AddScoped<AuditLogger>();
         builder.Services.AddSingleton<PipeMessageQueue>();
         builder.Services.AddSingleton<ServerLocation>();
         builder.Services.AddHostedService<PipeBackgroundService>();

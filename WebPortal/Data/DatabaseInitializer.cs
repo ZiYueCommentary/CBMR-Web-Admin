@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Microsoft.EntityFrameworkCore;
+
 namespace CbmrWebAdmin.WebPortal.Data;
 
 public static class DatabaseInitializer
@@ -22,6 +24,7 @@ public static class DatabaseInitializer
         ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         await dbContext.Database.EnsureCreatedAsync();
+        await dbContext.Database.ExecuteSqlRawAsync(ApplicationDbContext.CreateAuditLogsSql);
         await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider);
     }
 }

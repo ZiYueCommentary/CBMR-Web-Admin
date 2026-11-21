@@ -181,6 +181,10 @@ else
         }
 
         await transaction.CommitAsync();
+        string auditDetails = (_input.IsPrimaryAdmin ? "MainAdmin" : "RegularAdmin") +
+                              (_editingUserId is not null && !string.IsNullOrEmpty(_input.Password) ? ", password changed" : "");
+        await AuditLogger.WriteAsync(_editingUserId is null ? AuditActions.CreateAccount : AuditActions.UpdateAccount,
+            _input.UserName.Trim(), auditDetails);
         CancelEdit();
         await LoadUsers();
         SetMessage(Localizer["AccountSaved"], false);
@@ -228,6 +232,7 @@ else
         }
 
         await transaction.CommitAsync();
+        await AuditLogger.WriteAsync(AuditActions.DeleteAccount, target.UserName);
         if (_editingUserId == user.Id) CancelEdit();
         await LoadUsers();
         SetMessage(Localizer["AccountDeleted"], false);

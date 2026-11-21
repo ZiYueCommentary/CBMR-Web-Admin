@@ -1,3 +1,4 @@
+@using CbmrWebAdmin.WebPortal.Data
 @using CbmrWebAdmin.Shared.Requests
 @using Serilog
 
@@ -82,6 +83,9 @@
                 ExpiresAtUtc = expiresAtUtc,
                 Reason = _reason!.Trim()
             });
+            await AuditLogger.WriteAsync(MuteVoice ? AuditActions.MuteVoice : AuditActions.MuteChat,
+                $"{Player.Name} ({Player.SteamId})",
+                $"{(expiresAtUtc is null ? "permanent" : $"until {expiresAtUtc:u}")}: {_reason!.Trim()}");
             await _modal.HideAsync();
             _muteDate = null;
             _muteTime = null;
