@@ -20,13 +20,52 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 {
     public DbSet<Ban> Bans => Set<Ban>();
 
+    public DbSet<Mute> Mutes => Set<Mute>();
+
     public void Initialize()
     {
         Database.EnsureCreated();
+        Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "mutes" (
+                "id" INTEGER NOT NULL CONSTRAINT "PK_mutes" PRIMARY KEY AUTOINCREMENT,
+                "steamid" TEXT NOT NULL,
+                "kind" INTEGER NOT NULL,
+                "reason" TEXT NOT NULL,
+                "duration" INTEGER NULL,
+                "started_at" TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS "IX_mutes_steamid_kind" ON "mutes" ("steamid", "kind");
+            """);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Mute>(entity =>
+        {
+            entity.ToTable("mutes");
+            entity.HasKey(mute => mute.Id);
+            entity.Property(mute => mute.Id).HasColumnName("id");
+            entity.Property(mute => mute.SteamId)
+                .HasColumnName("steamid")
+                .HasMaxLength(64)
+                .IsRequired();
+            entity.Property(mute => mute.Kind)
+                .HasColumnName("kind")
+                .IsRequired();
+            entity.Property(mute => mute.Reason)
+                .HasColumnName("reason")
+                .IsRequired();
+            entity.Property(mute => mute.Duration)
+                .HasColumnName("duration")
+                .HasConversion(
+                    duration => duration.HasValue ? duration.Value.Ticks : (long?)null,
+                    ticks => ticks.HasValue ? TimeSpan.FromTicks(ticks.Value) : null);
+            entity.Property(mute => mute.StartedAt)
+                .HasColumnName("started_at")
+                .IsRequired();
+            entity.HasIndex(mute => new { mute.SteamId, mute.Kind });
+        });
+
         modelBuilder.Entity<Ban>(entity =>
         {
             entity.ToTable("bans");
@@ -59,6 +98,15 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             .OrderByDescending(ban => ban.Id)
             .AsEnumerable()
             .FirstOrDefault(ban => ban.Duration is null || ban.StartedAt + ban.Duration.Value > utcNow);
+    }
+
+    public Mute? FindActiveMute(string steamId, MuteKind kind, DateTime utcNow)
+    {
+        return Mutes.AsNoTracking()
+            .Where(mute => mute.SteamId == steamId && mute.Kind == kind)
+            .OrderByDescending(mute => mute.Id)
+            .AsEnumerable()
+            .FirstOrDefault(mute => mute.Duration is null || mute.StartedAt + mute.Duration.Value > utcNow);
     }
 
     public static WebPortalDbContext Create(string databasePath)

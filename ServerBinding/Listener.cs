@@ -56,7 +56,8 @@ public static class Listener
                     PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, playerLanguage, cancellationToken),
                     PipeMessageType.GetPlayerLanguage => PipeEnvelope.CreateResponse(request, playerLanguage.Culture.Name),
                     PipeMessageType.SetPlayerLanguage => HandleSetPlayerLanguage(request, playerLanguage),
-                    PipeMessageType.MuteVoice or PipeMessageType.MuteChat => HandleMutePlayer(request),
+                    PipeMessageType.MuteVoice => await HandleMutePlayerAsync(request, databasePath, MuteKind.Voice, cancellationToken),
+                    PipeMessageType.MuteChat => await HandleMutePlayerAsync(request, databasePath, MuteKind.Chat, cancellationToken),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -69,9 +70,32 @@ public static class Listener
         }
     }
 
-    private static PipeEnvelope HandleMutePlayer(PipeEnvelope request)
+    private static async Task<PipeEnvelope> HandleMutePlayerAsync(
+        PipeEnvelope request, string databasePath, MuteKind kind, CancellationToken cancellationToken)
     {
-        return PipeEnvelope.CreateError(request, "Player muting is not implemented on the game server.");
+        MutePlayerRequest mutePlayerRequest = request.DeserializePayload<MutePlayerRequest>();
+        DateTime startedAt = DateTime.UtcNow;
+        if (string.IsNullOrWhiteSpace(mutePlayerRequest.SteamId) || mutePlayerRequest.SteamId.Length > 64)
+            throw new InvalidDataException("A SteamID of at most 64 characters is required.");
+        if (string.IsNullOrWhiteSpace(mutePlayerRequest.Reason))
+            throw new InvalidDataException("A mute reason is required.");
+        if (mutePlayerRequest.ExpiresAtUtc is not null &&
+            (mutePlayerRequest.ExpiresAtUtc.Value.Kind != DateTimeKind.Utc || mutePlayerRequest.ExpiresAtUtc <= startedAt))
+            throw new InvalidDataException("The mute expiration must be a future UTC date and time.");
+
+        await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
+        Mute mute = new Mute
+        {
+            SteamId = mutePlayerRequest.SteamId.Trim(),
+            Kind = kind,
+            Reason = mutePlayerRequest.Reason.Trim(),
+            StartedAt = startedAt,
+            Duration = mutePlayerRequest.ExpiresAtUtc - startedAt
+        };
+        database.Mutes.Add(mute);
+        await database.SaveChangesAsync(cancellationToken);
+
+        return PipeEnvelope.CreateResponse(request);
     }
 
     private static PipeEnvelope HandleSetPlayerLanguage(PipeEnvelope request, PlayerLanguageSettings playerLanguage)
