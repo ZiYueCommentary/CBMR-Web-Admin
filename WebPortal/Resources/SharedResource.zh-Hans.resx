@@ -275,7 +275,6 @@
   <data name="PlayerVoiceMuted" xml:space="preserve"><value>已对该玩家进行语音禁言。</value></data>
   <data name="PlayerChatMuted" xml:space="preserve"><value>已对该玩家进行聊天禁言。</value></data>
   <data name="MuteFailed" xml:space="preserve"><value>无法禁言该玩家。游戏服务器可能尚未实现此功能。请检查服务器连接和日志。</value></data>
-||||||| parent of 012c851 (Add audit log of admin actions with audit log page)
   <data name="AuditLog" xml:space="preserve"><value>审计日志</value></data>
   <data name="AuditLogDescription" xml:space="preserve"><value>管理员通过本网站执行的操作，最新的在前。时间以服务器时区显示。</value></data>
   <data name="AuditAction" xml:space="preserve"><value>操作</value></data>

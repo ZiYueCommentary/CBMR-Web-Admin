@@ -235,7 +235,6 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerVoiceMuted" xml:space="preserve"><value>The player's voice has been muted.</value></data>
   <data name="PlayerChatMuted" xml:space="preserve"><value>The player's chat has been muted.</value></data>
   <data name="MuteFailed" xml:space="preserve"><value>Could not mute the player. Game server support may not be implemented. Check the server connection and logs.</value></data>
-||||||| parent of 012c851 (Add audit log of admin actions with audit log page)
   <data name="AuditLog" xml:space="preserve"><value>Audit log</value></data>
   <data name="AuditLogDescription" xml:space="preserve"><value>Actions performed by administrators through this website, newest first. Times are shown in the server time zone.</value></data>
   <data name="AuditAction" xml:space="preserve"><value>Action</value></data>
