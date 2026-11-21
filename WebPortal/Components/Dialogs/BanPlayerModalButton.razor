@@ -1,14 +1,24 @@
 @using CbmrWebAdmin.Shared.Requests
 @using Serilog
 
-<button type="button" class="btn btn-danger" disabled="@_sending" @onclick="ShowModal">@Localizer["Ban"]</button>
+<button type="button" class="btn btn-danger" disabled="@_sending" @onclick="ShowModal">@Localizer[Player is null ? "BanOfflinePlayer" : "Ban"]</button>
 
-<Modal @ref="_modal" Title="@Localizer["BanPlayer"]">
+<Modal @ref="_modal" Title="@Localizer[Player is null ? "BanOfflinePlayer" : "BanPlayer"]">
     <BodyTemplate>
-        <div class="d-flex gap-2 align-items-center mb-3">
-            <span>@Player.Name</span>
-            <span class="text-muted">@Player.SteamId</span>
-        </div>
+        @if (Player is null)
+        {
+            <div class="mb-3">
+                <input class="form-control" type="text" @bind="_steamId" required maxlength="64"
+                       disabled="@_sending" placeholder="@Localizer["SteamIdPlaceholder"]" aria-label="@Localizer["SteamIdPlaceholder"]" />
+            </div>
+        }
+        else
+        {
+            <div class="d-flex gap-2 align-items-center mb-3">
+                <span>@Player.Name</span>
+                <span class="text-muted">@Player.SteamId</span>
+            </div>
+        }
         <div class="mb-2">@Localizer["BanUntil"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></div>
         <div class="form-check mb-3">
             <label class="form-check-label">
@@ -28,14 +38,14 @@
     </BodyTemplate>
     <FooterTemplate>
         <Button Color="ButtonColor.Secondary" Disabled="_sending" @onclick="OnHideModalClick">@Localizer["Close"]</Button>
-        <Button Color="ButtonColor.Primary" Disabled="@(_sending || (!_permanent && (_banDate is null || _banTime is null)) || string.IsNullOrWhiteSpace(_reason))"
+        <Button Color="ButtonColor.Primary" Disabled="@(_sending || InvalidSteamId || (!_permanent && (_banDate is null || _banTime is null)) || string.IsNullOrWhiteSpace(_reason))"
                 @onclick="SendBanRequest">@Localizer["Ban"]</Button>
     </FooterTemplate>
 </Modal>
 
 @code {
-    [Parameter, EditorRequired]
-    public WebPlayer Player { get; set; } = null!;
+    [Parameter]
+    public WebPlayer? Player { get; set; }
 
     private Modal _modal = null!;
     private DateOnly? _banDate;
@@ -43,12 +53,16 @@
     private bool _permanent;
     private string? _reason;
     private bool _sending;
+    private string? _steamId;
+
+    private bool InvalidSteamId => Player is null && (string.IsNullOrWhiteSpace(_steamId) || _steamId.Trim().Length > 64);
 
     private async Task SendBanRequest()
     {
-        if (_sending) return;
+        if (_sending || InvalidSteamId) return;
         if ((!_permanent && (_banDate is null || _banTime is null)) || string.IsNullOrWhiteSpace(_reason)) return;
 
+        string steamId = Player?.SteamId ?? _steamId!.Trim();
         DateTime? expiresAtUtc = null;
         if (!_permanent)
         {
@@ -72,8 +86,8 @@
         {
             await ServerBinding.SendAsync(PipeMessageType.BanPlayer, new BanPlayerRequest
             {
-                SteamId = Player.SteamId,
-                PlayerName = Player.Name,
+                SteamId = steamId,
+                PlayerName = Player?.Name,
                 ExpiresAtUtc = expiresAtUtc,
                 Reason = _reason.Trim()
             });
@@ -82,11 +96,12 @@
             _banTime = null;
             _permanent = false;
             _reason = null;
+            _steamId = null;
             ToastService.Notify(new(ToastType.Success, Localizer["PlayerBanned"]));
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Error on banning player {SteamId}", Player.SteamId);
+            Log.Error(exception, "Error on banning player {SteamId}", steamId);
             ToastService.Notify(new(ToastType.Danger, Localizer["BanFailed"]));
         }
         finally

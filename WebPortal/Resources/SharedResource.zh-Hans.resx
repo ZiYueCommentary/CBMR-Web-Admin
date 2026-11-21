@@ -213,6 +213,12 @@
   <data name="BanPlayer" xml:space="preserve">
     <value>封禁玩家</value>
   </data>
+  <data name="BanOfflinePlayer" xml:space="preserve">
+    <value>封禁离线玩家</value>
+  </data>
+  <data name="SteamIdPlaceholder" xml:space="preserve">
+    <value>请输入 SteamID</value>
+  </data>
   <data name="BanUntil" xml:space="preserve">
     <value>封禁到：</value>
   </data>

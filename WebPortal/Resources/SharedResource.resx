@@ -173,6 +173,12 @@ If you are server admin, please log in first.</value></data>
   <data name="BanPlayer" xml:space="preserve">
     <value>Ban player</value>
   </data>
+  <data name="BanOfflinePlayer" xml:space="preserve">
+    <value>Ban offline player</value>
+  </data>
+  <data name="SteamIdPlaceholder" xml:space="preserve">
+    <value>Enter SteamID</value>
+  </data>
   <data name="BanUntil" xml:space="preserve">
     <value>Ban until:</value>
   </data>
