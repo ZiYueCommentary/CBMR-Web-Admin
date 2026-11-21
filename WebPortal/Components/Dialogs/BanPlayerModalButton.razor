@@ -8,7 +8,7 @@
         @if (Player is null)
         {
             <div class="mb-3">
-                <input class="form-control" type="text" @bind="_steamId" required maxlength="64"
+                <input class="form-control" type="text" @bind="_steamId" @bind:event="oninput" required maxlength="64"
                        disabled="@_sending" placeholder="@Localizer["SteamIdPlaceholder"]" aria-label="@Localizer["SteamIdPlaceholder"]" />
             </div>
         }
