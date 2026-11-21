@@ -252,4 +252,6 @@
   <data name="PlayerLanguage" xml:space="preserve"><value>发送给玩家的语言</value></data>
   <data name="PlayerLanguageSaved" xml:space="preserve"><value>玩家语言已保存。</value></data>
   <data name="PlayerLanguageFailed" xml:space="preserve"><value>无法加载或保存玩家语言，请检查服务器连接后重试。</value></data>
+  <data name="PlayersLoadFailed" xml:space="preserve"><value>无法加载玩家列表，请检查服务器连接后重试。</value></data>
+  <data name="KickFailed" xml:space="preserve"><value>无法踢出玩家，请检查服务器连接后重试。</value></data>
 </root>

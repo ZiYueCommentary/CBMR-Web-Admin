@@ -208,7 +208,7 @@ else
         [LocalizedStringLength(256, MinimumLength = 1, ResourceKey = "UsernameLength")]
         public string UserName { get; set; } = string.Empty;
 
-        [LocalizedStringLength(128, MinimumLength = 6, ResourceKey = "PasswordLength")]
+        [LocalizedStringLength(128, ResourceKey = "PasswordLength")]
         [OptionalPasswordMinimumLength(6)]
         public string Password { get; set; } = string.Empty;
     }

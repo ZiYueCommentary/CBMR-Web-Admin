@@ -40,9 +40,12 @@ public class PipeBackgroundService(
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous);
 
-                await ServerBindingPipe.ConnectAsync(stoppingToken);
-
-                await RequestServerLocationAsync(ServerBindingPipe, stoppingToken);
+                using (CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken))
+                {
+                    timeout.CancelAfter(PipeGateway.RequestTimeout);
+                    await ServerBindingPipe.ConnectAsync(timeout.Token);
+                    await RequestServerLocationAsync(ServerBindingPipe, timeout.Token);
+                }
                 await ProcessRequestsAsync(ServerBindingPipe, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -52,6 +55,10 @@ public class PipeBackgroundService(
             catch (Exception exception)
             {
                 logger.LogWarning(exception, "Pipe connection failed; retrying in {ReconnectDelay}.", reconnectDelay);
+            }
+            finally
+            {
+                ServerBindingPipe?.Dispose();
             }
 
             try
@@ -70,10 +77,17 @@ public class PipeBackgroundService(
         while (!stoppingToken.IsCancellationRequested)
         {
             PipeRequest request = await queue.Channel.Reader.ReadAsync(stoppingToken);
+            if (request.CancellationToken.IsCancellationRequested)
+            {
+                continue;
+            }
+
+            using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(
+                stoppingToken, request.CancellationToken);
             try
             {
-                await PipeProtocol.WriteAsync(pipe, request.Envelope, stoppingToken);
-                PipeEnvelope response = await PipeProtocol.ReadAsync(pipe, stoppingToken)
+                await PipeProtocol.WriteAsync(pipe, request.Envelope, timeout.Token);
+                PipeEnvelope response = await PipeProtocol.ReadAsync(pipe, timeout.Token)
                                         ?? throw new EndOfStreamException("The server closed the pipe without a response.");
 
                 if (response.RequestId != request.Envelope.RequestId)

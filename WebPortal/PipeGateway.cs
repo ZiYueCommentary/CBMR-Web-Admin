@@ -18,6 +18,8 @@ namespace CbmrWebAdmin.WebPortal;
 
 public class PipeGateway(PipeMessageQueue queue)
 {
+    internal static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(5);
+
     public async Task SendAsync(PipeMessageType messageType, CancellationToken cancellationToken = default)
     {
         await SendEnvelopeAsync(PipeEnvelope.CreateRequest(messageType), cancellationToken);
@@ -57,8 +59,20 @@ public class PipeGateway(PipeMessageQueue queue)
         TaskCompletionSource<PipeEnvelope> completion =
             new TaskCompletionSource<PipeEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        await queue.Channel.Writer.WriteAsync(new PipeRequest(envelope, completion), cancellationToken);
-        PipeEnvelope response = await completion.Task.WaitAsync(cancellationToken);
+        using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(RequestTimeout);
+        using CancellationTokenRegistration registration = timeout.Token.Register(() => completion.TrySetCanceled(timeout.Token));
+
+        PipeEnvelope response;
+        try
+        {
+            await queue.Channel.Writer.WriteAsync(new PipeRequest(envelope, completion, timeout.Token), timeout.Token);
+            response = await completion.Task;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Pipe request '{envelope.MessageType}' timed out.");
+        }
 
         if (response.Kind == PipeEnvelopeKind.Error)
         {

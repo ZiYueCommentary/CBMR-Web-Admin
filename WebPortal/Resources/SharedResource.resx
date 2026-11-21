@@ -212,4 +212,6 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerLanguage" xml:space="preserve"><value>Language sent to players</value></data>
   <data name="PlayerLanguageSaved" xml:space="preserve"><value>Player language saved.</value></data>
   <data name="PlayerLanguageFailed" xml:space="preserve"><value>Could not load or save the player language. Check the server connection and try again.</value></data>
+  <data name="PlayersLoadFailed" xml:space="preserve"><value>Could not load players. Check the server connection and try again.</value></data>
+  <data name="KickFailed" xml:space="preserve"><value>Could not kick the player. Check the server connection and try again.</value></data>
 </root>

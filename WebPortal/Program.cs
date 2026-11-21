@@ -50,6 +50,7 @@ public class Program
             .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager()
+            .AddDefaultTokenProviders()
             .AddClaimsPrincipalFactory<PrimaryAdminClaimsPrincipalFactory>();
 
         builder.Services.AddSingleton<PipeMessageQueue>();

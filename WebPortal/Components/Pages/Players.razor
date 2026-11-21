@@ -12,13 +12,18 @@
 
 <p>@Localizer["PlayersOnline"]</p>
 
-@if (_webPlayers == null)
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+
+@if (_webPlayers == null && _errorMessage is null)
 {
     <p>
         <em>@Localizer["Loading"]</em>
     </p>
 }
-else
+else if (_webPlayers is not null)
 {
     <table class="table">
         <thead>
@@ -61,11 +66,20 @@ else
 
 @code {
     private List<WebPlayer>? _webPlayers;
+    private string? _errorMessage;
     private readonly HashSet<string> _pendingKicks = [];
 
     protected override async Task OnInitializedAsync()
     {
-        _webPlayers = await ServerBinding.SendAsync<List<WebPlayer>>(PipeMessageType.Players);
+        try
+        {
+            _webPlayers = await ServerBinding.SendAsync<List<WebPlayer>>(PipeMessageType.Players);
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Error loading players");
+            _errorMessage = Localizer["PlayersLoadFailed"];
+        }
     }
 
     private async Task KickPlayerAsync(WebPlayer player)
@@ -77,13 +91,18 @@ else
 
         try
         {
+            _errorMessage = null;
             KickPlayerRequest request = new KickPlayerRequest
             {
                 Index = player.Index,
                 SteamId = player.SteamId
             };
-            var response = await ServerBinding.SendAsync<KickPlayerRequest, PipeEnvelope>(PipeMessageType.KickPlayer, request);
-            if (response.Kind == PipeEnvelopeKind.Error) Log.Error("Error on kicking player: {}", response.Error);
+            await ServerBinding.SendAsync(PipeMessageType.KickPlayer, request);
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Error kicking player");
+            _errorMessage = Localizer["KickFailed"];
         }
         finally
         {

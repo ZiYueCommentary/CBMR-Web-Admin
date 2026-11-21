@@ -26,4 +26,5 @@ public class PipeMessageQueue
         });
 }
 
-public sealed record PipeRequest(PipeEnvelope Envelope, TaskCompletionSource<PipeEnvelope> Completion);
+public sealed record PipeRequest(PipeEnvelope Envelope, TaskCompletionSource<PipeEnvelope> Completion,
+    CancellationToken CancellationToken);
