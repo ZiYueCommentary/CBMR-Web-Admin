@@ -37,7 +37,13 @@ public enum PipeMessageType : byte
     GetPlayerLanguage,
     SetPlayerLanguage,
     MuteVoice,
-    MuteChat
+    MuteChat,
+    ListBans,
+    UpdateBan,
+    RemoveBan,
+    ListMutes,
+    UpdateMute,
+    RemoveMute
 }
 
 [MessagePackObject]

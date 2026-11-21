@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CbmrWebAdmin.ServerBinding;
 
-public static class Listener
+public static partial class Listener
 {
     public static async Task StartListenAsync(
         ILogger<Metadata> logger,
@@ -58,6 +58,12 @@ public static class Listener
                     PipeMessageType.SetPlayerLanguage => HandleSetPlayerLanguage(request, playerLanguage),
                     PipeMessageType.MuteVoice => await HandleMutePlayerAsync(request, databasePath, MuteKind.Voice, cancellationToken),
                     PipeMessageType.MuteChat => await HandleMutePlayerAsync(request, databasePath, MuteKind.Chat, cancellationToken),
+                    PipeMessageType.ListBans => await HandleListBansAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.ListMutes => await HandleListMutesAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.UpdateBan => await HandleUpdateModerationAsync(request, databasePath, false, cancellationToken),
+                    PipeMessageType.UpdateMute => await HandleUpdateModerationAsync(request, databasePath, true, cancellationToken),
+                    PipeMessageType.RemoveBan => await HandleRemoveModerationAsync(request, databasePath, false, cancellationToken),
+                    PipeMessageType.RemoveMute => await HandleRemoveModerationAsync(request, databasePath, true, cancellationToken),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }

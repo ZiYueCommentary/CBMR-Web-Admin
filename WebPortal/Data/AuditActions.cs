@@ -26,6 +26,10 @@ public static class AuditActions
     public const string Broadcast = "Broadcast";
     public const string KickPlayer = "KickPlayer";
     public const string BanPlayer = "BanPlayer";
+    public const string UnbanPlayer = "UnbanPlayer";
+    public const string UnmutePlayer = "UnmutePlayer";
+    public const string ModifyBan = "ModifyBan";
+    public const string ModifyMute = "ModifyMute";
     public const string MuteVoice = "MuteVoice";
     public const string MuteChat = "MuteChat";
     public const string RestartServer = "RestartServer";

@@ -1,0 +1,139 @@
+@using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Components.Dialogs
+@using CbmrWebAdmin.WebPortal.Data
+@using Serilog
+
+<p>@Localizer["ModerationActiveOnly"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
+<button type="button" class="btn btn-secondary mb-3" disabled="@_busy" @onclick="LoadAsync">@Localizer["ModerationRefresh"]</button>
+
+@if (_errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+}
+@if (_loading)
+{
+    <p><em>@Localizer["Loading"]</em></p>
+}
+else if (_records is not null)
+{
+    @if (_records.Count == 0)
+    {
+        <p>@Localizer["NoActiveModeration"]</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>@Localizer["ModerationId"]</th>
+                    <th>@Localizer["SteamID"]</th>
+                    @if (IsMute)
+                    {
+                        <th>@Localizer["MuteKind"]</th>
+                    }
+                    <th>@Localizer["ModerationReason"]</th>
+                    <th>@Localizer["ModerationStartedAt"]</th>
+                    <th>@Localizer["ModerationExpiresAt"]</th>
+                    <th>@Localizer["Operations"]</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (ModerationRow row in _records)
+                {
+                    <tr @key="row.Id">
+                        <td>@row.Id</td>
+                        <td>@row.SteamId</td>
+                        @if (IsMute)
+                        {
+                            <td>@Localizer[row.Kind == MuteRecordKind.Voice ? "MuteKindVoice" : "MuteKindChat"]</td>
+                        }
+                        <td style="white-space: pre-wrap">@row.Reason</td>
+                        <td>@row.StartedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@(row.ExpiresAtUtc is { } expiry ? expiry.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") : Localizer["ModerationPermanent"].Value)</td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer[IsMute ? "Unmute" : "Unban"]</button>
+                                <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
+                                    ExpiresAtUtc="row.ExpiresAtUtc" IsMute="IsMute" Kind="row.Kind" Disabled="_busy" OnSaved="LoadAsync" />
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public bool IsMute { get; set; }
+
+    private List<ModerationRow>? _records;
+    private bool _loading = true;
+    private bool _busy;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _busy = true;
+        _loading = true;
+        _errorMessage = null;
+        try
+        {
+            if (IsMute)
+            {
+                List<MuteRecord> records = await ServerBinding.SendAsync<List<MuteRecord>>(PipeMessageType.ListMutes);
+                _records = records.Select(record => new ModerationRow(record.Id, record.SteamId, record.Reason,
+                    record.StartedAtUtc, record.ExpiresAtUtc, record.Kind)).ToList();
+            }
+            else
+            {
+                List<BanRecord> records = await ServerBinding.SendAsync<List<BanRecord>>(PipeMessageType.ListBans);
+                _records = records.Select(record => new ModerationRow(record.Id, record.SteamId, record.Reason,
+                    record.StartedAtUtc, record.ExpiresAtUtc, null)).ToList();
+            }
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Error loading moderation records (IsMute: {IsMute})", IsMute);
+            _records = null;
+            _errorMessage = Localizer["ModerationLoadFailed"];
+        }
+        finally
+        {
+            _loading = false;
+            _busy = false;
+        }
+    }
+
+    private async Task RemoveAsync(ModerationRow row)
+    {
+        if (_busy) return;
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            await ServerBinding.SendAsync(IsMute ? PipeMessageType.RemoveMute : PipeMessageType.RemoveBan,
+                new RemoveModerationRequest { Id = row.Id });
+            await AuditLogger.WriteAsync(IsMute ? AuditActions.UnmutePlayer : AuditActions.UnbanPlayer,
+                row.SteamId, $"Record {row.Id}" + (IsMute ? $"; {row.Kind}" : ""));
+            await LoadAsync();
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Error removing moderation record {Id} (IsMute: {IsMute})", row.Id, IsMute);
+            _errorMessage = Localizer["ModerationRemoveFailed"];
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed record ModerationRow(long Id, string SteamId, string Reason, DateTime StartedAtUtc,
+        DateTime? ExpiresAtUtc, MuteRecordKind? Kind);
+}
