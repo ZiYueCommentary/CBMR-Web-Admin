@@ -14,6 +14,7 @@
 
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace CbmrWebAdmin.WebPortal.Data;
 
@@ -27,6 +28,7 @@ public static class IdentitySeeder
     {
         await using AsyncServiceScope scope = services.CreateAsyncScope();
         UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        if (await userManager.Users.AnyAsync(user => user.IsPrimaryAdmin)) return;
         ApplicationUser? admin = await userManager.FindByNameAsync(AdminUserName);
         if (admin is not null)
         {

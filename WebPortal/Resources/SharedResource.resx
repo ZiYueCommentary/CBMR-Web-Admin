@@ -214,4 +214,10 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerLanguageFailed" xml:space="preserve"><value>Could not load or save the player language. Check the server connection and try again.</value></data>
   <data name="PlayersLoadFailed" xml:space="preserve"><value>Could not load players. Check the server connection and try again.</value></data>
   <data name="KickFailed" xml:space="preserve"><value>Could not kick the player. Check the server connection and try again.</value></data>
+  <data name="AccountRole" xml:space="preserve"><value>Role</value></data>
+  <data name="MainAdmin" xml:space="preserve"><value>Main admin</value></data>
+  <data name="RegularAdmin" xml:space="preserve"><value>Regular admin</value></data>
+  <data name="CannotDemoteSelf" xml:space="preserve"><value>You cannot demote your own account.</value></data>
+  <data name="LastMainAdminRequired" xml:space="preserve"><value>The last main admin cannot be demoted or deleted.</value></data>
+  <data name="AccountRoleSignInNotice" xml:space="preserve"><value>After a role change, the user must sign in again to refresh their access.</value></data>
 </root>

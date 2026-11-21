@@ -6,6 +6,7 @@
 @using System.ComponentModel.DataAnnotations
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceScopeFactory ScopeFactory
 
 <PageTitle>@Localizer["AccountManagement"]</PageTitle>
 
@@ -33,6 +34,14 @@
                 </div>
                 <ValidationMessage For="() => _input.Password" class="text-danger"/>
             </div>
+            <div class="col-md-4">
+                <label for="account-role" class="form-label">@Localizer["AccountRole"]</label>
+                <InputSelect id="account-role" @bind-Value="_input.IsPrimaryAdmin" class="form-select">
+                    <option value="false">@Localizer["RegularAdmin"]</option>
+                    <option value="true">@Localizer["MainAdmin"]</option>
+                </InputSelect>
+                <div class="form-text">@Localizer["AccountRoleSignInNotice"]</div>
+            </div>
             <div class="col-auto">
                 <button type="submit"
                         class="btn btn-primary">@(_editingUserId is null ? Localizer["AddAccount"] : Localizer["Save"])</button>
@@ -50,6 +59,7 @@
             <thead>
             <tr>
                 <th>@Localizer["Username"]</th>
+                <th>@Localizer["AccountRole"]</th>
                 <th>@Localizer["Operations"]</th>
             </tr>
             </thead>
@@ -58,6 +68,7 @@
             {
                 <tr>
                     <td>@user.UserName</td>
+                    <td>@Localizer[user.IsPrimaryAdmin ? "MainAdmin" : "RegularAdmin"]</td>
                     <td>
                         <button type="button" class="btn btn-sm btn-outline-primary"
                                 @onclick="() => BeginEdit(user)">@Localizer["Edit"]</button>
@@ -96,12 +107,18 @@ else
 
     private async Task LoadUsers()
     {
-        _users = await UserManager.Users.OrderBy(user => user.UserName).ToListAsync();
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        _users = await userManager.Users.AsNoTracking().OrderBy(user => user.UserName).ToListAsync();
     }
 
     private async Task SaveAccount()
     {
-        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin())
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin(userManager))
         {
             SetMessage(Localizer["AccessDenied"], true);
             return;
@@ -116,24 +133,44 @@ else
                 return;
             }
 
-            ApplicationUser user = new() { UserName = _input.UserName.Trim() };
-            result = await UserManager.CreateAsync(user, _input.Password);
+            ApplicationUser user = new() { UserName = _input.UserName.Trim(), IsPrimaryAdmin = _input.IsPrimaryAdmin };
+            result = await userManager.CreateAsync(user, _input.Password);
         }
         else
         {
-            ApplicationUser? user = await UserManager.FindByIdAsync(_editingUserId);
-            if (user is null || user.IsPrimaryAdmin)
+            ApplicationUser? user = await userManager.FindByIdAsync(_editingUserId);
+            if (user is null)
             {
                 SetMessage(Localizer["AccountOperationFailed"], true);
                 return;
             }
 
+            bool roleChanged = user.IsPrimaryAdmin != _input.IsPrimaryAdmin;
+            if (user.IsPrimaryAdmin && !_input.IsPrimaryAdmin)
+            {
+                AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                if (user.Id == userManager.GetUserId(state.User))
+                {
+                    SetMessage(Localizer["CannotDemoteSelf"], true);
+                    return;
+                }
+
+                if (await userManager.Users.CountAsync(account => account.IsPrimaryAdmin) <= 1)
+                {
+                    SetMessage(Localizer["LastMainAdminRequired"], true);
+                    return;
+                }
+            }
+
             user.UserName = _input.UserName.Trim();
-            result = await UserManager.UpdateAsync(user);
+            user.IsPrimaryAdmin = _input.IsPrimaryAdmin;
+            result = roleChanged
+                ? await userManager.UpdateSecurityStampAsync(user)
+                : await userManager.UpdateAsync(user);
             if (result.Succeeded && !string.IsNullOrEmpty(_input.Password))
             {
-                string token = await UserManager.GeneratePasswordResetTokenAsync(user);
-                result = await UserManager.ResetPasswordAsync(user, token, _input.Password);
+                string token = await userManager.GeneratePasswordResetTokenAsync(user);
+                result = await userManager.ResetPasswordAsync(user, token, _input.Password);
             }
         }
 
@@ -143,6 +180,7 @@ else
             return;
         }
 
+        await transaction.CommitAsync();
         CancelEdit();
         await LoadUsers();
         SetMessage(Localizer["AccountSaved"], false);
@@ -150,37 +188,55 @@ else
 
     private void BeginEdit(ApplicationUser user)
     {
-        if (user.IsPrimaryAdmin) return;
         _editingUserId = user.Id;
         _input.UserName = user.UserName ?? string.Empty;
+        _input.IsPrimaryAdmin = user.IsPrimaryAdmin;
         _input.Password = string.Empty;
         _message = null;
     }
 
     private async Task DeleteAccount(ApplicationUser user)
     {
-        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin() || user.IsPrimaryAdmin)
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin(userManager))
         {
             SetMessage(Localizer["AccountOperationFailed"], true);
             return;
         }
 
-        IdentityResult result = await UserManager.DeleteAsync(user);
+        ApplicationUser? target = await userManager.FindByIdAsync(user.Id);
+        if (target is null)
+        {
+            SetMessage(Localizer["AccountOperationFailed"], true);
+            return;
+        }
+
+        if (target.IsPrimaryAdmin && await userManager.Users.CountAsync(account => account.IsPrimaryAdmin) <= 1)
+        {
+            SetMessage(Localizer["LastMainAdminRequired"], true);
+            return;
+        }
+
+        IdentityResult result = await userManager.DeleteAsync(target);
         if (!result.Succeeded)
         {
             SetMessage(string.Join(" ", result.Errors.Select(error => error.Description)), true);
             return;
         }
 
+        await transaction.CommitAsync();
         if (_editingUserId == user.Id) CancelEdit();
         await LoadUsers();
         SetMessage(Localizer["AccountDeleted"], false);
     }
 
-    private async Task<bool> IsCurrentUserPrimaryAdmin()
+    private async Task<bool> IsCurrentUserPrimaryAdmin(UserManager<ApplicationUser> userManager)
     {
         AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        ApplicationUser? user = await UserManager.GetUserAsync(state.User);
+        ApplicationUser? user = await userManager.GetUserAsync(state.User);
         return user?.IsPrimaryAdmin == true;
     }
 
@@ -189,6 +245,7 @@ else
         _editingUserId = null;
         _input.UserName = string.Empty;
         _input.Password = string.Empty;
+        _input.IsPrimaryAdmin = false;
     }
 
     private void GeneratePassword()
@@ -204,6 +261,8 @@ else
 
     private sealed class AccountInput
     {
+        public bool IsPrimaryAdmin { get; set; }
+
         [LocalizedRequired("UsernameRequired")]
         [LocalizedStringLength(256, MinimumLength = 1, ResourceKey = "UsernameLength")]
         public string UserName { get; set; } = string.Empty;
