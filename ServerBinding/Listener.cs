@@ -28,6 +28,7 @@ public static class Listener
         ILogger<Metadata> logger,
         NamedPipeServerStream pipeServer,
         string databasePath,
+        PlayerLanguageSettings playerLanguage,
         CancellationToken cancellationToken = default)
     {
         while (await PipeProtocol.ReadAsync(pipeServer, cancellationToken) is { } request)
@@ -52,7 +53,9 @@ public static class Listener
                     PipeMessageType.Chats => HandleChats(request),
                     PipeMessageType.ClearItems => HandleClearItems(request),
                     PipeMessageType.RestartServer => HandleRestartServer(request),
-                    PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, playerLanguage, cancellationToken),
+                    PipeMessageType.GetPlayerLanguage => PipeEnvelope.CreateResponse(request, playerLanguage.Culture.Name),
+                    PipeMessageType.SetPlayerLanguage => HandleSetPlayerLanguage(request, playerLanguage),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -63,6 +66,12 @@ public static class Listener
 
             await PipeProtocol.WriteAsync(pipeServer, response, cancellationToken);
         }
+    }
+
+    private static PipeEnvelope HandleSetPlayerLanguage(PipeEnvelope request, PlayerLanguageSettings playerLanguage)
+    {
+        playerLanguage.Set(request.DeserializePayload<SetPlayerLanguageRequest>().Culture);
+        return PipeEnvelope.CreateResponse(request);
     }
 
     private static PipeEnvelope HandleWhereAreYou(PipeEnvelope request)
@@ -126,7 +135,7 @@ public static class Listener
     }
 
     private static async Task<PipeEnvelope> HandleBanPlayerAsync(
-        PipeEnvelope request, string databasePath, CancellationToken cancellationToken)
+        PipeEnvelope request, string databasePath, PlayerLanguageSettings playerLanguage, CancellationToken cancellationToken)
     {
         BanPlayerRequest banPlayerRequest = request.DeserializePayload<BanPlayerRequest>();
         DateTime startedAt = DateTime.UtcNow;
@@ -155,23 +164,24 @@ public static class Listener
             string playerName = player.Opaque.Pointer != 0
                 ? player.GetName()
                 : banPlayerRequest.PlayerName ?? ban.SteamId;
+            var culture = playerLanguage.Culture;
             string duration = ban.Duration is null
-                ? "永久"
-                : $"{ban.Duration.Value.Days}天{ban.Duration.Value.Hours}小时{ban.Duration.Value.Minutes}分钟{ban.Duration.Value.Seconds}秒";
+                ? PlayerMessages.Get(culture, "Permanent")
+                : PlayerMessages.Get(culture, "BanDuration", ban.Duration.Value.Days, ban.Duration.Value.Hours, ban.Duration.Value.Minutes, ban.Duration.Value.Seconds);
 
             if (player.Opaque.Pointer != 0)
             {
-                player.Kick(9, $"你已被服务器封禁！\n原因：{ban.Reason}\n封禁时长：{duration}");
+                player.Kick(9, PlayerMessages.Get(culture, "BanKick", ban.Reason, duration));
             }
 
             GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
-            GlobalProperties.Chat.Send($"&colr[255 165 0]玩家 {playerName.ReplaceLineEndings(" ")} 已被封禁");
-            GlobalProperties.Chat.Send($"&colr[255 165 0]SteamID：{ban.SteamId}");
+            GlobalProperties.Chat.Send("&colr[255 165 0]" + PlayerMessages.Get(culture, "PlayerBanned", playerName.ReplaceLineEndings(" ")));
+            GlobalProperties.Chat.Send("&colr[255 165 0]" + PlayerMessages.Get(culture, "SteamId", ban.SteamId));
             foreach (string line in ban.Reason.ReplaceLineEndings("\n").Split('\n'))
             {
-                GlobalProperties.Chat.Send($"&colr[255 165 0]原因：{line}");
+                GlobalProperties.Chat.Send("&colr[255 165 0]" + PlayerMessages.Get(culture, "Reason", line));
             }
-            GlobalProperties.Chat.Send($"&colr[255 165 0]封禁时长：{duration}");
+            GlobalProperties.Chat.Send("&colr[255 165 0]" + PlayerMessages.Get(culture, "Duration", duration));
             GlobalProperties.Chat.Send("&colr[255 165 0]======================================================");
         });
 

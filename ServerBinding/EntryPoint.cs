@@ -25,6 +25,7 @@ namespace CbmrWebAdmin.ServerBinding;
 public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> configProvider) : ILoad, IUnload
 {
     private readonly Config _config = configProvider.GetConfig();
+    private PlayerLanguageSettings _playerLanguage = null!;
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
@@ -32,6 +33,8 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 
     public void Load()
     {
+        _playerLanguage = new PlayerLanguageSettings(_config.DatabasePath);
+        _playerLanguage.Load();
         using (WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath))
         {
             database.Initialize();
@@ -69,13 +72,14 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             eventArg.Conn.Accept();
             return;
         }
-        string remaining = "永久";
+        var culture = _playerLanguage.Culture;
+        string remaining = PlayerMessages.Get(culture, "Permanent");
         if (ban.Duration is { } duration)
         {
             TimeSpan timeLeft = ban.StartedAt + duration - DateTime.UtcNow;
-            remaining = $"{timeLeft.Days}天{timeLeft.Hours}小时{timeLeft.Minutes}分钟";
+            remaining = PlayerMessages.Get(culture, "RemainingDuration", timeLeft.Days, timeLeft.Hours, timeLeft.Minutes);
         }
-        eventArg.Conn.Cancel($"你已被服务器封禁！\n原因：{ban.Reason}\n剩余时长：{remaining}");
+        eventArg.Conn.Cancel(PlayerMessages.Get(culture, "BanRejected", ban.Reason, remaining));
     }
 
     private static void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
@@ -99,7 +103,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             {
                 await pipeServer.WaitForConnectionAsync(cancellationToken);
                 logger.LogInformation("Server connected to Web Portal successfully.");
-                await Listener.StartListenAsync(logger, pipeServer, _config.DatabasePath, cancellationToken);
+                await Listener.StartListenAsync(logger, pipeServer, _config.DatabasePath, _playerLanguage, cancellationToken);
                 logger.LogInformation("Web Portal disconnected; waiting for a new pipe connection.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

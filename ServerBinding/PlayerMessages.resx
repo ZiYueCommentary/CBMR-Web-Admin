@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Permanent" xml:space="preserve"><value>Permanent</value></data>
+  <data name="BanDuration" xml:space="preserve"><value>{0}d {1}h {2}m {3}s</value></data>
+  <data name="RemainingDuration" xml:space="preserve"><value>{0}d {1}h {2}m</value></data>
+  <data name="BanKick" xml:space="preserve"><value>You have been banned from this server!
+Reason: {0}
+Ban duration: {1}</value></data>
+  <data name="BanRejected" xml:space="preserve"><value>You have been banned from this server!
+Reason: {0}
+Time remaining: {1}</value></data>
+  <data name="PlayerBanned" xml:space="preserve"><value>Player {0} has been banned</value></data>
+  <data name="SteamId" xml:space="preserve"><value>SteamID: {0}</value></data>
+  <data name="Reason" xml:space="preserve"><value>Reason: {0}</value></data>
+  <data name="Duration" xml:space="preserve"><value>Ban duration: {0}</value></data>
+</root>

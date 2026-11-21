@@ -209,4 +209,7 @@ If you are server admin, please log in first.</value></data>
   <data name="PasswordRequiresDigit" xml:space="preserve"><value>Password must contain at least one digit ('0'-'9').</value></data>
   <data name="PasswordRequiresLower" xml:space="preserve"><value>Password must contain at least one lowercase letter ('a'-'z').</value></data>
   <data name="PasswordRequiresUpper" xml:space="preserve"><value>Password must contain at least one uppercase letter ('A'-'Z').</value></data>
+  <data name="PlayerLanguage" xml:space="preserve"><value>Language sent to players</value></data>
+  <data name="PlayerLanguageSaved" xml:space="preserve"><value>Player language saved.</value></data>
+  <data name="PlayerLanguageFailed" xml:space="preserve"><value>Could not load or save the player language. Check the server connection and try again.</value></data>
 </root>

@@ -88,6 +88,16 @@ Current values in `Shared/PipeEnvelope.cs`:
 - `Broadcast`
 - `Chats`
 - `ClearItems`
+- `RestartServer` (7)
+- `BanPlayer` (8)
+- `GetPlayerLanguage` (9): returns the selected culture string
+- `SetPlayerLanguage` (10): accepts `SetPlayerLanguageRequest.Culture` at MessagePack key 0; unsupported cultures return an error
+
+Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
+the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`
+on plugin load. Changes are persisted before being applied. Player-facing ban messages use
+`ServerBinding/PlayerMessages*.resx` with an explicit selected culture, independent of the web UI language.
+Deploy the whole ServerBinding build output, including `zh-Hans/CbmrWebAdmin.ServerBinding.resources.dll`.
 
 When adding a message type, update the switch in `ServerBinding/Listener.cs` and add the corresponding WebPortal call where needed.
 

@@ -1,10 +1,26 @@
 ﻿@page "/central-console"
 @attribute [Authorize]
 @using CbmrWebAdmin.WebPortal.Components.Dialogs
+@using CbmrWebAdmin.Shared.Requests
+@using System.Globalization
 
 <PageTitle>@Localizer["CentralConsole"]</PageTitle>
 
 <h1>@Localizer["CentralConsole"]</h1>
+
+<div class="mb-3">
+    <label for="player-language" class="form-label">@Localizer["PlayerLanguage"]</label>
+    <select @key="_languageBusy" id="player-language" class="form-select" value="@_playerLanguage" @onchange="SetPlayerLanguage" disabled="@_languageBusy">
+        @if (_playerLanguage is null)
+        {
+            <option value="">@(_languageBusy ? Localizer["Loading"] : Localizer["PlayerLanguage"])</option>
+        }
+        @foreach (string culture in PlayerLanguages.Supported)
+        {
+            <option value="@culture">@CultureInfo.GetCultureInfo(culture).NativeName</option>
+        }
+    </select>
+</div>
 
 <button class="btn btn-primary" @onclick="FixElevator">@Localizer["FixElevator"]</button>
 <BroadcastModalButton/>
@@ -14,6 +30,47 @@
 <RestartServerModalButton/>
 <ForceRestartServerButton/>
 @code {
+    private string? _playerLanguage;
+    private bool _languageBusy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _languageBusy = true;
+        try
+        {
+            _playerLanguage = await ServerBinding.SendAsync<string>(PipeMessageType.GetPlayerLanguage);
+        }
+        catch (Exception)
+        {
+            ToastService.Notify(new(ToastType.Danger, Localizer["PlayerLanguageFailed"]));
+        }
+        finally
+        {
+            _languageBusy = false;
+        }
+    }
+
+    private async Task SetPlayerLanguage(ChangeEventArgs args)
+    {
+        string? culture = args.Value?.ToString();
+        if (culture is null || !PlayerLanguages.Supported.Contains(culture)) return;
+        _languageBusy = true;
+        try
+        {
+            await ServerBinding.SendAsync(PipeMessageType.SetPlayerLanguage, new SetPlayerLanguageRequest { Culture = culture });
+            _playerLanguage = culture;
+            ToastService.Notify(new(ToastType.Success, Localizer["PlayerLanguageSaved"]));
+        }
+        catch (Exception)
+        {
+            ToastService.Notify(new(ToastType.Danger, Localizer["PlayerLanguageFailed"]));
+        }
+        finally
+        {
+            _languageBusy = false;
+        }
+    }
+
     private async Task FixElevator()
     {
         await ServerBinding.SendAsync(PipeMessageType.FixElevator);

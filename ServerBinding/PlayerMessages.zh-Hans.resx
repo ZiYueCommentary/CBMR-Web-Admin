@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Permanent" xml:space="preserve"><value>永久</value></data>
+  <data name="BanDuration" xml:space="preserve"><value>{0}天{1}小时{2}分钟{3}秒</value></data>
+  <data name="RemainingDuration" xml:space="preserve"><value>{0}天{1}小时{2}分钟</value></data>
+  <data name="BanKick" xml:space="preserve"><value>你已被服务器封禁！
+原因：{0}
+封禁时长：{1}</value></data>
+  <data name="BanRejected" xml:space="preserve"><value>你已被服务器封禁！
+原因：{0}
+剩余时长：{1}</value></data>
+  <data name="PlayerBanned" xml:space="preserve"><value>玩家 {0} 已被封禁</value></data>
+  <data name="SteamId" xml:space="preserve"><value>SteamID：{0}</value></data>
+  <data name="Reason" xml:space="preserve"><value>原因：{0}</value></data>
+  <data name="Duration" xml:space="preserve"><value>封禁时长：{0}</value></data>
+</root>
