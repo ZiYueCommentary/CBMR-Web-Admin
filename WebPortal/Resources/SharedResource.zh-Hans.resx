@@ -231,4 +231,22 @@
   <data name="BanFailed" xml:space="preserve">
     <value>无法确认封禁记录是否已保存，请检查服务器连接和日志。</value>
   </data>
+  <data name="ConnectedServerProcess" xml:space="preserve"><value>已连接到服务器进程：{0}</value></data>
+  <data name="ApplicationName" xml:space="preserve"><value>CBMR 网页管理</value></data>
+  <data name="Success" xml:space="preserve"><value>成功！</value></data>
+  <data name="UsernameRequired" xml:space="preserve"><value>请输入用户名。</value></data>
+  <data name="LoginPasswordRequired" xml:space="preserve"><value>请输入密码。</value></data>
+  <data name="UsernameLength" xml:space="preserve"><value>用户名长度必须在 {0} 到 {1} 个字符之间。</value></data>
+  <data name="PasswordLength" xml:space="preserve"><value>密码长度必须在 {0} 到 {1} 个字符之间。</value></data>
+  <data name="PasswordMinimumLength" xml:space="preserve"><value>密码必须至少包含 {0} 个字符。</value></data>
+  <data name="DefaultError" xml:space="preserve"><value>发生未知错误。</value></data>
+  <data name="ConcurrencyFailure" xml:space="preserve"><value>此账号已被其他请求修改，请重试。</value></data>
+  <data name="InvalidUserName" xml:space="preserve"><value>用户名“{0}”无效，请仅使用字母或数字。</value></data>
+  <data name="DuplicateUserName" xml:space="preserve"><value>用户名“{0}”已被使用。</value></data>
+  <data name="InvalidToken" xml:space="preserve"><value>账号操作令牌无效。</value></data>
+  <data name="PasswordRequiresUniqueChars" xml:space="preserve"><value>密码必须至少包含 {0} 个不同字符。</value></data>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve"><value>密码必须至少包含一个非字母数字字符。</value></data>
+  <data name="PasswordRequiresDigit" xml:space="preserve"><value>密码必须至少包含一个数字（0-9）。</value></data>
+  <data name="PasswordRequiresLower" xml:space="preserve"><value>密码必须至少包含一个小写字母（a-z）。</value></data>
+  <data name="PasswordRequiresUpper" xml:space="preserve"><value>密码必须至少包含一个大写字母（A-Z）。</value></data>
 </root>

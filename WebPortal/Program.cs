@@ -47,6 +47,7 @@ public class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
         builder.Services.AddIdentityCore<ApplicationUser>()
+            .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager()
             .AddClaimsPrincipalFactory<PrimaryAdminClaimsPrincipalFactory>();

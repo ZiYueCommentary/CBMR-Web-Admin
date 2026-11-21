@@ -92,13 +92,12 @@ limitations under the License.
 
     private sealed class InputModel
     {
-        [Required] public string UserName { get; set; } = "";
+        [LocalizedRequired("UsernameRequired")] public string UserName { get; set; } = "";
 
-        [Required]
+        [LocalizedRequired("LoginPasswordRequired")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
     }
 

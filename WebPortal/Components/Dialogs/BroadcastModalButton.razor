@@ -44,7 +44,7 @@
                 Message = _message!
             });
         _message = null;
-        ToastService.Notify(new(ToastType.Success, "Succeed!"));
+        ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
     }
 
 }

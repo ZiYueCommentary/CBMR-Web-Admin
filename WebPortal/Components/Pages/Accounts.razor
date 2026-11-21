@@ -203,20 +203,26 @@ else
 
     private sealed class AccountInput
     {
-        [Required]
-        [StringLength(256, MinimumLength = 1)]
+        [LocalizedRequired("UsernameRequired")]
+        [LocalizedStringLength(256, MinimumLength = 1, ResourceKey = "UsernameLength")]
         public string UserName { get; set; } = string.Empty;
 
-        [StringLength(128, MinimumLength = 6)]
+        [LocalizedStringLength(128, MinimumLength = 6, ResourceKey = "PasswordLength")]
         [OptionalPasswordMinimumLength(6)]
         public string Password { get; set; } = string.Empty;
     }
 
     private sealed class OptionalPasswordMinimumLengthAttribute(int minimumLength)
-        : ValidationAttribute($"Password must be at least {minimumLength} characters.")
+        : ValidationAttribute
     {
-        public override bool IsValid(object? value) =>
-            value is not string password || password.Length == 0 || password.Length >= minimumLength;
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is not string password || password.Length == 0 || password.Length >= minimumLength)
+                return ValidationResult.Success;
+
+            var localizer = validationContext.GetRequiredService<IStringLocalizer<SharedResource>>();
+            return new ValidationResult(localizer["PasswordMinimumLength", minimumLength]);
+        }
     }
 
 }

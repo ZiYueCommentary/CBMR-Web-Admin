@@ -24,7 +24,7 @@
         if (confirmation)
         {
             KillProcessByPath(Location.Path);
-            ToastService.Notify(new(ToastType.Success, "Succeed!"));
+            ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
         }
     }
 
