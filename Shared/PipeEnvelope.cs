@@ -35,7 +35,9 @@ public enum PipeMessageType : byte
     RestartServer,
     BanPlayer,
     GetPlayerLanguage,
-    SetPlayerLanguage
+    SetPlayerLanguage,
+    MuteVoice,
+    MuteChat
 }
 
 [MessagePackObject]

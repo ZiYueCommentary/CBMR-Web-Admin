@@ -226,4 +226,13 @@ If you are server admin, please log in first.</value></data>
   <data name="CannotDemoteSelf" xml:space="preserve"><value>You cannot demote your own account.</value></data>
   <data name="LastMainAdminRequired" xml:space="preserve"><value>The last main admin cannot be demoted or deleted.</value></data>
   <data name="AccountRoleSignInNotice" xml:space="preserve"><value>After a role change, the user must sign in again to refresh their access.</value></data>
+  <data name="MuteVoice" xml:space="preserve"><value>Mute voice</value></data>
+  <data name="MuteChat" xml:space="preserve"><value>Mute chat</value></data>
+  <data name="MuteUntil" xml:space="preserve"><value>Mute until:</value></data>
+  <data name="PermanentMute" xml:space="preserve"><value>Permanent mute</value></data>
+  <data name="MuteReason" xml:space="preserve"><value>Mute reason</value></data>
+  <data name="InvalidMuteExpiration" xml:space="preserve"><value>Select a valid, unambiguous future date and time.</value></data>
+  <data name="PlayerVoiceMuted" xml:space="preserve"><value>The player's voice has been muted.</value></data>
+  <data name="PlayerChatMuted" xml:space="preserve"><value>The player's chat has been muted.</value></data>
+  <data name="MuteFailed" xml:space="preserve"><value>Could not mute the player. Game server support may not be implemented. Check the server connection and logs.</value></data>
 </root>

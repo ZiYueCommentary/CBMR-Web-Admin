@@ -44,6 +44,8 @@ else if (_webPlayers is not null)
                 <td>
                     <div class="btn-group" role="group">
                         <BanPlayerModalButton @key="player.SteamId" Player="player"/>
+                        <MutePlayerModalButton @key="(player.SteamId, true)" Player="player" MuteVoice="true"/>
+                        <MutePlayerModalButton @key="(player.SteamId, false)" Player="player" MuteVoice="false"/>
                         <button type="button"
                                 class="btn btn-warning"
                                 disabled="@_pendingKicks.Contains(player.SteamId)"

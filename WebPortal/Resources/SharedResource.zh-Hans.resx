@@ -266,4 +266,13 @@
   <data name="CannotDemoteSelf" xml:space="preserve"><value>不能将自己的账号降级为普通管理员。</value></data>
   <data name="LastMainAdminRequired" xml:space="preserve"><value>不能将最后一位主管理员降级或删除。</value></data>
   <data name="AccountRoleSignInNotice" xml:space="preserve"><value>角色变更后，用户必须重新登录以刷新权限。</value></data>
+  <data name="MuteVoice" xml:space="preserve"><value>语音禁言</value></data>
+  <data name="MuteChat" xml:space="preserve"><value>聊天禁言</value></data>
+  <data name="MuteUntil" xml:space="preserve"><value>禁言至：</value></data>
+  <data name="PermanentMute" xml:space="preserve"><value>永久禁言</value></data>
+  <data name="MuteReason" xml:space="preserve"><value>禁言原因</value></data>
+  <data name="InvalidMuteExpiration" xml:space="preserve"><value>请选择有效且无歧义的未来日期和时间。</value></data>
+  <data name="PlayerVoiceMuted" xml:space="preserve"><value>已对该玩家进行语音禁言。</value></data>
+  <data name="PlayerChatMuted" xml:space="preserve"><value>已对该玩家进行聊天禁言。</value></data>
+  <data name="MuteFailed" xml:space="preserve"><value>无法禁言该玩家。游戏服务器可能尚未实现此功能。请检查服务器连接和日志。</value></data>
 </root>

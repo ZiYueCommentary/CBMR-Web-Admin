@@ -56,6 +56,7 @@ public static class Listener
                     PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, playerLanguage, cancellationToken),
                     PipeMessageType.GetPlayerLanguage => PipeEnvelope.CreateResponse(request, playerLanguage.Culture.Name),
                     PipeMessageType.SetPlayerLanguage => HandleSetPlayerLanguage(request, playerLanguage),
+                    PipeMessageType.MuteVoice or PipeMessageType.MuteChat => HandleMutePlayer(request),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -66,6 +67,11 @@ public static class Listener
 
             await PipeProtocol.WriteAsync(pipeServer, response, cancellationToken);
         }
+    }
+
+    private static PipeEnvelope HandleMutePlayer(PipeEnvelope request)
+    {
+        return PipeEnvelope.CreateError(request, "Player muting is not implemented on the game server.");
     }
 
     private static PipeEnvelope HandleSetPlayerLanguage(PipeEnvelope request, PlayerLanguageSettings playerLanguage)
