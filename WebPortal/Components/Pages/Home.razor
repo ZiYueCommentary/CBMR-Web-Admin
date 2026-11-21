@@ -1,6 +1,7 @@
 ﻿@page "/"
 
 @inject ServerLocation Location
+@implements IAsyncDisposable
 
 @* @attribute [Authorize] *@
 
@@ -10,4 +11,54 @@
 
 <p>@Localizer["Welcome"]</p>
 
-<p>@Localizer["ConnectedServerProcess", Location.Path]</p>
+@if (!string.IsNullOrWhiteSpace(_processPath))
+{
+    <p>@Localizer["ConnectedServerProcess", Localizer[_isRunning ? "ServerProcessRunning" : "ServerProcessDead"], _processPath]</p>
+}
+
+@code {
+    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(3));
+    private Task? _refreshTask;
+    private string? _processPath;
+    private bool _isRunning;
+
+    protected override void OnInitialized()
+    {
+        RefreshStatus();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _refreshTask = RefreshStatusAsync();
+        }
+    }
+
+    private void RefreshStatus()
+    {
+        _processPath = Location.Path;
+        _isRunning = ServerProcess.IsRunning(_processPath);
+    }
+
+    private async Task RefreshStatusAsync()
+    {
+        while (await _refreshTimer.WaitForNextTickAsync())
+        {
+            await InvokeAsync(() =>
+            {
+                RefreshStatus();
+                StateHasChanged();
+            });
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _refreshTimer.Dispose();
+        if (_refreshTask is not null)
+        {
+            await _refreshTask;
+        }
+    }
+}

@@ -197,7 +197,9 @@ If you are server admin, please log in first.</value></data>
   <data name="BanFailed" xml:space="preserve">
     <value>Could not confirm the ban was saved. Check the server connection and logs.</value>
   </data>
-  <data name="ConnectedServerProcess" xml:space="preserve"><value>Connected to server process: {0}</value></data>
+  <data name="ConnectedServerProcess" xml:space="preserve"><value>Server process: {0} — {1}</value></data>
+  <data name="ServerProcessRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="ServerProcessDead" xml:space="preserve"><value>Dead</value></data>
   <data name="ApplicationName" xml:space="preserve"><value>CBMR Web Admin</value></data>
   <data name="Success" xml:space="preserve"><value>Succeed!</value></data>
   <data name="UsernameRequired" xml:space="preserve"><value>A username is required.</value></data>

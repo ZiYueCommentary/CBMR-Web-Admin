@@ -33,7 +33,6 @@
     private static void KillProcessByPath(string targetPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath)) return;
-        string targetStandardPath = Path.GetFullPath(targetPath).Trim().ToLower();
 
         Process[] processes = Process.GetProcesses();
 
@@ -41,10 +40,7 @@
         {
             try
             {
-                if (process.MainModule == null) continue;
-                string currentPath = Path.GetFullPath(process.MainModule.FileName).Trim().ToLower();
-
-                if (currentPath != targetStandardPath) continue;
+                if (!ServerProcess.MatchesPath(process, targetPath)) continue;
                 process.Kill(entireProcessTree: true);
                 process.WaitForExit();
             }
