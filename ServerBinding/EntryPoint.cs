@@ -34,7 +34,8 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     public void Load()
     {
         _playerLanguage = new PlayerLanguageSettings(_config.DatabasePath);
-        _playerLanguage.Load();
+        if (!_playerLanguage.Load())
+            logger.LogWarning("Saved player language is invalid; using the default {Culture}.", _playerLanguage.Culture.Name);
         using (WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath))
         {
             database.Initialize();

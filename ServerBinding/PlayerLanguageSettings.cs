@@ -15,14 +15,22 @@ public sealed class PlayerLanguageSettings(string databasePath)
         get { lock (_lock) return CultureInfo.GetCultureInfo(_culture); }
     }
 
-    public void Load()
+    public bool Load()
     {
         lock (_lock)
         {
-            if (!File.Exists(_path)) return;
-            string? culture = JsonSerializer.Deserialize<string>(File.ReadAllText(_path));
-            Validate(culture);
-            _culture = culture!;
+            if (!File.Exists(_path)) return true;
+            try
+            {
+                string? culture = JsonSerializer.Deserialize<string>(File.ReadAllText(_path));
+                Validate(culture);
+                _culture = culture!;
+                return true;
+            }
+            catch (Exception exception) when (exception is IOException or JsonException or ArgumentException)
+            {
+                return false;
+            }
         }
     }
 
