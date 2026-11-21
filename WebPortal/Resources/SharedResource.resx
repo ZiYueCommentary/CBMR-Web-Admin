@@ -200,6 +200,9 @@ If you are server admin, please log in first.</value></data>
   <data name="ConnectedServerProcess" xml:space="preserve"><value>Server process: {0} — {1}</value></data>
   <data name="ServerProcessRunning" xml:space="preserve"><value>Running</value></data>
   <data name="ServerProcessDead" xml:space="preserve"><value>Dead</value></data>
+  <data name="PortalVersion" xml:space="preserve"><value>Portal version: {0}</value></data>
+  <data name="BindingVersion" xml:space="preserve"><value>Binding version: {0}</value></data>
+  <data name="VersionMismatch" xml:space="preserve"><value>The binding and portal versions do not match. Please update them to the same version.</value></data>
   <data name="ApplicationName" xml:space="preserve"><value>CBMR Web Admin</value></data>
   <data name="Success" xml:space="preserve"><value>Succeed!</value></data>
   <data name="UsernameRequired" xml:space="preserve"><value>A username is required.</value></data>

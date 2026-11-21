@@ -20,4 +20,5 @@ namespace CbmrWebAdmin.Shared;
 public class ServerLocation
 {
     [Key(0)] public string Path { get; set; } = string.Empty;
+    [Key(1)] public string Version { get; set; } = string.Empty;
 }

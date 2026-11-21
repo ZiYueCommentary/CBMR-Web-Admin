@@ -114,7 +114,8 @@ public static partial class Listener
     {
         return PipeEnvelope.CreateResponse(request, new ServerLocation
         {
-            Path = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName
+            Path = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName,
+            Version = AssemblyVersion.GetVersion(typeof(Listener).Assembly)
         });
     }
 

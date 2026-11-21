@@ -130,7 +130,9 @@ public class PipeBackgroundService(
             throw new InvalidDataException("Expected a WhereAreYou response envelope.");
         }
 
-        serverLocation.Path = response.DeserializePayload<ServerLocation>().Path;
+        ServerLocation location = response.DeserializePayload<ServerLocation>();
+        serverLocation.Path = location.Path;
+        serverLocation.Version = location.Version;
         logger.LogInformation("Connected to server at {ServerPath}.", serverLocation.Path);
     }
 

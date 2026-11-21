@@ -11,16 +11,29 @@
 
 <p>@Localizer["Welcome"]</p>
 
+<p>@Localizer["PortalVersion", PortalVersion]</p>
+
+@if (!string.IsNullOrEmpty(_bindingVersion))
+{
+    <p>@Localizer["BindingVersion", _bindingVersion]</p>
+    @if (!string.Equals(_bindingVersion, PortalVersion, StringComparison.Ordinal))
+    {
+        <Alert Color="AlertColor.Warning"><Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@Localizer["VersionMismatch"]</Alert>
+    }
+}
+
 @if (!string.IsNullOrWhiteSpace(_processPath))
 {
     <p>@Localizer["ConnectedServerProcess", Localizer[_isRunning ? "ServerProcessRunning" : "ServerProcessDead"], _processPath]</p>
 }
 
 @code {
+    private static readonly string PortalVersion = AssemblyVersion.GetVersion(typeof(Home).Assembly);
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(3));
     private Task? _refreshTask;
     private string? _processPath;
     private bool _isRunning;
+    private string? _bindingVersion;
 
     protected override void OnInitialized()
     {
@@ -38,6 +51,7 @@
     private void RefreshStatus()
     {
         _processPath = Location.Path;
+        _bindingVersion = Location.Version;
         _isRunning = ServerProcess.IsRunning(_processPath);
     }
 
