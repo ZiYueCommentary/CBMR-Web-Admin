@@ -300,6 +300,8 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerSessionLogPrevious" xml:space="preserve"><value>Previous</value></data>
   <data name="PlayerSessionLogNext" xml:space="preserve"><value>Next</value></data>
   <data name="Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="PendingReportNotification" xml:space="preserve"><value>{0} unhandled reports</value></data>
+  <data name="ReviewPendingReports" xml:space="preserve"><value>Open Reports to review and reply.</value></data>
   <data name="AuditActionReplyReport" xml:space="preserve"><value>Reply to report</value></data>
   <data name="Reporter" xml:space="preserve"><value>Reporter</value></data>
   <data name="ReportedPlayer" xml:space="preserve"><value>Reported player</value></data>

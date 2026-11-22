@@ -5,10 +5,16 @@
 <button class="btn btn-sm btn-outline-secondary m-2" @onclick="EnableAsync">@Localizer["EnableReportNotifications"]</button>
 @code {
     private bool _disposed;
+    private bool _interactive;
+    private bool _initialChecked;
+    private bool _checking;
     protected override void OnInitialized() => Events.ReportsUpdated += OnReport;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender) await EnableAsync();
+        if (!firstRender) return;
+        _interactive = true;
+        await EnableAsync();
+        await CheckPendingAsync();
     }
     private async Task EnableAsync()
     {
@@ -18,14 +24,34 @@
     }
     private void OnReport(ReportRecord? report)
     {
-        if (report is null || _disposed) return;
+        if (_disposed) return;
         _ = InvokeAsync(async () =>
         {
             if (_disposed) return;
+            await CheckPendingAsync();
+            if (report is null) return;
             try { await JS.InvokeVoidAsync("reportNotifications.show", Localizer["NewReport", report.ReporterName, report.ReportedName].Value, report.Content); }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
         });
+    }
+    private async Task CheckPendingAsync()
+    {
+        if (!_interactive || _initialChecked || _checking || _disposed) return;
+        _checking = true;
+        try
+        {
+            var reports = await ServerBinding.SendAsync<List<ReportRecord>>(PipeMessageType.ListReports);
+            if (_disposed) return;
+            int count = reports.Count(report => !report.Handled);
+            if (count > 0)
+                await JS.InvokeVoidAsync("reportNotifications.show", Localizer["PendingReportNotification", count].Value, Localizer["ReviewPendingReports"].Value);
+            _initialChecked = true;
+        }
+        catch (Exception exception) when (exception is JSException or JSDisconnectedException or TimeoutException or InvalidOperationException or IOException)
+        {
+        }
+        finally { _checking = false; }
     }
     public void Dispose() { _disposed = true; Events.ReportsUpdated -= OnReport; }
 }

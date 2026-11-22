@@ -114,7 +114,10 @@ index and input; submit/cancel/disconnect/unload closes the owned dialog and rem
 Reports are intercepted before chat mute checks, so muted players can report privately.
 Submission has a 30-second per-player cooldown and a 2000-character limit.
 Authenticated portal users see `/reports`; browser notifications require Web Notification API
-permission and a supported secure context. Reply actions are audit logged.
+permission and a supported secure context. On the initial interactive layout load, the portal
+also checks for unhandled reports and notifies once; failed initial connections retry on the
+next reports event. Navigation within the layout does not repeat this reminder.
+Reply actions are audit logged.
 
 Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
 the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`
