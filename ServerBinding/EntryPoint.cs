@@ -18,6 +18,7 @@ using CCB.Attributes;
 using CCB.Internal;
 using Microsoft.Extensions.Logging;
 using CbmrWebAdmin.ServerBinding.Data;
+using CbmrWebAdmin.Shared;
 
 namespace CbmrWebAdmin.ServerBinding;
 
@@ -28,7 +29,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private PlayerLanguageSettings _playerLanguage = null!;
     private ModerationCache _moderationCache = null!;
     private MuteAttemptLog _muteAttemptLog = null!;
-    private PlayerNameHistory _playerNameHistory = null!;
+    private PlayerSessionLog _playerSessionLog = null!;
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
@@ -48,7 +49,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             _moderationCache = new ModerationCache(database);
         }
         _muteAttemptLog = new MuteAttemptLog(_config.DatabasePath, logger);
-        _playerNameHistory = new PlayerNameHistory(_config.DatabasePath, logger);
+        _playerSessionLog = new PlayerSessionLog(_config.DatabasePath, logger);
 
         _listenerCancellation = new CancellationTokenSource();
         _eventsTask = ChatEvents.RunAsync(PipeName, logger, _listenerCancellation.Token);
@@ -63,6 +64,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         EventRegistry.PlayerVoice += OnPlayerVoice;
         EventRegistry.IncomingConnection += OnConnectionInComing;
         EventRegistry.PlayerConnect += OnPlayerConnect;
+        EventRegistry.PlayerDisconnect += OnPlayerDisconnect;
     }
 
     public void Unload()
@@ -76,8 +78,9 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
         EventRegistry.PlayerConnect -= OnPlayerConnect;
+        EventRegistry.PlayerDisconnect -= OnPlayerDisconnect;
         _muteAttemptLog?.Dispose();
-        _playerNameHistory?.Dispose();
+        _playerSessionLog?.Dispose();
         _moderationCache?.Dispose();
         ServerChatList.Clear();
     }
@@ -101,10 +104,14 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         eventArg.Conn.Cancel(PlayerMessages.Get(culture, "BanRejected", ban.Reason, remaining));
     }
 
-    private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg)
-    {
-        _playerNameHistory.Observe(eventArg.Player.GetSteamID(), eventArg.Player.GetName());
-    }
+    private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg) =>
+        LogPlayerSessionEvent(PlayerSessionEvent.Join, eventArg.Player);
+
+    private void OnPlayerDisconnect(EventRegistry.PlayerDisconnectEventArg eventArg) =>
+        LogPlayerSessionEvent(PlayerSessionEvent.Leave, eventArg.Player);
+
+    private void LogPlayerSessionEvent(PlayerSessionEvent sessionEvent, Player player) =>
+        _playerSessionLog.Enqueue(sessionEvent, player.GetSteamID(), player.GetName(), player.GetIP());
 
     private void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
     {

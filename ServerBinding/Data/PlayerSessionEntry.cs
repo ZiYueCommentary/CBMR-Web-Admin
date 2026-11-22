@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using MessagePack;
+using CbmrWebAdmin.Shared;
 
-namespace CbmrWebAdmin.Shared;
+namespace CbmrWebAdmin.ServerBinding.Data;
 
-[MessagePackObject]
-public sealed class PlayerNameHistoryResponse
+internal sealed class PlayerSessionEntry
 {
-    [Key(0)] public List<PlayerNameRecord> Records { get; set; } = [];
-
-    [Key(1)] public int TotalCount { get; init; }
+    public long Id { get; init; }
+    public required string SteamId { get; init; }
+    public required string Name { get; init; }
+    public required string IpAddress { get; init; }
+    public PlayerSessionEvent Event { get; init; }
+    public DateTime OccurredAtUtc { get; init; }
 }

@@ -26,7 +26,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     internal DbSet<MuteAttempt> MuteAttempts => Set<MuteAttempt>();
 
-    internal DbSet<PlayerNameObservation> PlayerNames => Set<PlayerNameObservation>();
+    internal DbSet<PlayerSessionEntry> PlayerSessions => Set<PlayerSessionEntry>();
 
     public void Initialize()
     {
@@ -51,14 +51,16 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "occurred_at_utc" TEXT NOT NULL,
                 "text" TEXT NULL
             );
-            CREATE TABLE IF NOT EXISTS "player_name_history" (
-                "id" INTEGER NOT NULL CONSTRAINT "PK_player_name_history" PRIMARY KEY AUTOINCREMENT,
+            CREATE TABLE IF NOT EXISTS "player_session_log" (
+                "id" INTEGER NOT NULL CONSTRAINT "PK_player_session_log" PRIMARY KEY AUTOINCREMENT,
                 "steamid" TEXT NOT NULL,
                 "name" TEXT NOT NULL,
-                "first_seen_at_utc" TEXT NOT NULL
+                "ip_address" TEXT NOT NULL,
+                "event" INTEGER NOT NULL,
+                "occurred_at_utc" TEXT NOT NULL
             );
-            CREATE INDEX IF NOT EXISTS "IX_player_name_history_steamid_id"
-                ON "player_name_history" ("steamid", "id" DESC);
+            CREATE INDEX IF NOT EXISTS "IX_player_session_log_occurred_at_utc_id"
+                ON "player_session_log" ("occurred_at_utc" DESC, "id" DESC);
             """);
 
         if (!HasExpiryColumn(transaction, "bans"))
@@ -94,17 +96,19 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PlayerNameObservation>(entity =>
+        modelBuilder.Entity<PlayerSessionEntry>(entity =>
         {
-            entity.ToTable("player_name_history");
+            entity.ToTable("player_session_log");
             entity.HasKey(entry => entry.Id);
             entity.Property(entry => entry.Id).HasColumnName("id");
             entity.Property(entry => entry.SteamId).HasColumnName("steamid");
             entity.Property(entry => entry.Name).HasColumnName("name");
-            entity.Property(entry => entry.FirstSeenAtUtc)
-                .HasColumnName("first_seen_at_utc")
+            entity.Property(entry => entry.IpAddress).HasColumnName("ip_address");
+            entity.Property(entry => entry.Event).HasColumnName("event");
+            entity.Property(entry => entry.OccurredAtUtc)
+                .HasColumnName("occurred_at_utc")
                 .HasConversion(time => time, time => DateTime.SpecifyKind(time, DateTimeKind.Utc));
-            entity.HasIndex(entry => new { entry.SteamId, entry.Id }).IsDescending(false, true);
+            entity.HasIndex(entry => new { entry.OccurredAtUtc, entry.Id }).IsDescending();
         });
 
         modelBuilder.Entity<MuteAttempt>(entity =>

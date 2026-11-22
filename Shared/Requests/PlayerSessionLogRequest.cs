@@ -14,14 +14,14 @@
 
 using MessagePack;
 
-namespace CbmrWebAdmin.Shared;
+namespace CbmrWebAdmin.Shared.Requests;
 
 [MessagePackObject]
-public sealed class PlayerNameRecord
+public sealed class PlayerSessionLogRequest
 {
-    [Key(0)] public string SteamId { get; set; } = string.Empty;
+    [Key(0)] public string Search { get; set; } = string.Empty;
 
-    [Key(1)] public string Name { get; set; } = string.Empty;
+    [Key(1)] public int Offset { get; init; }
 
-    [Key(2)] public DateTime FirstSeenAtUtc { get; init; }
+    [Key(2)] public int PageSize { get; init; }
 }

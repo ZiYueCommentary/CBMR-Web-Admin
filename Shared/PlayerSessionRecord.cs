@@ -14,14 +14,24 @@
 
 using MessagePack;
 
-namespace CbmrWebAdmin.Shared.Requests;
+namespace CbmrWebAdmin.Shared;
+
+public enum PlayerSessionEvent
+{
+    Join,
+    Leave
+}
 
 [MessagePackObject]
-public sealed class PlayerNameHistoryRequest
+public sealed class PlayerSessionRecord
 {
-    [Key(0)] public string Search { get; set; } = string.Empty;
+    [Key(0)] public string SteamId { get; set; } = string.Empty;
 
-    [Key(1)] public int Offset { get; init; }
+    [Key(1)] public string Name { get; set; } = string.Empty;
 
-    [Key(2)] public int PageSize { get; init; }
+    [Key(2)] public string IpAddress { get; set; } = string.Empty;
+
+    [Key(3)] public PlayerSessionEvent Event { get; init; }
+
+    [Key(4)] public DateTime OccurredAtUtc { get; init; }
 }

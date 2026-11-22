@@ -21,37 +21,41 @@ namespace CbmrWebAdmin.ServerBinding;
 
 public static partial class Listener
 {
-    private static async Task<PipeEnvelope> HandlePlayerNameHistoryAsync(
+    private static async Task<PipeEnvelope> HandlePlayerSessionLogAsync(
         PipeEnvelope request, string databasePath, CancellationToken cancellationToken)
     {
-        PlayerNameHistoryRequest filter = request.DeserializePayload<PlayerNameHistoryRequest>();
+        PlayerSessionLogRequest filter = request.DeserializePayload<PlayerSessionLogRequest>();
         if (filter.Offset < 0 || filter.PageSize is < 1 or > 100)
-            throw new InvalidDataException("Invalid player name history page.");
+            throw new InvalidDataException("Invalid player session log page.");
 
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
-        IQueryable<PlayerNameObservation> query = database.PlayerNames.AsNoTracking();
+        IQueryable<PlayerSessionEntry> query = database.PlayerSessions.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
             string search = filter.Search.Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_");
             string pattern = $"%{search}%";
             query = query.Where(entry =>
-                EF.Functions.Like(entry.SteamId, pattern, @"\") || EF.Functions.Like(entry.Name, pattern, @"\"));
+                EF.Functions.Like(entry.SteamId, pattern, @"\")
+                || EF.Functions.Like(entry.Name, pattern, @"\")
+                || EF.Functions.Like(entry.IpAddress, pattern, @"\"));
         }
 
         int totalCount = await query.CountAsync(cancellationToken);
-        List<PlayerNameRecord> records = await query
-            .OrderBy(entry => entry.SteamId)
+        List<PlayerSessionRecord> records = await query
+            .OrderByDescending(entry => entry.OccurredAtUtc)
             .ThenByDescending(entry => entry.Id)
             .Skip(filter.Offset)
             .Take(filter.PageSize)
-            .Select(entry => new PlayerNameRecord
+            .Select(entry => new PlayerSessionRecord
             {
                 SteamId = entry.SteamId,
                 Name = entry.Name,
-                FirstSeenAtUtc = entry.FirstSeenAtUtc
+                IpAddress = entry.IpAddress,
+                Event = entry.Event,
+                OccurredAtUtc = entry.OccurredAtUtc
             })
             .ToListAsync(cancellationToken);
-        return PipeEnvelope.CreateResponse(request, new PlayerNameHistoryResponse
+        return PipeEnvelope.CreateResponse(request, new PlayerSessionLogResponse
         {
             Records = records,
             TotalCount = totalCount
