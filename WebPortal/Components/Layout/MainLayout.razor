@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject PipeConnectionState ConnectionState
 
 <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
 
@@ -13,7 +14,7 @@
         </div>
 
         <article class="content px-4">
-            @if (!PipeBackgroundService.ServerBindingPipe.IsConnected)
+            @if (!ConnectionState.IsConnected)
             {
                 <Alert Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@Localizer["NoConnectionWithServer"]</Alert>
             }

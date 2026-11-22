@@ -20,10 +20,10 @@ namespace CbmrWebAdmin.WebPortal;
 public class PipeBackgroundService(
     PipeMessageQueue queue,
     ServerLocation serverLocation,
+    PipeConnectionState connectionState,
     ILogger<PipeBackgroundService> logger,
     IConfiguration configuration) : BackgroundService
 {
-    protected internal static NamedPipeClientStream ServerBindingPipe;
     private const int DefaultReconnectDelaySeconds = 5;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,21 +32,21 @@ public class PipeBackgroundService(
 
         while (true)
         {
+            using NamedPipeClientStream pipe = new(
+                ".",
+                configuration["PipeName"] ?? "CbmrWebAdmin",
+                PipeDirection.InOut,
+                PipeOptions.Asynchronous);
             try
             {
-                ServerBindingPipe = new NamedPipeClientStream(
-                    ".",
-                    configuration["PipeName"] ?? "CbmrWebAdmin",
-                    PipeDirection.InOut,
-                    PipeOptions.Asynchronous);
-
                 using (CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken))
                 {
                     timeout.CancelAfter(PipeGateway.RequestTimeout);
-                    await ServerBindingPipe.ConnectAsync(timeout.Token);
-                    await RequestServerLocationAsync(ServerBindingPipe, timeout.Token);
+                    await pipe.ConnectAsync(timeout.Token);
+                    await RequestServerLocationAsync(pipe, timeout.Token);
+                    connectionState.IsConnected = true;
                 }
-                await ProcessRequestsAsync(ServerBindingPipe, stoppingToken);
+                await ProcessRequestsAsync(pipe, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -58,7 +58,8 @@ public class PipeBackgroundService(
             }
             finally
             {
-                ServerBindingPipe?.Dispose();
+                connectionState.IsConnected = false;
+                pipe.Dispose();
             }
 
             try

@@ -1,4 +1,5 @@
 @implements IDisposable
+@inject PipeConnectionState ConnectionState
 
 @if (_serverNotResponding)
 {
@@ -16,7 +17,7 @@
 
         try
         {
-            if (PipeBackgroundService.ServerBindingPipe?.IsConnected != true) return;
+            if (!ConnectionState.IsConnected) return;
 
             await ServerBinding.SendAsync(PipeMessageType.Heartbeat, cancellationToken: _cancellation.Token);
         }

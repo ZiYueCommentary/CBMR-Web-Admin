@@ -56,6 +56,7 @@ public class Program
         builder.Services.AddScoped<AuditLogger>();
         builder.Services.AddSingleton<PipeMessageQueue>();
         builder.Services.AddSingleton<ServerLocation>();
+        builder.Services.AddSingleton<PipeConnectionState>();
         builder.Services.AddHostedService<PipeBackgroundService>();
         builder.Services.AddSingleton<PipeGateway>();
         builder.Services.AddBlazorBootstrap();
