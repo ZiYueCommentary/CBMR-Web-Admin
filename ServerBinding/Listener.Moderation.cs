@@ -26,16 +26,15 @@ public static partial class Listener
     {
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
         DateTime utcNow = DateTime.UtcNow;
-        List<Ban> bans = await database.Bans.AsNoTracking().OrderByDescending(ban => ban.Id).ToListAsync(cancellationToken);
+        List<Ban> bans = await database.ActiveBans(utcNow).OrderByDescending(ban => ban.Id).ToListAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request, bans
-            .Where(ban => ban.Duration is null || ban.StartedAt + ban.Duration.Value > utcNow)
             .Select(ban => new BanRecord
             {
                 Id = ban.Id,
                 SteamId = ban.SteamId,
                 Reason = ban.Reason,
                 StartedAtUtc = DateTime.SpecifyKind(ban.StartedAt, DateTimeKind.Utc),
-                ExpiresAtUtc = ban.Duration is null ? null : DateTime.SpecifyKind(ban.StartedAt + ban.Duration.Value, DateTimeKind.Utc)
+                ExpiresAtUtc = ban.ExpiresAt
             }).ToList());
     }
 
@@ -44,22 +43,21 @@ public static partial class Listener
     {
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
         DateTime utcNow = DateTime.UtcNow;
-        List<Mute> mutes = await database.Mutes.AsNoTracking().OrderByDescending(mute => mute.Id).ToListAsync(cancellationToken);
+        List<Mute> mutes = await database.ActiveMutes(utcNow).OrderByDescending(mute => mute.Id).ToListAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request, mutes
-            .Where(mute => mute.Duration is null || mute.StartedAt + mute.Duration.Value > utcNow)
             .Select(mute => new MuteRecord
             {
                 Id = mute.Id,
                 SteamId = mute.SteamId,
                 Reason = mute.Reason,
                 StartedAtUtc = DateTime.SpecifyKind(mute.StartedAt, DateTimeKind.Utc),
-                ExpiresAtUtc = mute.Duration is null ? null : DateTime.SpecifyKind(mute.StartedAt + mute.Duration.Value, DateTimeKind.Utc),
+                ExpiresAtUtc = mute.ExpiresAt,
                 Kind = mute.Kind == MuteKind.Voice ? MuteRecordKind.Voice : MuteRecordKind.Chat
             }).ToList());
     }
 
     private static async Task<PipeEnvelope> HandleUpdateModerationAsync(
-        PipeEnvelope request, string databasePath, bool isMute, CancellationToken cancellationToken)
+        PipeEnvelope request, string databasePath, ModerationCache moderationCache, bool isMute, CancellationToken cancellationToken)
     {
         UpdateModerationRequest update = request.DeserializePayload<UpdateModerationRequest>();
         if (string.IsNullOrWhiteSpace(update.Reason))
@@ -74,6 +72,9 @@ public static partial class Listener
             if (mute is null) return PipeEnvelope.CreateError(request, "Mute record not found.");
             mute.Reason = update.Reason.Trim();
             mute.Duration = update.ExpiresAtUtc - mute.StartedAt;
+            mute.ExpiresAt = update.ExpiresAtUtc;
+            await database.SaveChangesAsync(cancellationToken);
+            moderationCache.Set(mute);
         }
         else
         {
@@ -81,22 +82,35 @@ public static partial class Listener
             if (ban is null) return PipeEnvelope.CreateError(request, "Ban record not found.");
             ban.Reason = update.Reason.Trim();
             ban.Duration = update.ExpiresAtUtc - ban.StartedAt;
+            ban.ExpiresAt = update.ExpiresAtUtc;
+            await database.SaveChangesAsync(cancellationToken);
+            moderationCache.Set(ban);
         }
 
-        await database.SaveChangesAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request);
     }
 
     private static async Task<PipeEnvelope> HandleRemoveModerationAsync(
-        PipeEnvelope request, string databasePath, bool isMute, CancellationToken cancellationToken)
+        PipeEnvelope request, string databasePath, ModerationCache moderationCache, bool isMute, CancellationToken cancellationToken)
     {
         long id = request.DeserializePayload<RemoveModerationRequest>().Id;
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
-        int removed = isMute
-            ? await database.Mutes.Where(mute => mute.Id == id).ExecuteDeleteAsync(cancellationToken)
-            : await database.Bans.Where(ban => ban.Id == id).ExecuteDeleteAsync(cancellationToken);
-        return removed == 0
-            ? PipeEnvelope.CreateError(request, "Moderation record not found.")
-            : PipeEnvelope.CreateResponse(request);
+        if (isMute)
+        {
+            Mute? mute = await database.Mutes.SingleOrDefaultAsync(mute => mute.Id == id, cancellationToken);
+            if (mute is null) return PipeEnvelope.CreateError(request, "Moderation record not found.");
+            database.Mutes.Remove(mute);
+            await database.SaveChangesAsync(cancellationToken);
+            moderationCache.Remove(mute);
+        }
+        else
+        {
+            Ban? ban = await database.Bans.SingleOrDefaultAsync(ban => ban.Id == id, cancellationToken);
+            if (ban is null) return PipeEnvelope.CreateError(request, "Moderation record not found.");
+            database.Bans.Remove(ban);
+            await database.SaveChangesAsync(cancellationToken);
+            moderationCache.Remove(ban);
+        }
+        return PipeEnvelope.CreateResponse(request);
     }
 }

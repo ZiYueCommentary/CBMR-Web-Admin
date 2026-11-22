@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace CbmrWebAdmin.ServerBinding.Data;
 
@@ -25,6 +27,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
     public void Initialize()
     {
         Database.EnsureCreated();
+        using IDbContextTransaction transaction = Database.BeginTransaction();
         Database.ExecuteSqlRaw("""
             CREATE TABLE IF NOT EXISTS "mutes" (
                 "id" INTEGER NOT NULL CONSTRAINT "PK_mutes" PRIMARY KEY AUTOINCREMENT,
@@ -32,10 +35,41 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "kind" INTEGER NOT NULL,
                 "reason" TEXT NOT NULL,
                 "duration" INTEGER NULL,
-                "started_at" TEXT NOT NULL
+                "started_at" TEXT NOT NULL,
+                "expires_at" INTEGER NULL
             );
             CREATE INDEX IF NOT EXISTS "IX_mutes_steamid_kind" ON "mutes" ("steamid", "kind");
             """);
+
+        if (!HasExpiryColumn(transaction, "bans"))
+        {
+            Database.ExecuteSqlRaw("""ALTER TABLE "bans" ADD COLUMN "expires_at" INTEGER NULL""");
+            foreach (Ban ban in Bans.Where(ban => ban.Duration != null).ToList())
+                ban.ExpiresAt = ban.StartedAt + ban.Duration;
+        }
+
+        if (!HasExpiryColumn(transaction, "mutes"))
+        {
+            Database.ExecuteSqlRaw("""ALTER TABLE "mutes" ADD COLUMN "expires_at" INTEGER NULL""");
+            foreach (Mute mute in Mutes.Where(mute => mute.Duration != null).ToList())
+                mute.ExpiresAt = mute.StartedAt + mute.Duration;
+        }
+
+        SaveChanges();
+        transaction.Commit();
+    }
+
+    private bool HasExpiryColumn(IDbContextTransaction transaction, string table)
+    {
+        using DbCommand command = Database.GetDbConnection().CreateCommand();
+        command.Transaction = transaction.GetDbTransaction();
+        command.CommandText = table == "bans" ? """PRAGMA table_info("bans")""" : """PRAGMA table_info("mutes")""";
+        using DbDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (reader.GetString(1) == "expires_at") return true;
+        }
+        return false;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,6 +97,11 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             entity.Property(mute => mute.StartedAt)
                 .HasColumnName("started_at")
                 .IsRequired();
+            entity.Property(mute => mute.ExpiresAt)
+                .HasColumnName("expires_at")
+                .HasConversion(
+                    expiry => expiry.HasValue ? expiry.Value.Ticks : (long?)null,
+                    ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
             entity.HasIndex(mute => new { mute.SteamId, mute.Kind });
         });
 
@@ -86,28 +125,21 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             entity.Property(ban => ban.StartedAt)
                 .HasColumnName("started_at")
                 .IsRequired();
+            entity.Property(ban => ban.ExpiresAt)
+                .HasColumnName("expires_at")
+                .HasConversion(
+                    expiry => expiry.HasValue ? expiry.Value.Ticks : (long?)null,
+                    ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
 
             entity.HasIndex(ban => ban.SteamId);
         });
     }
 
-    public Ban? FindActiveBan(string steamId, DateTime utcNow)
-    {
-        return Bans.AsNoTracking()
-            .Where(ban => ban.SteamId == steamId)
-            .OrderByDescending(ban => ban.Id)
-            .AsEnumerable()
-            .FirstOrDefault(ban => ban.Duration is null || ban.StartedAt + ban.Duration.Value > utcNow);
-    }
+    public IQueryable<Ban> ActiveBans(DateTime utcNow) =>
+        Bans.AsNoTracking().Where(ban => ban.ExpiresAt == null || ban.ExpiresAt > utcNow);
 
-    public Mute? FindActiveMute(string steamId, MuteKind kind, DateTime utcNow)
-    {
-        return Mutes.AsNoTracking()
-            .Where(mute => mute.SteamId == steamId && mute.Kind == kind)
-            .OrderByDescending(mute => mute.Id)
-            .AsEnumerable()
-            .FirstOrDefault(mute => mute.Duration is null || mute.StartedAt + mute.Duration.Value > utcNow);
-    }
+    public IQueryable<Mute> ActiveMutes(DateTime utcNow) =>
+        Mutes.AsNoTracking().Where(mute => mute.ExpiresAt == null || mute.ExpiresAt > utcNow);
 
     public static WebPortalDbContext Create(string databasePath)
     {

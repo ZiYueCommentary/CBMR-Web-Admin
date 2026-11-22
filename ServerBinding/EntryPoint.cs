@@ -26,6 +26,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 {
     private readonly Config _config = configProvider.GetConfig();
     private PlayerLanguageSettings _playerLanguage = null!;
+    private ModerationCache _moderationCache = null!;
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
@@ -39,6 +40,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         using (WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath))
         {
             database.Initialize();
+            _moderationCache = new ModerationCache(database);
         }
 
         _listenerCancellation = new CancellationTokenSource();
@@ -50,6 +52,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         };
         _listenerThread.Start();
         EventRegistry.PlayerChat += OnPlayerChat;
+        EventRegistry.PlayerVoice += OnPlayerVoice;
         EventRegistry.IncomingConnection += OnConnectionInComing;
     }
 
@@ -60,14 +63,16 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _listenerThread?.Join(TimeSpan.FromSeconds(5));
         _listenerCancellation?.Dispose();
         EventRegistry.PlayerChat -= OnPlayerChat;
+        EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
+        _moderationCache?.Dispose();
         ServerChatList.Clear();
     }
 
     private void OnConnectionInComing(EventRegistry.IncomingConnectionEventArg eventArg)
     {
-        using WebPortalDbContext database = WebPortalDbContext.Create(_config.DatabasePath);
-        Ban? ban = database.FindActiveBan(eventArg.Conn.GetSteamID(), DateTime.UtcNow);
+        DateTime utcNow = DateTime.UtcNow;
+        ModerationCache.Entry? ban = _moderationCache.FindActive(eventArg.Conn.GetSteamID(), null, utcNow);
         if (ban is null)
         {
             eventArg.Conn.Accept();
@@ -75,17 +80,28 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         }
         var culture = _playerLanguage.Culture;
         string remaining = PlayerMessages.Get(culture, "Permanent");
-        if (ban.Duration is { } duration)
+        if (ban.ExpiresAt is { } expiresAt)
         {
-            TimeSpan timeLeft = ban.StartedAt + duration - DateTime.UtcNow;
+            TimeSpan timeLeft = expiresAt - utcNow;
             remaining = PlayerMessages.Get(culture, "RemainingDuration", timeLeft.Days, timeLeft.Hours, timeLeft.Minutes);
         }
         eventArg.Conn.Cancel(PlayerMessages.Get(culture, "BanRejected", ban.Reason, remaining));
     }
 
-    private static void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
+    private void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
     {
+        if (_moderationCache.FindActive(eventArg.Player.GetSteamID(), MuteKind.Chat, DateTime.UtcNow) is not null)
+        {
+            eventArg.EventResult = false;
+            return;
+        }
         ServerChatList.Add(eventArg.Player, eventArg.Text);
+    }
+
+    private void OnPlayerVoice(EventRegistry.PlayerVoiceEventArg eventArg)
+    {
+        if (_moderationCache.FindActive(eventArg.Player.GetSteamID(), MuteKind.Voice, DateTime.UtcNow) is not null)
+            eventArg.EventResult = false;
     }
 
     private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
@@ -104,7 +120,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             {
                 await pipeServer.WaitForConnectionAsync(cancellationToken);
                 logger.LogInformation("Server connected to Web Portal successfully.");
-                await Listener.StartListenAsync(logger, pipeServer, _config.DatabasePath, _playerLanguage, cancellationToken);
+                await Listener.StartListenAsync(logger, pipeServer, _config.DatabasePath, _playerLanguage, _moderationCache, cancellationToken);
                 logger.LogInformation("Web Portal disconnected; waiting for a new pipe connection.");
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

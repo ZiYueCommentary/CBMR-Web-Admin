@@ -24,11 +24,12 @@ namespace CbmrWebAdmin.ServerBinding;
 
 public static partial class Listener
 {
-    public static async Task StartListenAsync(
+    internal static async Task StartListenAsync(
         ILogger<Metadata> logger,
         NamedPipeServerStream pipeServer,
         string databasePath,
         PlayerLanguageSettings playerLanguage,
+        ModerationCache moderationCache,
         CancellationToken cancellationToken = default)
     {
         while (await PipeProtocol.ReadAsync(pipeServer, cancellationToken) is { } request)
@@ -58,17 +59,17 @@ public static partial class Listener
                     PipeMessageType.Chats => HandleChats(request),
                     PipeMessageType.ClearItems => HandleClearItems(request),
                     PipeMessageType.RestartServer => HandleRestartServer(request),
-                    PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, playerLanguage, cancellationToken),
+                    PipeMessageType.BanPlayer => await HandleBanPlayerAsync(request, databasePath, playerLanguage, moderationCache, cancellationToken),
                     PipeMessageType.GetPlayerLanguage => PipeEnvelope.CreateResponse(request, playerLanguage.Culture.Name),
                     PipeMessageType.SetPlayerLanguage => HandleSetPlayerLanguage(request, playerLanguage),
-                    PipeMessageType.MuteVoice => await HandleMutePlayerAsync(request, databasePath, MuteKind.Voice, cancellationToken),
-                    PipeMessageType.MuteChat => await HandleMutePlayerAsync(request, databasePath, MuteKind.Chat, cancellationToken),
+                    PipeMessageType.MuteVoice => await HandleMutePlayerAsync(request, databasePath, moderationCache, MuteKind.Voice, cancellationToken),
+                    PipeMessageType.MuteChat => await HandleMutePlayerAsync(request, databasePath, moderationCache, MuteKind.Chat, cancellationToken),
                     PipeMessageType.ListBans => await HandleListBansAsync(request, databasePath, cancellationToken),
                     PipeMessageType.ListMutes => await HandleListMutesAsync(request, databasePath, cancellationToken),
-                    PipeMessageType.UpdateBan => await HandleUpdateModerationAsync(request, databasePath, false, cancellationToken),
-                    PipeMessageType.UpdateMute => await HandleUpdateModerationAsync(request, databasePath, true, cancellationToken),
-                    PipeMessageType.RemoveBan => await HandleRemoveModerationAsync(request, databasePath, false, cancellationToken),
-                    PipeMessageType.RemoveMute => await HandleRemoveModerationAsync(request, databasePath, true, cancellationToken),
+                    PipeMessageType.UpdateBan => await HandleUpdateModerationAsync(request, databasePath, moderationCache, false, cancellationToken),
+                    PipeMessageType.UpdateMute => await HandleUpdateModerationAsync(request, databasePath, moderationCache, true, cancellationToken),
+                    PipeMessageType.RemoveBan => await HandleRemoveModerationAsync(request, databasePath, moderationCache, false, cancellationToken),
+                    PipeMessageType.RemoveMute => await HandleRemoveModerationAsync(request, databasePath, moderationCache, true, cancellationToken),
                     _ => PipeEnvelope.CreateError(request, $"Unknown message type '{request.MessageType}'.")
                 };
             }
@@ -82,7 +83,7 @@ public static partial class Listener
     }
 
     private static async Task<PipeEnvelope> HandleMutePlayerAsync(
-        PipeEnvelope request, string databasePath, MuteKind kind, CancellationToken cancellationToken)
+        PipeEnvelope request, string databasePath, ModerationCache moderationCache, MuteKind kind, CancellationToken cancellationToken)
     {
         MutePlayerRequest mutePlayerRequest = request.DeserializePayload<MutePlayerRequest>();
         DateTime startedAt = DateTime.UtcNow;
@@ -101,10 +102,12 @@ public static partial class Listener
             Kind = kind,
             Reason = mutePlayerRequest.Reason.Trim(),
             StartedAt = startedAt,
-            Duration = mutePlayerRequest.ExpiresAtUtc - startedAt
+            Duration = mutePlayerRequest.ExpiresAtUtc - startedAt,
+            ExpiresAt = mutePlayerRequest.ExpiresAtUtc
         };
         database.Mutes.Add(mute);
         await database.SaveChangesAsync(cancellationToken);
+        moderationCache.Set(mute);
 
         return PipeEnvelope.CreateResponse(request);
     }
@@ -177,7 +180,7 @@ public static partial class Listener
     }
 
     private static async Task<PipeEnvelope> HandleBanPlayerAsync(
-        PipeEnvelope request, string databasePath, PlayerLanguageSettings playerLanguage, CancellationToken cancellationToken)
+        PipeEnvelope request, string databasePath, PlayerLanguageSettings playerLanguage, ModerationCache moderationCache, CancellationToken cancellationToken)
     {
         BanPlayerRequest banPlayerRequest = request.DeserializePayload<BanPlayerRequest>();
         DateTime startedAt = DateTime.UtcNow;
@@ -195,10 +198,12 @@ public static partial class Listener
             SteamId = banPlayerRequest.SteamId.Trim(),
             Reason = banPlayerRequest.Reason.Trim(),
             StartedAt = startedAt,
-            Duration = banPlayerRequest.ExpiresAtUtc - startedAt
+            Duration = banPlayerRequest.ExpiresAtUtc - startedAt,
+            ExpiresAt = banPlayerRequest.ExpiresAtUtc
         };
         database.Bans.Add(ban);
         await database.SaveChangesAsync(cancellationToken);
+        moderationCache.Set(ban);
 
         MainThreadContext.RunOnMainThread(() =>
         {
