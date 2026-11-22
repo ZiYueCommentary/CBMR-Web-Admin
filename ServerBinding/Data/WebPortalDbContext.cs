@@ -24,6 +24,8 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     public DbSet<Mute> Mutes => Set<Mute>();
 
+    internal DbSet<MuteAttempt> MuteAttempts => Set<MuteAttempt>();
+
     public void Initialize()
     {
         Database.EnsureCreated();
@@ -39,6 +41,14 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "expires_at" INTEGER NULL
             );
             CREATE INDEX IF NOT EXISTS "IX_mutes_steamid_kind" ON "mutes" ("steamid", "kind");
+            CREATE TABLE IF NOT EXISTS "mute_attempts" (
+                "id" INTEGER NOT NULL CONSTRAINT "PK_mute_attempts" PRIMARY KEY AUTOINCREMENT,
+                "steamid" TEXT NOT NULL,
+                "player_name" TEXT NULL,
+                "kind" INTEGER NOT NULL,
+                "occurred_at_utc" TEXT NOT NULL,
+                "text" TEXT NULL
+            );
             """);
 
         if (!HasExpiryColumn(transaction, "bans"))
@@ -74,6 +84,20 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<MuteAttempt>(entity =>
+        {
+            entity.ToTable("mute_attempts");
+            entity.HasKey(attempt => attempt.Id);
+            entity.Property(attempt => attempt.Id).HasColumnName("id");
+            entity.Property(attempt => attempt.SteamId).HasColumnName("steamid").IsRequired();
+            entity.Property(attempt => attempt.PlayerName).HasColumnName("player_name");
+            entity.Property(attempt => attempt.Kind).HasColumnName("kind");
+            entity.Property(attempt => attempt.OccurredAtUtc)
+                .HasColumnName("occurred_at_utc")
+                .HasConversion(time => time, time => DateTime.SpecifyKind(time, DateTimeKind.Utc));
+            entity.Property(attempt => attempt.Text).HasColumnName("text");
+        });
+
         modelBuilder.Entity<Mute>(entity =>
         {
             entity.ToTable("mutes");

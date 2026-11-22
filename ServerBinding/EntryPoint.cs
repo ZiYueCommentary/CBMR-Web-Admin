@@ -27,6 +27,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private readonly Config _config = configProvider.GetConfig();
     private PlayerLanguageSettings _playerLanguage = null!;
     private ModerationCache _moderationCache = null!;
+    private MuteAttemptLog _muteAttemptLog = null!;
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
@@ -45,6 +46,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             database.Initialize();
             _moderationCache = new ModerationCache(database);
         }
+        _muteAttemptLog = new MuteAttemptLog(_config.DatabasePath, logger);
 
         _listenerCancellation = new CancellationTokenSource();
         _eventsTask = ChatEvents.RunAsync(PipeName, logger, _listenerCancellation.Token);
@@ -70,6 +72,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         EventRegistry.PlayerChat -= OnPlayerChat;
         EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
+        _muteAttemptLog?.Dispose();
         _moderationCache?.Dispose();
         ServerChatList.Clear();
     }
@@ -95,9 +98,12 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 
     private void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
     {
-        if (_moderationCache.FindActive(eventArg.Player.GetSteamID(), MuteKind.Chat, DateTime.UtcNow) is not null)
+        string steamId = eventArg.Player.GetSteamID();
+        DateTime utcNow = DateTime.UtcNow;
+        if (_moderationCache.FindActive(steamId, MuteKind.Chat, utcNow) is not null)
         {
             eventArg.EventResult = false;
+            LogMuteAttempt(eventArg.Player, steamId, MuteKind.Chat, utcNow, eventArg.Text);
             return;
         }
         ServerChatList.Add(eventArg.Player, eventArg.Text);
@@ -105,8 +111,24 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
 
     private void OnPlayerVoice(EventRegistry.PlayerVoiceEventArg eventArg)
     {
-        if (_moderationCache.FindActive(eventArg.Player.GetSteamID(), MuteKind.Voice, DateTime.UtcNow) is not null)
-            eventArg.EventResult = false;
+        string steamId = eventArg.Player.GetSteamID();
+        DateTime utcNow = DateTime.UtcNow;
+        if (_moderationCache.FindActive(steamId, MuteKind.Voice, utcNow) is null) return;
+
+        eventArg.EventResult = false;
+        LogMuteAttempt(eventArg.Player, steamId, MuteKind.Voice, utcNow, null);
+    }
+
+    private void LogMuteAttempt(Player player, string steamId, MuteKind kind, DateTime utcNow, string? text)
+    {
+        _muteAttemptLog.Enqueue(new MuteAttempt
+        {
+            SteamId = steamId,
+            PlayerName = player.GetName(),
+            Kind = kind,
+            OccurredAtUtc = utcNow,
+            Text = text
+        });
     }
 
     private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
