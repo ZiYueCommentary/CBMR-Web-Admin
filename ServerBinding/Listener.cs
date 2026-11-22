@@ -41,7 +41,11 @@ public static partial class Listener
                     throw new InvalidDataException($"Expected a request envelope, received {request.Kind}.");
                 }
 
-                logger.LogInformation("Received Web Admin request: {RequestMessageType}", request.MessageType);
+                LogLevel logLevel = request.MessageType is PipeMessageType.Heartbeat or PipeMessageType.Chats
+                    or PipeMessageType.Players or PipeMessageType.WhereAreYou or PipeMessageType.GetPlayerLanguage
+                    or PipeMessageType.ListBans or PipeMessageType.ListMutes
+                    ? LogLevel.Debug : LogLevel.Information;
+                logger.Log(logLevel, "Received Web Admin request: {RequestMessageType}", request.MessageType);
 
                 response = request.MessageType switch
                 {
