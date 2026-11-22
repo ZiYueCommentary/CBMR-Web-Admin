@@ -51,7 +51,10 @@ public enum PipeMessageType : byte
     ListReports,
     ReplyReport,
     ReportCreated,
-    ReportsUpdated
+    ReportsUpdated,
+    ListAnnouncements,
+    CreateAnnouncement,
+    UpdateAnnouncement
 }
 
 [MessagePackObject]

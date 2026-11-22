@@ -17,6 +17,8 @@ namespace CbmrWebAdmin.WebPortal.Data;
 
 public static class AuditActions
 {
+    public const string CreateAnnouncement = "CreateAnnouncement";
+    public const string UpdateAnnouncement = "UpdateAnnouncement";
     public const string ReplyReport = "ReplyReport";
     public const string Login = "Login";
     public const string LoginFailed = "LoginFailed";

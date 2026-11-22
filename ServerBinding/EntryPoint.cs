@@ -16,6 +16,7 @@ using System.IO.Pipes;
 using CCB.Abstractions;
 using CCB.Attributes;
 using CCB.Internal;
+using CCB.Extensions;
 using Microsoft.Extensions.Logging;
 using CbmrWebAdmin.ServerBinding.Data;
 using CbmrWebAdmin.Shared;
@@ -63,6 +64,7 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
         _listenerThread.Start();
         EventRegistry.PlayerChat += OnPlayerChat;
         EventRegistry.PlayerDialogAction += OnReportDialogAction;
+        EventRegistry.PlayerDialogAction += OnAnnouncementDialogAction;
         EventRegistry.PlayerVoice += OnPlayerVoice;
         EventRegistry.IncomingConnection += OnConnectionInComing;
         EventRegistry.PlayerConnect += OnPlayerConnect;
@@ -78,6 +80,8 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
         _listenerCancellation?.Dispose();
         EventRegistry.PlayerChat -= OnPlayerChat;
         EventRegistry.PlayerDialogAction -= OnReportDialogAction;
+        EventRegistry.PlayerDialogAction -= OnAnnouncementDialogAction;
+        _announcementQueues.Clear();
         foreach (string steamId in _reportForms.Keys.ToList()) CloseReportForm(steamId);
         EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
@@ -112,6 +116,8 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
     {
         LogPlayerSessionEvent(PlayerSessionEvent.Join, eventArg.Player);
         string steamId = eventArg.Player.GetSteamID();
+        Queue<long> announcementQueue = new();
+        _announcementQueues[steamId] = announcementQueue;
         CancellationToken token = _listenerCancellation!.Token;
         _ = Task.Run(async () =>
         {
@@ -119,6 +125,11 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
             {
                 await Task.Delay(TimeSpan.FromSeconds(2), token);
                 await ReportReplyDelivery.DeliverAsync(_config.DatabasePath, steamId, _playerLanguage, token);
+                MainThreadContext.RunOnMainThread(() =>
+                {
+                    DeliverAnnouncements(steamId, announcementQueue, token);
+                    return true;
+                });
             }
             catch (OperationCanceledException) when (token.IsCancellationRequested) { }
             catch (Exception exception) { logger.LogError(exception, "Could not deliver pending report replies."); }
@@ -127,6 +138,7 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
 
     private void OnPlayerDisconnect(EventRegistry.PlayerDisconnectEventArg eventArg)
     {
+        _announcementQueues.Remove(eventArg.Player.GetSteamID());
         CloseReportForm(eventArg.Player.GetSteamID());
         LogPlayerSessionEvent(PlayerSessionEvent.Leave, eventArg.Player);
     }

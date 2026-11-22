@@ -22,6 +22,8 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 {
     public DbSet<Ban> Bans => Set<Ban>();
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<AnnouncementRead> AnnouncementReads => Set<AnnouncementRead>();
 
     public DbSet<Mute> Mutes => Set<Mute>();
 
@@ -34,6 +36,16 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
         Database.EnsureCreated();
         using IDbContextTransaction transaction = Database.BeginTransaction();
         Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "announcements" (
+                "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "Title" TEXT NOT NULL, "Content" TEXT NOT NULL,
+                "ExpiresAtUtc" TEXT NOT NULL, "CreatedAtUtc" TEXT NOT NULL,
+                "UpdatedAtUtc" TEXT NOT NULL, "CreatedBy" TEXT NOT NULL, "Revision" INTEGER NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS "announcement_reads" (
+                "SteamId" TEXT NOT NULL, "AnnouncementId" INTEGER NOT NULL, "Revision" INTEGER NOT NULL,
+                PRIMARY KEY ("SteamId", "AnnouncementId")
+            );
             CREATE TABLE IF NOT EXISTS "Reports" (
                 "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                 "ReporterSteamId" TEXT NOT NULL, "ReporterName" TEXT NOT NULL,
@@ -126,6 +138,12 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Announcement>().ToTable("announcements");
+        modelBuilder.Entity<AnnouncementRead>(entity =>
+        {
+            entity.ToTable("announcement_reads");
+            entity.HasKey(read => new { read.SteamId, read.AnnouncementId });
+        });
         modelBuilder.Entity<PlayerSessionEntry>(entity =>
         {
             entity.ToTable("player_session_log");

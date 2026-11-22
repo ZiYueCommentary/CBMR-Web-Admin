@@ -1,0 +1,120 @@
+@* Copyright 2026 ZiYueCommentary
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License. *@
+
+@using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Data
+@inject AuthenticationStateProvider Authentication
+
+<button class="btn btn-primary" disabled="@(_busy || TimeZone is null || Announcement?.Expired == true)" @onclick="ShowAsync">@Localizer[Announcement is null ? "NewAnnouncement" : "EditAnnouncement"]</button>
+<Modal @ref="_modal" Title="@Localizer[Announcement is null ? "NewAnnouncement" : "EditAnnouncement"]">
+    <BodyTemplate>
+        <label class="form-label" for="@(_inputId + "-title")">@Localizer["AnnouncementTitle"]</label>
+        <input id="@(_inputId + "-title")" class="form-control mb-3" maxlength="200" @bind="_title" disabled="@_busy" />
+        <label class="form-label" for="@(_inputId + "-content")">@Localizer["AnnouncementContent"]</label>
+        <textarea id="@(_inputId + "-content")" class="form-control mb-3" rows="6" maxlength="10000" @bind="_content" disabled="@_busy"></textarea>
+        <div class="mb-2">@Localizer["AnnouncementExpiry"] <span class="text-muted">(@TimeZone?.Id)</span></div>
+        <div class="d-flex gap-2 align-items-center mb-3">
+            <DateInput TValue="DateOnly?" @bind-Value="_date" Disabled="_busy" />
+            <TimeInput TValue="TimeOnly?" @bind-Value="_time" Disabled="_busy" />
+        </div>
+        @if (Announcement is not null)
+        {
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" @bind="_resend" disabled="@_busy" />
+                @Localizer["AnnouncementResend"]
+            </label>
+        }
+        @if (_error is not null) { <p class="text-danger">@_error</p> }
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" disabled="@_busy" @onclick="CloseAsync">@Localizer["Close"]</button>
+        <button class="btn btn-primary" disabled="@(_busy || InvalidInput || Announcement?.Expired == true)" @onclick="SaveAsync">@Localizer["SaveAnnouncement"]</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+    [Parameter] public AnnouncementRecord? Announcement { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+    private readonly string _inputId = "announcement-" + Guid.NewGuid().ToString("N");
+    private Modal _modal = null!;
+    private string _title = "";
+    private string _content = "";
+    private DateOnly? _date;
+    private TimeOnly? _time;
+    private bool _resend;
+    private bool _busy;
+    private string? _error;
+    private bool InvalidInput => string.IsNullOrWhiteSpace(_title) || _title.Length > 200 ||
+        string.IsNullOrWhiteSpace(_content) || _content.Length > 10000 || _date is null || _time is null;
+
+    private async Task ShowAsync()
+    {
+        if (TimeZone is null || Announcement?.Expired == true) return;
+        _title = Announcement?.Title ?? "";
+        _content = Announcement?.Content ?? "";
+        DateTime? local = Announcement is null ? null : TimeZone.FromUtc(Announcement.ExpiresAtUtc);
+        _date = local is { } date ? DateOnly.FromDateTime(date) : null;
+        _time = local is { } time ? TimeOnly.FromDateTime(time) : null;
+        _resend = false;
+        _error = null;
+        await _modal.ShowAsync();
+    }
+
+    private Task CloseAsync() => _modal.HideAsync();
+
+    private async Task SaveAsync()
+    {
+        if (_busy || InvalidInput || Announcement?.Expired == true) return;
+        DateTime? expiry = TimeZone?.ToFutureUtc(_date!.Value, _time!.Value);
+        if (expiry is null)
+        {
+            _error = Localizer["InvalidAnnouncementExpiry"];
+            return;
+        }
+        _busy = true;
+        _error = null;
+        try
+        {
+            var state = await Authentication.GetAuthenticationStateAsync();
+            if (state.User.Identity?.IsAuthenticated != true) throw new InvalidOperationException();
+            AnnouncementRecord saved;
+            if (Announcement is null)
+            {
+                saved = await ServerBinding.SendAsync<CreateAnnouncementRequest, AnnouncementRecord>(PipeMessageType.CreateAnnouncement,
+                    new CreateAnnouncementRequest
+                    {
+                        Title = _title.Trim(), Content = _content.Trim(), ExpiresAtUtc = expiry.Value,
+                        AdminName = state.User.Identity.Name ?? "?"
+                    });
+            }
+            else
+            {
+                saved = await ServerBinding.SendAsync<UpdateAnnouncementRequest, AnnouncementRecord>(PipeMessageType.UpdateAnnouncement,
+                    new UpdateAnnouncementRequest
+                    {
+                        Id = Announcement.Id, Title = _title.Trim(), Content = _content.Trim(),
+                        ExpiresAtUtc = expiry.Value, ResendToReaders = _resend
+                    });
+            }
+            await AuditLogger.WriteAsync(Announcement is null ? AuditActions.CreateAnnouncement : AuditActions.UpdateAnnouncement,
+                saved.Id.ToString(), $"{saved.Title}; until {saved.ExpiresAtUtc:u}; revision {saved.Revision}; resend: {_resend}");
+            await _modal.HideAsync();
+            ToastService.Notify(new(ToastType.Success, Localizer["AnnouncementSaved"]));
+            await OnSaved.InvokeAsync();
+        }
+        catch { _error = Localizer["AnnouncementSaveFailed"]; }
+        finally { _busy = false; }
+    }
+}

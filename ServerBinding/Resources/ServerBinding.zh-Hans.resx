@@ -32,4 +32,5 @@
   <data name="ReportContentTitle" xml:space="preserve"><value>举报 {0}</value></data>
   <data name="ReportContentHint" xml:space="preserve"><value>请描述问题（1至2000字）。</value></data>
   <data name="ReportInvalidContent" xml:space="preserve"><value>请输入1至2000字的举报内容。</value></data>
+  <data name="AnnouncementOK" xml:space="preserve"><value>确定</value></data>
 </root>

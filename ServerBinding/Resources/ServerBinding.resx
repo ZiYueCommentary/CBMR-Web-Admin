@@ -32,4 +32,5 @@ Time remaining: {1}</value></data>
   <data name="ReportContentTitle" xml:space="preserve"><value>Report {0}</value></data>
   <data name="ReportContentHint" xml:space="preserve"><value>Describe the issue (1–2000 characters).</value></data>
   <data name="ReportInvalidContent" xml:space="preserve"><value>Please enter a report of 1–2000 characters.</value></data>
+  <data name="AnnouncementOK" xml:space="preserve"><value>OK</value></data>
 </root>

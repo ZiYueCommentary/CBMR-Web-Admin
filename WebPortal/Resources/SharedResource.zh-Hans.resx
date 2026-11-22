@@ -363,4 +363,24 @@
   <data name="ReportReplyDelivered" xml:space="preserve"><value>已送达</value></data>
   <data name="EnableReportNotifications" xml:space="preserve"><value>启用举报通知</value></data>
   <data name="NewReport" xml:space="preserve"><value>新举报：{0} 举报了 {1}</value></data>
+  <data name="Announcements" xml:space="preserve"><value>公告栏</value></data>
+  <data name="AnnouncementsLoadFailed" xml:space="preserve"><value>无法加载公告。</value></data>
+  <data name="AnnouncementTitle" xml:space="preserve"><value>标题</value></data>
+  <data name="AnnouncementContent" xml:space="preserve"><value>内容</value></data>
+  <data name="AnnouncementExpiry" xml:space="preserve"><value>截止时间</value></data>
+  <data name="AnnouncementCreated" xml:space="preserve"><value>创建时间</value></data>
+  <data name="AnnouncementUpdated" xml:space="preserve"><value>修改时间</value></data>
+  <data name="AnnouncementStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="AnnouncementExpired" xml:space="preserve"><value>已过期</value></data>
+  <data name="AnnouncementActive" xml:space="preserve"><value>有效</value></data>
+  <data name="NoAnnouncements" xml:space="preserve"><value>暂无公告。</value></data>
+  <data name="NewAnnouncement" xml:space="preserve"><value>新建公告</value></data>
+  <data name="EditAnnouncement" xml:space="preserve"><value>修改公告</value></data>
+  <data name="AnnouncementResend" xml:space="preserve"><value>重新向已读玩家显示此公告</value></data>
+  <data name="SaveAnnouncement" xml:space="preserve"><value>保存公告</value></data>
+  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>请按浏览器时区选择未来的截止时间（不能是有歧义或无效的时间）。</value></data>
+  <data name="AnnouncementSaved" xml:space="preserve"><value>公告已保存。</value></data>
+  <data name="AnnouncementSaveFailed" xml:space="preserve"><value>无法保存公告，公告可能已过期，请重新加载列表。</value></data>
+  <data name="CreateAnnouncement" xml:space="preserve"><value>新建公告</value></data>
+  <data name="UpdateAnnouncement" xml:space="preserve"><value>修改公告</value></data>
 </root>

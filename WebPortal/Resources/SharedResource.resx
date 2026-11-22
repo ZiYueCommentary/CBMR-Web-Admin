@@ -323,4 +323,24 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportReplyDelivered" xml:space="preserve"><value>Delivered</value></data>
   <data name="EnableReportNotifications" xml:space="preserve"><value>Enable report notifications</value></data>
   <data name="NewReport" xml:space="preserve"><value>New report: {0} reported {1}</value></data>
+  <data name="Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="AnnouncementsLoadFailed" xml:space="preserve"><value>Could not load announcements.</value></data>
+  <data name="AnnouncementTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="AnnouncementContent" xml:space="preserve"><value>Content</value></data>
+  <data name="AnnouncementExpiry" xml:space="preserve"><value>Expiry</value></data>
+  <data name="AnnouncementCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="AnnouncementUpdated" xml:space="preserve"><value>Updated</value></data>
+  <data name="AnnouncementStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="AnnouncementExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="AnnouncementActive" xml:space="preserve"><value>Active</value></data>
+  <data name="NoAnnouncements" xml:space="preserve"><value>No announcements.</value></data>
+  <data name="NewAnnouncement" xml:space="preserve"><value>New announcement</value></data>
+  <data name="EditAnnouncement" xml:space="preserve"><value>Edit announcement</value></data>
+  <data name="AnnouncementResend" xml:space="preserve"><value>Show again to players who have already read it</value></data>
+  <data name="SaveAnnouncement" xml:space="preserve"><value>Save announcement</value></data>
+  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>Choose a future expiry in your browser time zone (not an ambiguous or invalid time).</value></data>
+  <data name="AnnouncementSaved" xml:space="preserve"><value>Announcement saved.</value></data>
+  <data name="AnnouncementSaveFailed" xml:space="preserve"><value>Could not save the announcement. It may have expired; reload the list.</value></data>
+  <data name="CreateAnnouncement" xml:space="preserve"><value>Create announcement</value></data>
+  <data name="UpdateAnnouncement" xml:space="preserve"><value>Update announcement</value></data>
 </root>
