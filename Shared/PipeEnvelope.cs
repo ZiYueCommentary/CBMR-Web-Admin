@@ -20,7 +20,8 @@ public enum PipeEnvelopeKind : byte
 {
     Request,
     Response,
-    Error
+    Error,
+    Event
 }
 
 public enum PipeMessageType : byte
@@ -44,13 +45,15 @@ public enum PipeMessageType : byte
     ListMutes,
     UpdateMute,
     RemoveMute,
-    Heartbeat
+    Heartbeat,
+    ChatUpdated
 }
 
 [MessagePackObject]
 public sealed class PipeEnvelope
 {
     public const byte CurrentVersion = 1;
+    public const string EventsPipeSuffix = ".Events";
 
     [Key(0)] public byte Version { get; init; }
 
@@ -83,6 +86,17 @@ public sealed class PipeEnvelope
             RequestId = Guid.NewGuid(),
             Version = CurrentVersion,
             Kind = PipeEnvelopeKind.Request,
+            MessageType = messageType
+        };
+    }
+
+    public static PipeEnvelope CreateEvent(PipeMessageType messageType)
+    {
+        return new PipeEnvelope
+        {
+            RequestId = Guid.NewGuid(),
+            Version = CurrentVersion,
+            Kind = PipeEnvelopeKind.Event,
             MessageType = messageType
         };
     }

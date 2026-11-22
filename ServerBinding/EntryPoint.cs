@@ -30,6 +30,9 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
+    private const string PipeName = "CbmrWebAdmin";
+    private Task? _eventsTask;
+    internal static readonly ChatEventPublisher ChatEvents = new();
     internal static readonly ServerChatList ServerChatList = new();
 
     public void Load()
@@ -44,6 +47,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         }
 
         _listenerCancellation = new CancellationTokenSource();
+        _eventsTask = ChatEvents.RunAsync(PipeName, logger, _listenerCancellation.Token);
         _listenerThread = new Thread(() =>
                 ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
         {
@@ -61,6 +65,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _listenerCancellation?.Cancel();
         _pipeServer?.Dispose();
         _listenerThread?.Join(TimeSpan.FromSeconds(5));
+        _eventsTask?.GetAwaiter().GetResult();
         _listenerCancellation?.Dispose();
         EventRegistry.PlayerChat -= OnPlayerChat;
         EventRegistry.PlayerVoice -= OnPlayerVoice;
@@ -109,7 +114,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         while (!cancellationToken.IsCancellationRequested)
         {
             await using NamedPipeServerStream pipeServer = new NamedPipeServerStream(
-                "CbmrWebAdmin", //todo dyna
+                PipeName, //todo dyna
                 PipeDirection.InOut,
                 1,
                 PipeTransmissionMode.Byte,

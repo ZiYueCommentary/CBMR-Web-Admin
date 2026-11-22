@@ -32,6 +32,7 @@ public class ServerChatList
             _queue.Enqueue(new WebChat{SteamId = player.GetSteamID(), PlayerName = player.GetName(), Message = message, When = DateTime.Now, Sequence = ++_sequence});
             while (_queue.Count > Size) _queue.Dequeue();
         }
+        EntryPoint.ChatEvents.Publish();
     }
 
     public void Clear()
@@ -41,6 +42,7 @@ public class ServerChatList
             _queue.Clear();
             _streamId = Guid.NewGuid();
         }
+        EntryPoint.ChatEvents.Publish();
     }
 
     public ChatsResponse GetItems(long afterSequence, Guid streamId)

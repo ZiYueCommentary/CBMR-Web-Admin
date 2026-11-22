@@ -58,6 +58,8 @@ public class Program
         builder.Services.AddSingleton<ServerLocation>();
         builder.Services.AddSingleton<PipeConnectionState>();
         builder.Services.AddHostedService<PipeBackgroundService>();
+        builder.Services.AddSingleton<ServerEvents>();
+        builder.Services.AddHostedService<ServerEventsBackgroundService>();
         builder.Services.AddSingleton<PipeGateway>();
         builder.Services.AddBlazorBootstrap();
 

@@ -1,5 +1,7 @@
 @page "/Chat"
 @using CbmrWebAdmin.Shared.Requests
+@inject ServerEvents ServerEvents
+@inject ILogger<Chat> Logger
 @attribute [Authorize]
 @implements IAsyncDisposable
 
@@ -45,8 +47,8 @@ else
 
     private List<WebChat>? _outputs;
     private readonly CancellationTokenSource _refreshCancellationTokenSource = new();
-    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(5));
-    private Task? _refreshTask;
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private CancellationToken _refreshToken;
     private Grid<WebChat>? _grid;
     private long _lastSequence;
     private Guid _streamId;
@@ -58,22 +60,41 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshAsync(_refreshCancellationTokenSource.Token);
-        _refreshTask = RefreshPeriodicallyAsync(_refreshCancellationTokenSource.Token);
+        _refreshToken = _refreshCancellationTokenSource.Token;
+        ServerEvents.ChatUpdated += OnChatUpdated;
+        await RefreshSafelyAsync();
     }
 
-    private async Task RefreshPeriodicallyAsync(CancellationToken cancellationToken)
+    private void OnChatUpdated()
+    {
+        _ = RefreshSafelyAsync();
+    }
+
+    private async Task RefreshSafelyAsync()
     {
         try
         {
-            while (await _refreshTimer.WaitForNextTickAsync(cancellationToken))
+            await _refreshLock.WaitAsync(_refreshToken);
+            try
             {
-                await RefreshAsync(cancellationToken);
-                await InvokeAsync(StateHasChanged);
+                await InvokeAsync(async () =>
+                {
+                    _refreshToken.ThrowIfCancellationRequested();
+                    await RefreshAsync(_refreshToken);
+                    StateHasChanged();
+                });
+            }
+            finally
+            {
+                _refreshLock.Release();
             }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (_refreshToken.IsCancellationRequested)
         {
+        }
+        catch (Exception exception)
+        {
+            Logger.LogDebug(exception, "Could not refresh chat messages.");
         }
     }
 
@@ -83,10 +104,10 @@ else
             PipeMessageType.Chats,
             new ChatsRequest { AfterSequence = _lastSequence, StreamId = _streamId },
             cancellationToken);
+        bool initialLoad = _outputs is null;
         _outputs ??= [];
         if (_streamId != response.StreamId)
         {
-            _outputs.Clear();
             _lastSequence = 0;
             _streamId = response.StreamId;
         }
@@ -95,11 +116,7 @@ else
         {
             _lastSequence = response.Messages[^1].Sequence;
             response.Messages.Reverse();
-            _outputs.InsertRange(0, response.Messages);
-            if (_outputs.Count > 50)
-            {
-                _outputs.RemoveRange(50, _outputs.Count - 50);
-            }
+            _outputs.InsertRange(0, initialLoad ? response.Messages.Take(30) : response.Messages);
         }
 
         if (_grid is not null)
@@ -110,14 +127,8 @@ else
 
     public async ValueTask DisposeAsync()
     {
+        ServerEvents.ChatUpdated -= OnChatUpdated;
         await _refreshCancellationTokenSource.CancelAsync();
-        _refreshTimer.Dispose();
-
-        if (_refreshTask is not null)
-        {
-            await _refreshTask;
-        }
-
         _refreshCancellationTokenSource.Dispose();
     }
 
