@@ -1,0 +1,107 @@
+@page "/player-name-history"
+@attribute [Authorize]
+@using CbmrWebAdmin.Shared.Requests
+@inject ILogger<PlayerNameHistory> Logger
+
+<PageTitle>@Localizer["PlayerNameHistory"]</PageTitle>
+
+<h1>@Localizer["PlayerNameHistory"]</h1>
+<p>@Localizer["PlayerNameHistoryDescription"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
+
+<form class="mb-3" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+    <label for="player-name-search" class="form-label">@Localizer["PlayerNameHistorySearchLabel"]</label>
+    <div class="input-group">
+        <input id="player-name-search" class="form-control" type="search" @bind="_searchInput" @bind:event="oninput" />
+        <button type="submit" class="btn btn-primary" disabled="@_loading">@Localizer["PlayerNameHistorySearch"]</button>
+    </div>
+</form>
+
+@if (_loading)
+{
+    <p><em>@Localizer["Loading"]</em></p>
+}
+else if (_page is null)
+{
+    <div class="alert alert-danger" role="alert">@Localizer["PlayerNameHistoryLoadFailed"]</div>
+}
+else if (_page.Records.Count == 0)
+{
+    <p>@Localizer["PlayerNameHistoryEmpty"]</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">@Localizer["SteamID"]</th>
+                    <th scope="col">@Localizer["Name"]</th>
+                    <th scope="col">@Localizer["PlayerNameHistoryFirstSeen"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (PlayerNameRecord record in _page.Records)
+                {
+                    <tr>
+                        <td>@record.SteamId</td>
+                        <td style="white-space: pre-wrap">@record.Name</td>
+                        <td>@record.FirstSeenAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (_page.TotalCount > PageSize)
+    {
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary" disabled="@(_offset == 0)" @onclick="() => LoadAsync(_offset - PageSize)">
+                @Localizer["PlayerNameHistoryPrevious"]
+            </button>
+            <button type="button" class="btn btn-secondary" disabled="@(_offset + _page.Records.Count >= _page.TotalCount)"
+                    @onclick="() => LoadAsync(_offset + PageSize)">
+                @Localizer["PlayerNameHistoryNext"]
+            </button>
+        </div>
+    }
+}
+
+@code {
+    private const int PageSize = 50;
+    private string _searchInput = string.Empty;
+    private string _search = string.Empty;
+    private int _offset;
+    private bool _loading;
+    private PlayerNameHistoryResponse? _page;
+
+    protected override Task OnInitializedAsync() => LoadAsync(0);
+
+    private Task SearchAsync()
+    {
+        if (_loading) return Task.CompletedTask;
+
+        _search = _searchInput;
+        return LoadAsync(0);
+    }
+
+    private async Task LoadAsync(int offset)
+    {
+        if (_loading) return;
+        _loading = true;
+        try
+        {
+            _page = await ServerBinding.SendAsync<PlayerNameHistoryRequest, PlayerNameHistoryResponse>(
+                PipeMessageType.PlayerNameHistory,
+                new PlayerNameHistoryRequest { Search = _search, Offset = offset, PageSize = PageSize });
+            _offset = offset;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Error loading player name history");
+            _page = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

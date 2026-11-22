@@ -287,4 +287,13 @@ If you are server admin, please log in first.</value></data>
   <data name="AuditActionUnmutePlayer" xml:space="preserve"><value>Unmute player</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>Modify ban</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>Modify mute</value></data>
+  <data name="PlayerNameHistory" xml:space="preserve"><value>Player Name History</value></data>
+  <data name="PlayerNameHistoryDescription" xml:space="preserve"><value>Look up player names recorded when players joined the server.</value></data>
+  <data name="PlayerNameHistorySearchLabel" xml:space="preserve"><value>Player name or SteamID</value></data>
+  <data name="PlayerNameHistorySearch" xml:space="preserve"><value>Search</value></data>
+  <data name="PlayerNameHistoryFirstSeen" xml:space="preserve"><value>First seen</value></data>
+  <data name="PlayerNameHistoryEmpty" xml:space="preserve"><value>No matching player names found.</value></data>
+  <data name="PlayerNameHistoryLoadFailed" xml:space="preserve"><value>Could not load player name history. Check the server connection and try again.</value></data>
+  <data name="PlayerNameHistoryPrevious" xml:space="preserve"><value>Previous</value></data>
+  <data name="PlayerNameHistoryNext" xml:space="preserve"><value>Next</value></data>
 </root>

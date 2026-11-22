@@ -46,7 +46,8 @@ public enum PipeMessageType : byte
     UpdateMute,
     RemoveMute,
     Heartbeat,
-    ChatUpdated
+    ChatUpdated,
+    PlayerNameHistory
 }
 
 [MessagePackObject]

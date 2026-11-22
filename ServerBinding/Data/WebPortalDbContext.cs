@@ -26,6 +26,8 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     internal DbSet<MuteAttempt> MuteAttempts => Set<MuteAttempt>();
 
+    internal DbSet<PlayerNameObservation> PlayerNames => Set<PlayerNameObservation>();
+
     public void Initialize()
     {
         Database.EnsureCreated();
@@ -49,6 +51,14 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "occurred_at_utc" TEXT NOT NULL,
                 "text" TEXT NULL
             );
+            CREATE TABLE IF NOT EXISTS "player_name_history" (
+                "id" INTEGER NOT NULL CONSTRAINT "PK_player_name_history" PRIMARY KEY AUTOINCREMENT,
+                "steamid" TEXT NOT NULL,
+                "name" TEXT NOT NULL,
+                "first_seen_at_utc" TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS "IX_player_name_history_steamid_id"
+                ON "player_name_history" ("steamid", "id" DESC);
             """);
 
         if (!HasExpiryColumn(transaction, "bans"))
@@ -84,6 +94,19 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<PlayerNameObservation>(entity =>
+        {
+            entity.ToTable("player_name_history");
+            entity.HasKey(entry => entry.Id);
+            entity.Property(entry => entry.Id).HasColumnName("id");
+            entity.Property(entry => entry.SteamId).HasColumnName("steamid");
+            entity.Property(entry => entry.Name).HasColumnName("name");
+            entity.Property(entry => entry.FirstSeenAtUtc)
+                .HasColumnName("first_seen_at_utc")
+                .HasConversion(time => time, time => DateTime.SpecifyKind(time, DateTimeKind.Utc));
+            entity.HasIndex(entry => new { entry.SteamId, entry.Id }).IsDescending(false, true);
+        });
+
         modelBuilder.Entity<MuteAttempt>(entity =>
         {
             entity.ToTable("mute_attempts");

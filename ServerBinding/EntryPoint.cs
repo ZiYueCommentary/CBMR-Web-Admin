@@ -28,6 +28,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private PlayerLanguageSettings _playerLanguage = null!;
     private ModerationCache _moderationCache = null!;
     private MuteAttemptLog _muteAttemptLog = null!;
+    private PlayerNameHistory _playerNameHistory = null!;
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
@@ -47,6 +48,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             _moderationCache = new ModerationCache(database);
         }
         _muteAttemptLog = new MuteAttemptLog(_config.DatabasePath, logger);
+        _playerNameHistory = new PlayerNameHistory(_config.DatabasePath, logger);
 
         _listenerCancellation = new CancellationTokenSource();
         _eventsTask = ChatEvents.RunAsync(PipeName, logger, _listenerCancellation.Token);
@@ -60,6 +62,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         EventRegistry.PlayerChat += OnPlayerChat;
         EventRegistry.PlayerVoice += OnPlayerVoice;
         EventRegistry.IncomingConnection += OnConnectionInComing;
+        EventRegistry.PlayerConnect += OnPlayerConnect;
     }
 
     public void Unload()
@@ -72,7 +75,9 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         EventRegistry.PlayerChat -= OnPlayerChat;
         EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
+        EventRegistry.PlayerConnect -= OnPlayerConnect;
         _muteAttemptLog?.Dispose();
+        _playerNameHistory?.Dispose();
         _moderationCache?.Dispose();
         ServerChatList.Clear();
     }
@@ -94,6 +99,11 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
             remaining = PlayerMessages.Get(culture, "RemainingDuration", timeLeft.Days, timeLeft.Hours, timeLeft.Minutes);
         }
         eventArg.Conn.Cancel(PlayerMessages.Get(culture, "BanRejected", ban.Reason, remaining));
+    }
+
+    private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg)
+    {
+        _playerNameHistory.Observe(eventArg.Player.GetSteamID(), eventArg.Player.GetName());
     }
 
     private void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)

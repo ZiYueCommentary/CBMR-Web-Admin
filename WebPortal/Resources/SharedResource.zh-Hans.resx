@@ -327,4 +327,13 @@
   <data name="AuditActionUnmutePlayer" xml:space="preserve"><value>解除玩家禁言</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>修改封禁</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>修改禁言</value></data>
+  <data name="PlayerNameHistory" xml:space="preserve"><value>玩家名称历史</value></data>
+  <data name="PlayerNameHistoryDescription" xml:space="preserve"><value>查询玩家加入服务器时记录的名称。</value></data>
+  <data name="PlayerNameHistorySearchLabel" xml:space="preserve"><value>玩家名称或 SteamID</value></data>
+  <data name="PlayerNameHistorySearch" xml:space="preserve"><value>搜索</value></data>
+  <data name="PlayerNameHistoryFirstSeen" xml:space="preserve"><value>首次记录时间</value></data>
+  <data name="PlayerNameHistoryEmpty" xml:space="preserve"><value>未找到匹配的玩家名称。</value></data>
+  <data name="PlayerNameHistoryLoadFailed" xml:space="preserve"><value>无法加载玩家名称历史。请检查服务器连接后重试。</value></data>
+  <data name="PlayerNameHistoryPrevious" xml:space="preserve"><value>上一页</value></data>
+  <data name="PlayerNameHistoryNext" xml:space="preserve"><value>下一页</value></data>
 </root>
