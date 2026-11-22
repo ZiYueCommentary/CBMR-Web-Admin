@@ -23,4 +23,5 @@ public class WebChat
     [Key(1)] public string PlayerName { get; set; } = string.Empty;
     [Key(2)] public string Message { get; set; } = string.Empty;
     [Key(3)] public DateTime When { get; set; }
+    [Key(4)] public long Sequence { get; set; }
 }

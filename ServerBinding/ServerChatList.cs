@@ -21,13 +21,15 @@ public class ServerChatList
 {
     private readonly Queue<WebChat> _queue = [];
     private readonly object _lock = new();
+    private readonly Guid _streamId = Guid.NewGuid();
+    private long _sequence;
     private const int Size = 50;
 
     public void Add(Player player, string message)
     {
         lock (_lock)
         {
-            _queue.Enqueue(new WebChat{SteamId = player.GetSteamID(), PlayerName = player.GetName(), Message = message, When = DateTime.Now});
+            _queue.Enqueue(new WebChat{SteamId = player.GetSteamID(), PlayerName = player.GetName(), Message = message, When = DateTime.Now, Sequence = ++_sequence});
             while (_queue.Count > Size) _queue.Dequeue();
         }
     }
@@ -40,11 +42,15 @@ public class ServerChatList
         }
     }
 
-    public IEnumerable<WebChat> GetItems()
+    public ChatsResponse GetItems(long afterSequence, Guid streamId)
     {
         lock (_lock)
         {
-            return _queue.ToArray();
+            return new ChatsResponse
+            {
+                StreamId = _streamId,
+                Messages = _queue.Where(chat => streamId != _streamId || chat.Sequence > afterSequence).ToList()
+            };
         }
     }
 }

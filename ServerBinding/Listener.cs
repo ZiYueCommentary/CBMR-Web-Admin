@@ -249,7 +249,9 @@ public static partial class Listener
 
     private static PipeEnvelope HandleChats(PipeEnvelope request)
     {
-        return PipeEnvelope.CreateResponse(request, EntryPoint.ServerChatList.GetItems().ToList());
+        ChatsRequest chatsRequest = request.DeserializePayload<ChatsRequest>();
+        return PipeEnvelope.CreateResponse(request,
+            EntryPoint.ServerChatList.GetItems(chatsRequest.AfterSequence, chatsRequest.StreamId));
     }
 
     private static PipeEnvelope HandleClearItems(PipeEnvelope request)

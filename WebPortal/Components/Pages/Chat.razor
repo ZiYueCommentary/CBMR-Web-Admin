@@ -1,4 +1,5 @@
 @page "/Chat"
+@using CbmrWebAdmin.Shared.Requests
 @attribute [Authorize]
 @implements IAsyncDisposable
 
@@ -18,7 +19,7 @@
 else
 {
     <Grid TItem="WebChat"
-          @key="_gridVersion"
+          @ref="_grid"
           AllowSorting="true"
           Class="table table-hover table-bordered table-striped"
           DataProvider="ChatDataProvider"
@@ -46,7 +47,9 @@ else
     private readonly CancellationTokenSource _refreshCancellationTokenSource = new();
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(5));
     private Task? _refreshTask;
-    private int _gridVersion;
+    private Grid<WebChat>? _grid;
+    private long _lastSequence;
+    private Guid _streamId;
 
     private async Task<GridDataProviderResult<WebChat>> ChatDataProvider(GridDataProviderRequest<WebChat> request)
     {
@@ -76,12 +79,33 @@ else
 
     private async Task RefreshAsync(CancellationToken cancellationToken)
     {
-        List<WebChat> outputs = await ServerBinding.SendAsync<List<WebChat>>(
+        ChatsResponse response = await ServerBinding.SendAsync<ChatsRequest, ChatsResponse>(
             PipeMessageType.Chats,
+            new ChatsRequest { AfterSequence = _lastSequence, StreamId = _streamId },
             cancellationToken);
-        outputs.Reverse();
-        _outputs = outputs;
-        _gridVersion++;
+        _outputs ??= [];
+        if (_streamId != response.StreamId)
+        {
+            _outputs.Clear();
+            _lastSequence = 0;
+            _streamId = response.StreamId;
+        }
+
+        if (response.Messages.Count > 0)
+        {
+            _lastSequence = response.Messages[^1].Sequence;
+            response.Messages.Reverse();
+            _outputs.InsertRange(0, response.Messages);
+            if (_outputs.Count > 50)
+            {
+                _outputs.RemoveRange(50, _outputs.Count - 50);
+            }
+        }
+
+        if (_grid is not null)
+        {
+            await _grid.RefreshDataAsync();
+        }
     }
 
     public async ValueTask DisposeAsync()
