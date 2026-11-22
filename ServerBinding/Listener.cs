@@ -52,6 +52,8 @@ public static partial class Listener
                 {
                     PipeMessageType.WhereAreYou => HandleWhereAreYou(request),
                     PipeMessageType.Heartbeat => PipeEnvelope.CreateResponse(request),
+                    PipeMessageType.ListReports => await HandleListReportsAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.ReplyReport => await HandleReplyReportAsync(request, databasePath, playerLanguage, cancellationToken),
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),

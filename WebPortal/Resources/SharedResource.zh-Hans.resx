@@ -339,4 +339,21 @@
   <data name="PlayerSessionLogLoadFailed" xml:space="preserve"><value>无法加载玩家进出日志。请检查服务器连接后重试。</value></data>
   <data name="PlayerSessionLogPrevious" xml:space="preserve"><value>上一页</value></data>
   <data name="PlayerSessionLogNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="Reports" xml:space="preserve"><value>玩家举报</value></data>
+  <data name="AuditActionReplyReport" xml:space="preserve"><value>回复举报</value></data>
+  <data name="Reporter" xml:space="preserve"><value>举报人</value></data>
+  <data name="ReportedPlayer" xml:space="preserve"><value>被举报玩家</value></data>
+  <data name="ReportContent" xml:space="preserve"><value>举报内容</value></data>
+  <data name="ReportStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ReportActions" xml:space="preserve"><value>操作</value></data>
+  <data name="ReportReply" xml:space="preserve"><value>回复</value></data>
+  <data name="ReportHandled" xml:space="preserve"><value>已处理</value></data>
+  <data name="ReportPending" xml:space="preserve"><value>待处理</value></data>
+  <data name="NoReports" xml:space="preserve"><value>暂无举报。</value></data>
+  <data name="ReportsLoadFailed" xml:space="preserve"><value>无法加载举报，请重试。</value></data>
+  <data name="ReportReplyFailed" xml:space="preserve"><value>回复失败，请先刷新举报列表；该举报可能已被处理。</value></data>
+  <data name="ReportReplySent" xml:space="preserve"><value>回复已保存并通过私聊发送给玩家。</value></data>
+  <data name="ReportReplyOffline" xml:space="preserve"><value>回复已保存。玩家不在线，未发送私聊消息。</value></data>
+  <data name="EnableReportNotifications" xml:space="preserve"><value>启用举报通知</value></data>
+  <data name="NewReport" xml:space="preserve"><value>新举报：{0} 举报了 {1}</value></data>
 </root>

@@ -47,7 +47,11 @@ public enum PipeMessageType : byte
     RemoveMute,
     Heartbeat,
     ChatUpdated,
-    PlayerSessionLog
+    PlayerSessionLog,
+    ListReports,
+    ReplyReport,
+    ReportCreated,
+    ReportsUpdated
 }
 
 [MessagePackObject]

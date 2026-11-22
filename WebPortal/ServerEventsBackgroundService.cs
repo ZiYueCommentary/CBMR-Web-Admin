@@ -39,10 +39,15 @@ public sealed class ServerEventsBackgroundService(
                     await pipe.ConnectAsync(timeout.Token);
                 }
                 events.NotifyChatUpdated();
+                events.NotifyReportsUpdated();
                 while (await PipeProtocol.ReadAsync(pipe, stoppingToken) is { } envelope)
                 {
                     if (envelope.Kind == PipeEnvelopeKind.Event && envelope.MessageType == PipeMessageType.ChatUpdated)
                         events.NotifyChatUpdated();
+                    else if (envelope.Kind == PipeEnvelopeKind.Event && envelope.MessageType == PipeMessageType.ReportCreated)
+                        events.NotifyReportsUpdated(envelope.DeserializePayload<ReportRecord>());
+                    else if (envelope.Kind == PipeEnvelopeKind.Event && envelope.MessageType == PipeMessageType.ReportsUpdated)
+                        events.NotifyReportsUpdated();
                     else
                         logger.LogDebug("Ignoring events pipe envelope {Kind}/{MessageType}.", envelope.Kind, envelope.MessageType);
                 }

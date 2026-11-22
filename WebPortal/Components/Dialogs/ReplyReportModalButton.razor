@@ -1,0 +1,45 @@
+@using CbmrWebAdmin.WebPortal.Data
+@inject AuthenticationStateProvider Authentication
+
+<button class="btn btn-primary" disabled="@(Report.Handled || _busy)" @onclick="ShowAsync">@Localizer["ReportReply"]</button>
+<Modal @ref="_modal" Title="@Localizer["ReportReply"]">
+    <BodyTemplate>
+        <p>@Report.ReporterName: @Report.Content</p>
+        <textarea class="form-control" rows="4" maxlength="2000" @bind="_reply" disabled="@_busy" aria-label="@Localizer["ReportReply"]"></textarea>
+        @if (_failed) { <p class="text-danger">@Localizer["ReportReplyFailed"]</p> }
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" disabled="@_busy" @onclick="CloseAsync">@Localizer["Close"]</button>
+        <button class="btn btn-primary" disabled="@(_busy || string.IsNullOrWhiteSpace(_reply))" @onclick="ReplyAsync">@Localizer["Send"]</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter, EditorRequired] public ReportRecord Report { get; set; } = null!;
+    [Parameter] public EventCallback OnReplied { get; set; }
+    private Modal _modal = null!;
+    private string _reply = "";
+    private bool _busy;
+    private bool _failed;
+    private async Task ShowAsync() { _failed = false; await _modal.ShowAsync(); }
+    private Task CloseAsync() => _modal.HideAsync();
+    private async Task ReplyAsync()
+    {
+        if (_busy || string.IsNullOrWhiteSpace(_reply)) return;
+        _busy = true;
+        _failed = false;
+        try
+        {
+            var state = await Authentication.GetAuthenticationStateAsync();
+            if (state.User.Identity?.IsAuthenticated != true) throw new InvalidOperationException();
+            var request = new ReplyReportRequest { Id = Report.Id, Reply = _reply.Trim(), AdminName = state.User.Identity.Name ?? "?" };
+            var result = await ServerBinding.SendAsync<ReplyReportRequest, ReplyReportResponse>(PipeMessageType.ReplyReport, request);
+            await AuditLogger.WriteAsync(AuditActions.ReplyReport, Report.Id.ToString(), request.Reply);
+            await _modal.HideAsync();
+            ToastService.Notify(new(ToastType.Success, Localizer[result.PlayerOnline ? "ReportReplySent" : "ReportReplyOffline"]));
+            await OnReplied.InvokeAsync();
+        }
+        catch { _failed = true; }
+        finally { _busy = false; }
+    }
+}

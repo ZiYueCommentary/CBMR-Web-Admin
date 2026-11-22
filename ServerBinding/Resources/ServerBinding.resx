@@ -17,4 +17,17 @@ Time remaining: {1}</value></data>
   <data name="SteamId" xml:space="preserve"><value>SteamID: {0}</value></data>
   <data name="Reason" xml:space="preserve"><value>Reason: {0}</value></data>
   <data name="Duration" xml:space="preserve"><value>Ban duration: {0}</value></data>
+  <data name="ReportUsage" xml:space="preserve"><value>Use /report to select a player and enter your report.</value></data>
+  <data name="ReportPlayerNotFound" xml:space="preserve"><value>No other player is available, or the selected player has left.</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>Your report has been submitted to the administrators.</value></data>
+  <data name="ReportCooldown" xml:space="preserve"><value>Please wait 30 seconds between reports.</value></data>
+  <data name="ReportFailed" xml:space="preserve"><value>Your report could not be saved. Please try again later.</value></data>
+  <data name="ReportReply" xml:space="preserve"><value>Report reply from {0}: {1}</value></data>
+  <data name="ReportSelectPlayer" xml:space="preserve"><value>Report: select a player</value></data>
+  <data name="ReportNext" xml:space="preserve"><value>Next</value></data>
+  <data name="ReportCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ReportSubmit" xml:space="preserve"><value>Submit</value></data>
+  <data name="ReportContentTitle" xml:space="preserve"><value>Report {0}</value></data>
+  <data name="ReportContentHint" xml:space="preserve"><value>Describe the issue (1–2000 characters).</value></data>
+  <data name="ReportInvalidContent" xml:space="preserve"><value>Please enter a report of 1–2000 characters.</value></data>
 </root>

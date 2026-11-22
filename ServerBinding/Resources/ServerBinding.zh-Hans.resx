@@ -17,4 +17,17 @@
   <data name="SteamId" xml:space="preserve"><value>SteamID：{0}</value></data>
   <data name="Reason" xml:space="preserve"><value>原因：{0}</value></data>
   <data name="Duration" xml:space="preserve"><value>封禁时长：{0}</value></data>
+  <data name="ReportUsage" xml:space="preserve"><value>使用 /report 选择玩家并填写举报内容。</value></data>
+  <data name="ReportPlayerNotFound" xml:space="preserve"><value>没有其他在线玩家，或所选玩家已离开。</value></data>
+  <data name="ReportSubmitted" xml:space="preserve"><value>您的举报已提交给管理员。</value></data>
+  <data name="ReportCooldown" xml:space="preserve"><value>请等待30秒后再次举报。</value></data>
+  <data name="ReportFailed" xml:space="preserve"><value>举报保存失败，请稍后重试。</value></data>
+  <data name="ReportReply" xml:space="preserve"><value>管理员 {0} 回复了您的举报：{1}</value></data>
+  <data name="ReportSelectPlayer" xml:space="preserve"><value>举报：选择玩家</value></data>
+  <data name="ReportNext" xml:space="preserve"><value>下一步</value></data>
+  <data name="ReportCancel" xml:space="preserve"><value>取消</value></data>
+  <data name="ReportSubmit" xml:space="preserve"><value>提交</value></data>
+  <data name="ReportContentTitle" xml:space="preserve"><value>举报 {0}</value></data>
+  <data name="ReportContentHint" xml:space="preserve"><value>请描述问题（1至2000字）。</value></data>
+  <data name="ReportInvalidContent" xml:space="preserve"><value>请输入1至2000字的举报内容。</value></data>
 </root>

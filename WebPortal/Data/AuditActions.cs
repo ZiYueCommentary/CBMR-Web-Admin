@@ -17,6 +17,7 @@ namespace CbmrWebAdmin.WebPortal.Data;
 
 public static class AuditActions
 {
+    public const string ReplyReport = "ReplyReport";
     public const string Login = "Login";
     public const string LoginFailed = "LoginFailed";
     public const string LockedOut = "LockedOut";

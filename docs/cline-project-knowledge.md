@@ -92,6 +92,29 @@ Current values in `Shared/PipeEnvelope.cs`:
 - `BanPlayer` (8)
 - `GetPlayerLanguage` (9): returns the selected culture string
 - `SetPlayerLanguage` (10): accepts `SetPlayerLanguageRequest.Culture` at MessagePack key 0; unsupported cultures return an error
+- `MuteVoice` (11), `MuteChat` (12), `ListBans` (13), `UpdateBan` (14), `RemoveBan` (15)
+- `ListMutes` (16), `UpdateMute` (17), `RemoveMute` (18), `Heartbeat` (19)
+- `ChatUpdated` (20): events-pipe chat invalidation
+- `PlayerSessionLog` (21): paged join/leave history
+- `ListReports` (22): all reports, newest first, including handled reports; returns `List<ReportRecord>`
+- `ReplyReport` (23): `ReplyReportRequest` (id/reply/admin name at keys 0–2); saves handling metadata and returns `ReplyReportResponse.PlayerOnline` (key 0). An offline reporter does not prevent saving.
+- `ReportCreated` (24): events-pipe event with `ReportRecord` payload for browser notifications
+- `ReportsUpdated` (25): payload-less events-pipe invalidation on replies and reconnect
+
+`ReportRecord` uses stable keys 0–10 for id, reporter SteamID/name, reported SteamID/name,
+content, created UTC, handled, handled UTC, reply, and admin name. ServerBinding persists
+reports permanently in SQLite (`Reports`, created explicitly for existing EnsureCreated databases).
+The events publisher coalesces chat invalidations separately; connected report events are not
+dropped behind chat traffic. Reports created while the portal is disconnected remain in the DB;
+reconnect refreshes the table but does not replay browser notifications.
+
+Players use `/report` to open a native per-player list dialog (type 2, id 28401), excluding
+themselves, then an input dialog (type 1, id 28402). `PlayerDialogAction` supplies the selected
+index and input; submit/cancel/disconnect/unload closes the owned dialog and removes form state.
+Reports are intercepted before chat mute checks, so muted players can report privately.
+Submission has a 30-second per-player cooldown and a 2000-character limit.
+Authenticated portal users see `/reports`; browser notifications require Web Notification API
+permission and a supported secure context. Reply actions are audit logged.
 
 Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
 the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`

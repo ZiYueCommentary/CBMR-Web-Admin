@@ -23,7 +23,7 @@ using CbmrWebAdmin.Shared;
 namespace CbmrWebAdmin.ServerBinding;
 
 [Injectable]
-public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> configProvider) : ILoad, IUnload
+public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> configProvider) : ILoad, IUnload
 {
     private readonly Config _config = configProvider.GetConfig();
     private readonly PerPlayerCooldown _chatMuteNoticeCooldown = new(5_000);
@@ -62,6 +62,7 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         };
         _listenerThread.Start();
         EventRegistry.PlayerChat += OnPlayerChat;
+        EventRegistry.PlayerDialogAction += OnReportDialogAction;
         EventRegistry.PlayerVoice += OnPlayerVoice;
         EventRegistry.IncomingConnection += OnConnectionInComing;
         EventRegistry.PlayerConnect += OnPlayerConnect;
@@ -76,6 +77,8 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         _eventsTask?.GetAwaiter().GetResult();
         _listenerCancellation?.Dispose();
         EventRegistry.PlayerChat -= OnPlayerChat;
+        EventRegistry.PlayerDialogAction -= OnReportDialogAction;
+        foreach (string steamId in _reportForms.Keys.ToList()) CloseReportForm(steamId);
         EventRegistry.PlayerVoice -= OnPlayerVoice;
         EventRegistry.IncomingConnection -= OnConnectionInComing;
         EventRegistry.PlayerConnect -= OnPlayerConnect;
@@ -108,14 +111,18 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg) =>
         LogPlayerSessionEvent(PlayerSessionEvent.Join, eventArg.Player);
 
-    private void OnPlayerDisconnect(EventRegistry.PlayerDisconnectEventArg eventArg) =>
+    private void OnPlayerDisconnect(EventRegistry.PlayerDisconnectEventArg eventArg)
+    {
+        CloseReportForm(eventArg.Player.GetSteamID());
         LogPlayerSessionEvent(PlayerSessionEvent.Leave, eventArg.Player);
+    }
 
     private void LogPlayerSessionEvent(PlayerSessionEvent sessionEvent, Player player) =>
         _playerSessionLog.Enqueue(sessionEvent, player.GetSteamID(), player.GetName(), player.GetIP());
 
     private void OnPlayerChat(EventRegistry.PlayerChatEventArg eventArg)
     {
+        if (TryHandleReport(eventArg)) return;
         string steamId = eventArg.Player.GetSteamID();
         DateTime utcNow = DateTime.UtcNow;
         if (_moderationCache.FindActive(steamId, MuteKind.Chat, utcNow) is { } mute)

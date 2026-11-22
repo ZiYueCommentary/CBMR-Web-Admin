@@ -21,6 +21,7 @@ namespace CbmrWebAdmin.ServerBinding.Data;
 public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : DbContext(options)
 {
     public DbSet<Ban> Bans => Set<Ban>();
+    public DbSet<Report> Reports => Set<Report>();
 
     public DbSet<Mute> Mutes => Set<Mute>();
 
@@ -33,6 +34,14 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
         Database.EnsureCreated();
         using IDbContextTransaction transaction = Database.BeginTransaction();
         Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "Reports" (
+                "Id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                "ReporterSteamId" TEXT NOT NULL, "ReporterName" TEXT NOT NULL,
+                "ReportedSteamId" TEXT NOT NULL, "ReportedName" TEXT NOT NULL,
+                "Content" TEXT NOT NULL, "CreatedAtUtc" TEXT NOT NULL,
+                "Handled" INTEGER NOT NULL, "HandledAtUtc" TEXT NULL,
+                "Reply" TEXT NULL, "RepliedBy" TEXT NULL
+            );
             CREATE TABLE IF NOT EXISTS "mutes" (
                 "id" INTEGER NOT NULL CONSTRAINT "PK_mutes" PRIMARY KEY AUTOINCREMENT,
                 "steamid" TEXT NOT NULL,

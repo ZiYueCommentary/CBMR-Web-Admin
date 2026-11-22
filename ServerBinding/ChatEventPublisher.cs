@@ -21,12 +21,17 @@ namespace CbmrWebAdmin.ServerBinding;
 
 internal sealed class ChatEventPublisher
 {
-    private Channel<bool>? _notifications;
+    private Channel<PipeEnvelope>? _notifications;
+    private int _chatPending;
 
     public void Publish()
     {
-        Volatile.Read(ref _notifications)?.Writer.TryWrite(true);
+        if (Interlocked.Exchange(ref _chatPending, 1) == 0)
+            PublishEvent(PipeEnvelope.CreateEvent(PipeMessageType.ChatUpdated));
     }
+
+    public void PublishEvent(PipeEnvelope envelope) =>
+        Volatile.Read(ref _notifications)?.Writer.TryWrite(envelope);
 
     public async Task RunAsync(string pipeName, ILogger logger, CancellationToken cancellationToken)
     {
@@ -38,17 +43,19 @@ internal sealed class ChatEventPublisher
                     pipeName + PipeEnvelope.EventsPipeSuffix,
                     PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 await pipe.WaitForConnectionAsync(cancellationToken);
-                Channel<bool> notifications = Channel.CreateBounded<bool>(new BoundedChannelOptions(1)
+                Channel<PipeEnvelope> notifications = Channel.CreateUnbounded<PipeEnvelope>(new UnboundedChannelOptions
                 {
-                    FullMode = BoundedChannelFullMode.DropOldest,
                     SingleReader = true
                 });
                 Volatile.Write(ref _notifications, notifications);
-                notifications.Writer.TryWrite(true);
-                await foreach (bool notification in notifications.Reader.ReadAllAsync(cancellationToken))
+                Interlocked.Exchange(ref _chatPending, 0);
+                Publish();
+                notifications.Writer.TryWrite(PipeEnvelope.CreateEvent(PipeMessageType.ReportsUpdated));
+                await foreach (PipeEnvelope notification in notifications.Reader.ReadAllAsync(cancellationToken))
                 {
-                    await PipeProtocol.WriteAsync(pipe,
-                        PipeEnvelope.CreateEvent(PipeMessageType.ChatUpdated), cancellationToken);
+                    if (notification.MessageType == PipeMessageType.ChatUpdated)
+                        Interlocked.Exchange(ref _chatPending, 0);
+                    await PipeProtocol.WriteAsync(pipe, notification, cancellationToken);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

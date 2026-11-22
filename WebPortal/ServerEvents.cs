@@ -17,6 +17,17 @@ namespace CbmrWebAdmin.WebPortal;
 public sealed class ServerEvents(ILogger<ServerEvents> logger)
 {
     public event Action? ChatUpdated;
+    public event Action<CbmrWebAdmin.Shared.ReportRecord?>? ReportsUpdated;
+
+    internal void NotifyReportsUpdated(CbmrWebAdmin.Shared.ReportRecord? report = null)
+    {
+        if (ReportsUpdated is not { } handlers) return;
+        foreach (Action<CbmrWebAdmin.Shared.ReportRecord?> handler in handlers.GetInvocationList())
+        {
+            try { handler(report); }
+            catch (Exception exception) { logger.LogDebug(exception, "Report subscriber failed."); }
+        }
+    }
 
     internal void NotifyChatUpdated()
     {

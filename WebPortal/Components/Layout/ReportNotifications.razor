@@ -1,0 +1,31 @@
+@implements IDisposable
+@inject ServerEvents Events
+@inject IJSRuntime JS
+
+<button class="btn btn-sm btn-outline-secondary m-2" @onclick="EnableAsync">@Localizer["EnableReportNotifications"]</button>
+@code {
+    private bool _disposed;
+    protected override void OnInitialized() => Events.ReportsUpdated += OnReport;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await EnableAsync();
+    }
+    private async Task EnableAsync()
+    {
+        try { await JS.InvokeVoidAsync("reportNotifications.enable"); }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+    }
+    private void OnReport(ReportRecord? report)
+    {
+        if (report is null || _disposed) return;
+        _ = InvokeAsync(async () =>
+        {
+            if (_disposed) return;
+            try { await JS.InvokeVoidAsync("reportNotifications.show", Localizer["NewReport", report.ReporterName, report.ReportedName].Value, report.Content); }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        });
+    }
+    public void Dispose() { _disposed = true; Events.ReportsUpdated -= OnReport; }
+}
