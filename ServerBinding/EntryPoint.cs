@@ -133,7 +133,8 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
         if (_moderationCache.FindActive(steamId, MuteKind.Voice, utcNow) is null) return;
 
         eventArg.EventResult = false;
-        LogMuteAttempt(eventArg.Player, steamId, MuteKind.Voice, utcNow, null);
+        if (_muteAttemptLog.ShouldLogVoiceAttempt(steamId))
+            LogMuteAttempt(eventArg.Player, steamId, MuteKind.Voice, utcNow, null);
     }
 
     private void LogMuteAttempt(Player player, string steamId, MuteKind kind, DateTime utcNow, string? text)
