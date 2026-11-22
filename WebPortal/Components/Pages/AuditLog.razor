@@ -1,5 +1,7 @@
 @page "/audit-log"
 @attribute [Authorize]
+@using System.Globalization
+@using System.Text.RegularExpressions
 @using CbmrWebAdmin.WebPortal.Data
 @inject IServiceScopeFactory ScopeFactory
 
@@ -7,7 +9,7 @@
 
 <h1>@Localizer["AuditLog"]</h1>
 
-<p>@Localizer["AuditLogDescription"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
+<p>@Localizer["AuditLogDescription"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
 
 <Grid TItem="AuditLogEntry"
       Class="table table-hover table-bordered table-striped"
@@ -17,7 +19,7 @@
       Responsive="true">
     <GridColumns>
         <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Time"]">
-            @DateTime.SpecifyKind(context.TimestampUtc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+            <BrowserTimestamp Utc="context.TimestampUtc" />
         </GridColumn>
         <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Username"]">
             @context.UserName
@@ -29,12 +31,39 @@
             @context.Target
         </GridColumn>
         <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditDetails"]">
-            <span style="white-space: pre-wrap">@context.Details</span>
+            @if (context.Details is { } details && GetExpiryField(context) is { } field &&
+                 DateTime.TryParseExact(field.Value, "u", CultureInfo.InvariantCulture,
+                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTime expiryUtc))
+            {
+                <span style="white-space: pre-wrap">@(details[..field.Index])<BrowserTimestamp Utc="expiryUtc" />@(details[(field.Index + field.Length)..])</span>
+            }
+            else
+            {
+                <span style="white-space: pre-wrap">@context.Details</span>
+            }
         </GridColumn>
     </GridColumns>
 </Grid>
 
 @code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+
+    private static Group? GetExpiryField(AuditLogEntry entry)
+    {
+        if (entry.Details is null) return null;
+        string? prefix = entry.Action switch
+        {
+            AuditActions.BanPlayer or AuditActions.MuteVoice or AuditActions.MuteChat => @"\A",
+            AuditActions.ModifyBan => @"\ARecord [0-9]+; ",
+            AuditActions.ModifyMute => @"\ARecord [0-9]+; (?:Voice|Chat); ",
+            _ => null
+        };
+        if (prefix is null) return null;
+
+        Match match = Regex.Match(entry.Details, prefix + @"until (?<expiry>[0-9\-: ]{19}Z): ");
+        return match.Success ? match.Groups["expiry"] : null;
+    }
+
     private async Task<GridDataProviderResult<AuditLogEntry>> AuditLogDataProvider(GridDataProviderRequest<AuditLogEntry> request)
     {
         await using AsyncServiceScope scope = ScopeFactory.CreateAsyncScope();

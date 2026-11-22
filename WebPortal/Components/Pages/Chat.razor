@@ -26,7 +26,7 @@ else
 
         <GridColumns>
             <GridColumn TItem="WebChat" HeaderText="@Localizer["Time"]" SortKeySelector="item => item.When">
-                @context.When.ToString("HH:mm:ss")
+                <BrowserTimestamp Utc="context.When" Format="HH:mm:ss" />
             </GridColumn>
             <GridColumn TItem="WebChat" HeaderText="@Localizer["Player"]">
                 @context.PlayerName

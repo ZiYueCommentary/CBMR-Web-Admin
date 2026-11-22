@@ -2,7 +2,7 @@
 @using CbmrWebAdmin.WebPortal.Data
 @using Serilog
 
-<button type="button" class="btn btn-primary" disabled="@(Disabled || _sending)" @onclick="ShowModal">@Localizer["ModifyModeration"]</button>
+<button type="button" class="btn btn-primary" disabled="@(Disabled || _sending || TimeZone is null)" @onclick="ShowModal">@Localizer["ModifyModeration"]</button>
 
 <Modal @ref="_modal" Title="@Localizer[IsMute ? "ModifyMute" : "ModifyBan"]">
     <BodyTemplate>
@@ -11,7 +11,7 @@
         {
             <div class="alert alert-danger" role="alert">@_errorMessage</div>
         }
-        <div class="mb-2">@Localizer["ModerationExpiresAt"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></div>
+        <div class="mb-2">@Localizer["ModerationExpiresAt"] <span class="text-muted">(@TimeZone?.Id)</span></div>
         <div class="form-check mb-3">
             <label class="form-check-label">
                 <input class="form-check-input" type="checkbox" @bind="_permanent" disabled="@_sending" />
@@ -35,6 +35,8 @@
 </Modal>
 
 @code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+
     [Parameter] public long Id { get; set; }
     [Parameter, EditorRequired] public string SteamId { get; set; } = null!;
     [Parameter, EditorRequired] public string Reason { get; set; } = null!;
@@ -55,9 +57,10 @@
 
     private async Task ShowModal()
     {
+        if (TimeZone is null) return;
         _reason = Reason;
         _permanent = ExpiresAtUtc is null;
-        DateTime? localExpiry = ExpiresAtUtc?.ToLocalTime();
+        DateTime? localExpiry = ExpiresAtUtc is { } expiry ? TimeZone.FromUtc(expiry) : null;
         _date = localExpiry is { } date ? DateOnly.FromDateTime(date) : null;
         _time = localExpiry is { } time ? TimeOnly.FromDateTime(time) : null;
         _errorMessage = null;
@@ -72,14 +75,8 @@
         DateTime? expiresAtUtc = null;
         if (!_permanent)
         {
-            DateTime localExpiry = _date!.Value.ToDateTime(_time!.Value);
-            if (TimeZoneInfo.Local.IsInvalidTime(localExpiry) || TimeZoneInfo.Local.IsAmbiguousTime(localExpiry))
-            {
-                _errorMessage = Localizer["InvalidModerationExpiration"];
-                return;
-            }
-            expiresAtUtc = TimeZoneInfo.ConvertTimeToUtc(localExpiry);
-            if (expiresAtUtc <= DateTime.UtcNow)
+            expiresAtUtc = TimeZone?.ToFutureUtc(_date!.Value, _time!.Value);
+            if (expiresAtUtc is null)
             {
                 _errorMessage = Localizer["InvalidModerationExpiration"];
                 return;

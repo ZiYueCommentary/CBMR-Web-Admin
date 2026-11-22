@@ -1,11 +1,42 @@
 ﻿@using CbmrWebAdmin.WebPortal.Components.Account.Shared
-<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <RedirectToLogin/>
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1"/>
-    </Found>
-</Router>
+@inject IJSRuntime JS
+
+<CascadingValue Value="_browserTimeZone">
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin/>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+        </Found>
+    </Router>
+</CascadingValue>
+
+@code {
+    private BrowserTimeZone? _browserTimeZone;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        TimeZoneInfo zone = TimeZoneInfo.Utc;
+        try
+        {
+            string? id = await JS.InvokeAsync<string?>("getBrowserTimeZone");
+            if (!string.IsNullOrWhiteSpace(id) && TimeZoneInfo.TryFindSystemTimeZoneById(id, out TimeZoneInfo? browserZone))
+                zone = browserZone;
+        }
+        catch (JSDisconnectedException)
+        {
+            return;
+        }
+        catch (Exception exception) when (exception is JSException or OperationCanceledException)
+        {
+        }
+
+        _browserTimeZone = new BrowserTimeZone(zone);
+        StateHasChanged();
+    }
+}

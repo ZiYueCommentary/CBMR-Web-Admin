@@ -3,7 +3,7 @@
 @using CbmrWebAdmin.WebPortal.Data
 @using Serilog
 
-<p>@Localizer["ModerationActiveOnly"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
+<p>@Localizer["ModerationActiveOnly"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
 <button type="button" class="btn btn-secondary mb-3" disabled="@_busy" @onclick="LoadAsync">@Localizer["ModerationRefresh"]</button>
 
 @if (_errorMessage is not null)
@@ -49,8 +49,17 @@ else if (_records is not null)
                             <td>@Localizer[row.Kind == MuteRecordKind.Voice ? "MuteKindVoice" : "MuteKindChat"]</td>
                         }
                         <td style="white-space: pre-wrap">@row.Reason</td>
-                        <td>@row.StartedAtUtc.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</td>
-                        <td>@(row.ExpiresAtUtc is { } expiry ? expiry.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") : Localizer["ModerationPermanent"].Value)</td>
+                        <td><BrowserTimestamp Utc="row.StartedAtUtc" /></td>
+                        <td>
+                            @if (row.ExpiresAtUtc is { } expiry)
+                            {
+                                <BrowserTimestamp Utc="expiry" />
+                            }
+                            else
+                            {
+                                @Localizer["ModerationPermanent"]
+                            }
+                        </td>
                         <td>
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer[IsMute ? "Unmute" : "Unban"]</button>
@@ -67,6 +76,8 @@ else if (_records is not null)
 }
 
 @code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+
     [Parameter]
     public bool IsMute { get; set; }
 

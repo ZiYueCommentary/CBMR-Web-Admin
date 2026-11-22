@@ -1,0 +1,10 @@
+@if (TimeZone is not null && Utc is { } utc)
+{
+    @TimeZone.FromUtc(utc).ToString(Format)
+}
+
+@code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+    [Parameter] public DateTime? Utc { get; set; }
+    [Parameter] public string Format { get; set; } = "yyyy-MM-dd HH:mm:ss";
+}

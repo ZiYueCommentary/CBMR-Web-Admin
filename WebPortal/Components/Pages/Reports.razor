@@ -23,7 +23,7 @@ else
             @foreach (var report in _reports)
             {
                 <tr @key="report.Id">
-                    <td>@report.CreatedAtUtc.ToLocalTime().ToString("g")</td>
+                    <td><BrowserTimestamp Utc="report.CreatedAtUtc" Format="g" /></td>
                     <td>@report.ReporterName<br/><small>@report.ReporterSteamId</small></td>
                     <td>@report.ReportedName<br/><small>@report.ReportedSteamId</small></td>
                     <td style="white-space: pre-wrap">@report.Content</td>
@@ -34,11 +34,11 @@ else
                         }
                     </td>
                     <td style="white-space: pre-wrap">@report.Reply
-                        @if (report.Handled) { <div><small>@report.RepliedBy · @report.HandledAtUtc?.ToLocalTime().ToString("g")</small></div> }
+                        @if (report.Handled) { <div><small>@report.RepliedBy · <BrowserTimestamp Utc="report.HandledAtUtc" Format="g" /></small></div> }
                         @if (report.Handled)
                         {
                             <div><small>@Localizer[report.ReplyDeliveredAtUtc is null ? "ReportReplyPendingDelivery" : "ReportReplyDelivered"]
-                                @report.ReplyDeliveredAtUtc?.ToLocalTime().ToString("g")</small></div>
+                                <BrowserTimestamp Utc="report.ReplyDeliveredAtUtc" Format="g" /></small></div>
                         }
                     </td>
                     <td><CbmrWebAdmin.WebPortal.Components.Dialogs.ReplyReportModalButton Report="report" OnReplied="RefreshAsync" /></td>

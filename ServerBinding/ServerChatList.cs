@@ -29,7 +29,7 @@ public class ServerChatList
     {
         lock (_lock)
         {
-            _queue.Enqueue(new WebChat{SteamId = player.GetSteamID(), PlayerName = player.GetName(), Message = message, When = DateTime.Now, Sequence = ++_sequence});
+            _queue.Enqueue(new WebChat{SteamId = player.GetSteamID(), PlayerName = player.GetName(), Message = message, When = DateTime.UtcNow, Sequence = ++_sequence});
             while (_queue.Count > Size) _queue.Dequeue();
         }
         EntryPoint.ChatEvents.Publish();

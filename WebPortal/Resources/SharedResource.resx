@@ -239,7 +239,7 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerChatMuted" xml:space="preserve"><value>The player's chat has been muted.</value></data>
   <data name="MuteFailed" xml:space="preserve"><value>Could not mute the player. Game server support may not be implemented. Check the server connection and logs.</value></data>
   <data name="AuditLog" xml:space="preserve"><value>Audit log</value></data>
-  <data name="AuditLogDescription" xml:space="preserve"><value>Actions performed by administrators through this website, newest first. Times are shown in the server time zone.</value></data>
+  <data name="AuditLogDescription" xml:space="preserve"><value>Actions performed by administrators through this website, newest first.</value></data>
   <data name="AuditAction" xml:space="preserve"><value>Action</value></data>
   <data name="AuditTarget" xml:space="preserve"><value>Target</value></data>
   <data name="AuditDetails" xml:space="preserve"><value>Details</value></data>

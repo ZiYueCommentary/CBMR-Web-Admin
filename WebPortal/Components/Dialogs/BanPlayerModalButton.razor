@@ -2,7 +2,7 @@
 @using Serilog
 @using CbmrWebAdmin.WebPortal.Data
 
-<button type="button" class="btn btn-danger" disabled="@_sending" @onclick="ShowModal">@Localizer[Player is null ? "BanOfflinePlayer" : "Ban"]</button>
+<button type="button" class="btn btn-danger" disabled="@(_sending || TimeZone is null)" @onclick="ShowModal">@Localizer[Player is null ? "BanOfflinePlayer" : "Ban"]</button>
 
 <Modal @ref="_modal" Title="@Localizer[Player is null ? "BanOfflinePlayer" : "BanPlayer"]">
     <BodyTemplate>
@@ -20,7 +20,7 @@
                 <span class="text-muted">@Player.SteamId</span>
             </div>
         }
-        <div class="mb-2">@Localizer["BanUntil"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></div>
+        <div class="mb-2">@Localizer["BanUntil"] <span class="text-muted">(@TimeZone?.Id)</span></div>
         <div class="form-check mb-3">
             <label class="form-check-label">
                 <input class="form-check-input" type="checkbox" @bind="_permanent" disabled="@_sending" />
@@ -45,6 +45,8 @@
 </Modal>
 
 @code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+
     [Parameter]
     public WebPlayer? Player { get; set; }
 
@@ -67,15 +69,8 @@
         DateTime? expiresAtUtc = null;
         if (!_permanent)
         {
-            DateTime localExpiration = _banDate!.Value.ToDateTime(_banTime!.Value);
-            if (TimeZoneInfo.Local.IsInvalidTime(localExpiration) || TimeZoneInfo.Local.IsAmbiguousTime(localExpiration))
-            {
-                ToastService.Notify(new(ToastType.Warning, Localizer["InvalidBanExpiration"]));
-                return;
-            }
-
-            expiresAtUtc = TimeZoneInfo.ConvertTimeToUtc(localExpiration);
-            if (expiresAtUtc <= DateTime.UtcNow)
+            expiresAtUtc = TimeZone?.ToFutureUtc(_banDate!.Value, _banTime!.Value);
+            if (expiresAtUtc is null)
             {
                 ToastService.Notify(new(ToastType.Warning, Localizer["InvalidBanExpiration"]));
                 return;
