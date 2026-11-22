@@ -355,7 +355,9 @@
   <data name="ReportsLoadFailed" xml:space="preserve"><value>无法加载举报，请重试。</value></data>
   <data name="ReportReplyFailed" xml:space="preserve"><value>回复失败，请先刷新举报列表；该举报可能已被处理。</value></data>
   <data name="ReportReplySent" xml:space="preserve"><value>回复已保存并通过私聊发送给玩家。</value></data>
-  <data name="ReportReplyOffline" xml:space="preserve"><value>回复已保存。玩家不在线，未发送私聊消息。</value></data>
+  <data name="ReportReplyOffline" xml:space="preserve"><value>回复已保存。玩家不在线，将在下次上线时收到私聊回复。</value></data>
+  <data name="ReportReplyPendingDelivery" xml:space="preserve"><value>待送达</value></data>
+  <data name="ReportReplyDelivered" xml:space="preserve"><value>已送达</value></data>
   <data name="EnableReportNotifications" xml:space="preserve"><value>启用举报通知</value></data>
   <data name="NewReport" xml:space="preserve"><value>新举报：{0} 举报了 {1}</value></data>
 </root>

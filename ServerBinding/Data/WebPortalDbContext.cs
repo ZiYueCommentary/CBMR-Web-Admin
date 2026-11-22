@@ -40,7 +40,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "ReportedSteamId" TEXT NOT NULL, "ReportedName" TEXT NOT NULL,
                 "Content" TEXT NOT NULL, "CreatedAtUtc" TEXT NOT NULL,
                 "Handled" INTEGER NOT NULL, "HandledAtUtc" TEXT NULL,
-                "Reply" TEXT NULL, "RepliedBy" TEXT NULL
+                "Reply" TEXT NULL, "RepliedBy" TEXT NULL, "ReplyDeliveredAtUtc" TEXT NULL
             );
             CREATE TABLE IF NOT EXISTS "mutes" (
                 "id" INTEGER NOT NULL CONSTRAINT "PK_mutes" PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +84,20 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             Database.ExecuteSqlRaw("""ALTER TABLE "mutes" ADD COLUMN "expires_at" INTEGER NULL""");
             foreach (Mute mute in Mutes.Where(mute => mute.Duration != null).ToList())
                 mute.ExpiresAt = mute.StartedAt + mute.Duration;
+        }
+
+        using (DbCommand command = Database.GetDbConnection().CreateCommand())
+        {
+            command.Transaction = transaction.GetDbTransaction();
+            command.CommandText = """PRAGMA table_info("Reports")""";
+            bool hasDeliveryColumn = false;
+            using (DbDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                    if (reader.GetString(1) == "ReplyDeliveredAtUtc") hasDeliveryColumn = true;
+            }
+            if (!hasDeliveryColumn)
+                Database.ExecuteSqlRaw("""ALTER TABLE "Reports" ADD COLUMN "ReplyDeliveredAtUtc" TEXT NULL""");
         }
 
         SaveChanges();

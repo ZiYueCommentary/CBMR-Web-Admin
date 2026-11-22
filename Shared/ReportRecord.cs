@@ -16,6 +16,7 @@ public sealed class ReportRecord
     [Key(8)] public DateTime? HandledAtUtc { get; set; }
     [Key(9)] public string? Reply { get; set; }
     [Key(10)] public string? RepliedBy { get; set; }
+    [Key(11)] public DateTime? ReplyDeliveredAtUtc { get; set; }
 }
 
 [MessagePackObject]

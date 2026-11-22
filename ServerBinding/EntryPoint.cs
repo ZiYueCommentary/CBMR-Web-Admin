@@ -108,8 +108,22 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
         eventArg.Conn.Cancel(PlayerMessages.Get(culture, "BanRejected", ban.Reason, remaining));
     }
 
-    private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg) =>
+    private void OnPlayerConnect(EventRegistry.PlayerConnectEventArg eventArg)
+    {
         LogPlayerSessionEvent(PlayerSessionEvent.Join, eventArg.Player);
+        string steamId = eventArg.Player.GetSteamID();
+        CancellationToken token = _listenerCancellation!.Token;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2), token);
+                await ReportReplyDelivery.DeliverAsync(_config.DatabasePath, steamId, _playerLanguage, token);
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+            catch (Exception exception) { logger.LogError(exception, "Could not deliver pending report replies."); }
+        }, token);
+    }
 
     private void OnPlayerDisconnect(EventRegistry.PlayerDisconnectEventArg eventArg)
     {

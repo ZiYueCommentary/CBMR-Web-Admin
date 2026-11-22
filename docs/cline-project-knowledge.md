@@ -102,7 +102,8 @@ Current values in `Shared/PipeEnvelope.cs`:
 - `ReportsUpdated` (25): payload-less events-pipe invalidation on replies and reconnect
 
 `ReportRecord` uses stable keys 0–10 for id, reporter SteamID/name, reported SteamID/name,
-content, created UTC, handled, handled UTC, reply, and admin name. ServerBinding persists
+content, created UTC, handled, handled UTC, reply, and admin name. Key 11 appends the nullable
+`ReplyDeliveredAtUtc` timestamp; null on a handled report means pending delivery. ServerBinding persists
 reports permanently in SQLite (`Reports`, created explicitly for existing EnsureCreated databases).
 The events publisher coalesces chat invalidations separately; connected report events are not
 dropped behind chat traffic. Reports created while the portal is disconnected remain in the DB;
@@ -118,6 +119,15 @@ permission and a supported secure context. On the initial interactive layout loa
 also checks for unhandled reports and notifies once; failed initial connections retry on the
 next reports event. Navigation within the layout does not repeat this reminder.
 Reply actions are audit logged.
+
+`ReportReplyDelivery` serializes live and reconnect deliveries to avoid duplicate sends from
+overlapping handlers. Replies are stored before delivery, sent on the main thread, then marked
+delivered in SQLite and announced through `ReportsUpdated`. `PlayerConnect` schedules a
+background lookup after two seconds; only pending replies for that SteamID are sent.
+Initialization idempotently adds `Reports.ReplyDeliveredAtUtc` using PRAGMA/ALTER for existing
+databases. Historical replies without delivery tracking are treated as pending and may be
+sent again on the reporter's next join. A crash between chat send and saving its timestamp
+can also cause redelivery; chat delivery and SQLite cannot be committed atomically.
 
 Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
 the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`

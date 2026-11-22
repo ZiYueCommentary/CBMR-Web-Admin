@@ -1,0 +1,52 @@
+using CCB.Internal;
+using CCB.Extensions;
+using CbmrWebAdmin.ServerBinding.Data;
+using CbmrWebAdmin.Shared;
+using Microsoft.EntityFrameworkCore;
+
+namespace CbmrWebAdmin.ServerBinding;
+
+internal static class ReportReplyDelivery
+{
+    private static readonly SemaphoreSlim DeliveryLock = new(1, 1);
+
+    internal static async Task<bool> DeliverAsync(string path, string steamId, PlayerLanguageSettings language,
+        CancellationToken token, long? reportId = null)
+    {
+        await DeliveryLock.WaitAsync(token);
+        try
+        {
+            await using WebPortalDbContext database = WebPortalDbContext.Create(path);
+            var query = database.Reports.Where(report => report.ReporterSteamId == steamId && report.Handled && report.Reply != null);
+            if (reportId is { } id) query = query.Where(report => report.Id == id);
+            else query = query.Where(report => report.ReplyDeliveredAtUtc == null);
+            var reports = await query.OrderBy(report => report.Id).ToListAsync(token);
+            bool delivered = false;
+            foreach (Report report in reports)
+            {
+                if (report.ReplyDeliveredAtUtc is not null)
+                {
+                    delivered = true;
+                    continue;
+                }
+                bool online = MainThreadContext.RunOnMainThread(() =>
+                {
+                    if (token.IsCancellationRequested) return false;
+                    Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == steamId);
+                    if (player.Opaque.Pointer == 0) return false;
+                    GlobalProperties.Chat.SendPlayer(player, PlayerMessages.Get(language.Culture, "ReportReply",
+                        (report.RepliedBy ?? "").ReplaceLineEndings(" "), report.Reply!.ReplaceLineEndings(" ")));
+                    return true;
+                });
+                if (!online) break;
+                report.ReplyDeliveredAtUtc = DateTime.UtcNow;
+                // Persist after sending even if unload was requested in the meantime.
+                await database.SaveChangesAsync(CancellationToken.None);
+                delivered = true;
+                EntryPoint.ChatEvents.PublishEvent(PipeEnvelope.CreateEvent(PipeMessageType.ReportsUpdated));
+            }
+            return delivered;
+        }
+        finally { DeliveryLock.Release(); }
+    }
+}

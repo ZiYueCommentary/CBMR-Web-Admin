@@ -1,5 +1,3 @@
-using CCB.Internal;
-using CCB.Extensions;
 using CbmrWebAdmin.ServerBinding.Data;
 using CbmrWebAdmin.Shared;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +13,8 @@ public static partial class Listener
         Content = report.Content, CreatedAtUtc = DateTime.SpecifyKind(report.CreatedAtUtc, DateTimeKind.Utc),
         Handled = report.Handled,
         HandledAtUtc = report.HandledAtUtc is { } time ? DateTime.SpecifyKind(time, DateTimeKind.Utc) : null,
-        Reply = report.Reply, RepliedBy = report.RepliedBy
+        Reply = report.Reply, RepliedBy = report.RepliedBy,
+        ReplyDeliveredAtUtc = report.ReplyDeliveredAtUtc is { } delivered ? DateTime.SpecifyKind(delivered, DateTimeKind.Utc) : null
     };
 
     private static async Task<PipeEnvelope> HandleListReportsAsync(PipeEnvelope request, string path, CancellationToken token)
@@ -41,14 +40,7 @@ public static partial class Listener
         report.RepliedBy = reply.AdminName.Trim();
         await database.SaveChangesAsync(token);
         EntryPoint.ChatEvents.PublishEvent(PipeEnvelope.CreateEvent(PipeMessageType.ReportsUpdated));
-        bool online = MainThreadContext.RunOnMainThread(() =>
-        {
-            Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == report.ReporterSteamId);
-            if (player.Opaque.Pointer == 0) return false;
-            GlobalProperties.Chat.SendPlayer(player, PlayerMessages.Get(language.Culture, "ReportReply",
-                report.RepliedBy.ReplaceLineEndings(" "), report.Reply.ReplaceLineEndings(" ")));
-            return true;
-        });
+        bool online = await ReportReplyDelivery.DeliverAsync(path, report.ReporterSteamId, language, token, report.Id);
         return PipeEnvelope.CreateResponse(request, new ReplyReportResponse { PlayerOnline = online });
     }
 }

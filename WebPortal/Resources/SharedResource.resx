@@ -315,7 +315,9 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportsLoadFailed" xml:space="preserve"><value>Could not load reports. Please try again.</value></data>
   <data name="ReportReplyFailed" xml:space="preserve"><value>Could not reply. Refresh reports before retrying; the report may already be handled.</value></data>
   <data name="ReportReplySent" xml:space="preserve"><value>Reply saved and sent privately to the player.</value></data>
-  <data name="ReportReplyOffline" xml:space="preserve"><value>Reply saved. The player was offline, so no private message was delivered.</value></data>
+  <data name="ReportReplyOffline" xml:space="preserve"><value>Reply saved. The player is offline and will receive it privately when they join again.</value></data>
+  <data name="ReportReplyPendingDelivery" xml:space="preserve"><value>Pending delivery</value></data>
+  <data name="ReportReplyDelivered" xml:space="preserve"><value>Delivered</value></data>
   <data name="EnableReportNotifications" xml:space="preserve"><value>Enable report notifications</value></data>
   <data name="NewReport" xml:space="preserve"><value>New report: {0} reported {1}</value></data>
 </root>

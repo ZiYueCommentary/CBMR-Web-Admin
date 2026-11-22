@@ -13,4 +13,5 @@ public sealed class Report
     public DateTime? HandledAtUtc { get; set; }
     public string? Reply { get; set; }
     public string? RepliedBy { get; set; }
+    public DateTime? ReplyDeliveredAtUtc { get; set; }
 }

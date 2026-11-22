@@ -30,6 +30,11 @@ else
                     <td>@Localizer[report.Handled ? "ReportHandled" : "ReportPending"]</td>
                     <td style="white-space: pre-wrap">@report.Reply
                         @if (report.Handled) { <div><small>@report.RepliedBy · @report.HandledAtUtc?.ToLocalTime().ToString("g")</small></div> }
+                        @if (report.Handled)
+                        {
+                            <div><small>@Localizer[report.ReplyDeliveredAtUtc is null ? "ReportReplyPendingDelivery" : "ReportReplyDelivered"]
+                                @report.ReplyDeliveredAtUtc?.ToLocalTime().ToString("g")</small></div>
+                        }
                     </td>
                     <td><CbmrWebAdmin.WebPortal.Components.Dialogs.ReplyReportModalButton Report="report" OnReplied="RefreshAsync" /></td>
                 </tr>
