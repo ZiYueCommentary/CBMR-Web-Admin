@@ -40,7 +40,7 @@
         await _modal.HideAsync();
         BroadcastRequest request = new BroadcastRequest
         {
-            Title = _showAdminName ? Localizer["AdminBoardcast", _adminName] : Localizer["ServerBoardcast"],
+            Title = _showAdminName ? Localizer["AdminBoardcast", _adminName ?? string.Empty] : Localizer["ServerBoardcast"],
             Message = _message!
         };
         await ServerBinding.SendAsync(PipeMessageType.Broadcast, request);

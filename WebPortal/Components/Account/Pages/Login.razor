@@ -65,7 +65,9 @@ limitations under the License.
 @code {
     private string? errorMessage;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = null!;
+
+    protected override void OnInitialized() => Input ??= new();
 
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
