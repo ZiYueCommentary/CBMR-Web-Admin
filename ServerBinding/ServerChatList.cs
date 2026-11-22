@@ -21,7 +21,7 @@ public class ServerChatList
 {
     private readonly Queue<WebChat> _queue = [];
     private readonly object _lock = new();
-    private readonly Guid _streamId = Guid.NewGuid();
+    private Guid _streamId = Guid.NewGuid();
     private long _sequence;
     private const int Size = 50;
 
@@ -39,6 +39,7 @@ public class ServerChatList
         lock (_lock)
         {
             _queue.Clear();
+            _streamId = Guid.NewGuid();
         }
     }
 
