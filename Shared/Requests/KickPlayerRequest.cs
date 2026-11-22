@@ -23,5 +23,5 @@ public sealed class KickPlayerRequest
     public int Index { get; init; }
 
     [Key(1)]
-    public string SteamId { get; init; } = string.Empty;
+    public string SteamId { get; set; } = string.Empty;
 }

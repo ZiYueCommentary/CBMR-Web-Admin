@@ -20,5 +20,5 @@ namespace CbmrWebAdmin.Shared.Requests;
 public sealed class RestartServerRequest
 {
     [Key(0)]
-    public string Reason { get; init; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
 }

@@ -19,7 +19,7 @@ namespace CbmrWebAdmin.Shared.Requests;
 [MessagePackObject]
 public sealed class BroadcastRequest
 {
-    [Key(0)] public string Message { get; init; } = string.Empty;
+    [Key(0)] public string Message { get; set; } = string.Empty;
 
-    [Key(1)] public string Title { get; init; } = string.Empty;
+    [Key(1)] public string Title { get; set; } = string.Empty;
 }
