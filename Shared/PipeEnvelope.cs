@@ -43,7 +43,8 @@ public enum PipeMessageType : byte
     RemoveBan,
     ListMutes,
     UpdateMute,
-    RemoveMute
+    RemoveMute,
+    Heartbeat
 }
 
 [MessagePackObject]

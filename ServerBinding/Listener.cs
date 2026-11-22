@@ -46,6 +46,7 @@ public static partial class Listener
                 response = request.MessageType switch
                 {
                     PipeMessageType.WhereAreYou => HandleWhereAreYou(request),
+                    PipeMessageType.Heartbeat => PipeEnvelope.CreateResponse(request),
                     PipeMessageType.FixElevator => HandleFixElevator(request),
                     PipeMessageType.Players => HandlePlayers(request),
                     PipeMessageType.KickPlayer => HandleKickPlayer(request),

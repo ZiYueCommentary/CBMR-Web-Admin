@@ -240,6 +240,7 @@
   <data name="ConnectedServerProcess" xml:space="preserve"><value>服务器进程：{0} — {1}</value></data>
   <data name="ServerProcessRunning" xml:space="preserve"><value>运行中</value></data>
   <data name="ServerProcessDead" xml:space="preserve"><value>已停止</value></data>
+  <data name="ServerNotResponding" xml:space="preserve"><value>服务器无响应，可能已停止运行。</value></data>
   <data name="PortalVersion" xml:space="preserve"><value>网页管理版本：{0}</value></data>
   <data name="BindingVersion" xml:space="preserve"><value>服务器绑定版本：{0}</value></data>
   <data name="VersionMismatch" xml:space="preserve"><value>服务器绑定与网页管理的版本不一致，请将它们更新至相同版本。</value></data>

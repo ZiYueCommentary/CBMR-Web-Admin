@@ -1,0 +1,41 @@
+@implements IDisposable
+
+@if (_serverNotResponding)
+{
+    <Alert Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@Localizer["ServerNotResponding"]</Alert>
+}
+
+@code {
+    private readonly CancellationTokenSource _cancellation = new();
+    private bool _serverNotResponding;
+    private bool _disposed;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            if (PipeBackgroundService.ServerBindingPipe?.IsConnected != true) return;
+
+            await ServerBinding.SendAsync(PipeMessageType.Heartbeat, cancellationToken: _cancellation.Token);
+        }
+        catch (OperationCanceledException) when (_disposed)
+        {
+        }
+        catch (Exception)
+        {
+            if (_disposed) return;
+
+            _serverNotResponding = true;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _cancellation.Cancel();
+        _cancellation.Dispose();
+    }
+}
