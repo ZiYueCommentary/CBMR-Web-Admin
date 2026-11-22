@@ -310,6 +310,9 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportActions" xml:space="preserve"><value>Actions</value></data>
   <data name="ReportReply" xml:space="preserve"><value>Reply</value></data>
   <data name="ReportHandled" xml:space="preserve"><value>Handled</value></data>
+  <data name="ReportOutcomeRequired" xml:space="preserve"><value>Outcome (required)</value></data>
+  <data name="ReportAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="ReportRejected" xml:space="preserve"><value>Rejected</value></data>
   <data name="ReportPending" xml:space="preserve"><value>Pending</value></data>
   <data name="NoReports" xml:space="preserve"><value>No reports yet.</value></data>
   <data name="ReportsLoadFailed" xml:space="preserve"><value>Could not load reports. Please try again.</value></data>

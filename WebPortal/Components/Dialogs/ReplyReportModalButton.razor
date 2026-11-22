@@ -5,12 +5,25 @@
 <Modal @ref="_modal" Title="@Localizer["ReportReply"]">
     <BodyTemplate>
         <p>@Report.ReporterName: @Report.Content</p>
+        <fieldset disabled="@_busy" class="mb-3">
+            <legend class="fs-6">@Localizer["ReportOutcomeRequired"]</legend>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="@_outcomeGroup" id="@(_outcomeGroup + "-accept")" required
+                       checked="@(_accepted == true)" @onchange="() => _accepted = true" />
+                <label class="form-check-label" for="@(_outcomeGroup + "-accept")">@Localizer["ReportAccepted"]</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="@_outcomeGroup" id="@(_outcomeGroup + "-reject")" required
+                       checked="@(_accepted == false)" @onchange="() => _accepted = false" />
+                <label class="form-check-label" for="@(_outcomeGroup + "-reject")">@Localizer["ReportRejected"]</label>
+            </div>
+        </fieldset>
         <textarea class="form-control" rows="4" maxlength="2000" @bind="_reply" disabled="@_busy" aria-label="@Localizer["ReportReply"]"></textarea>
         @if (_failed) { <p class="text-danger">@Localizer["ReportReplyFailed"]</p> }
     </BodyTemplate>
     <FooterTemplate>
         <button class="btn btn-secondary" disabled="@_busy" @onclick="CloseAsync">@Localizer["Close"]</button>
-        <button class="btn btn-primary" disabled="@(_busy || string.IsNullOrWhiteSpace(_reply))" @onclick="ReplyAsync">@Localizer["Send"]</button>
+        <button class="btn btn-primary" disabled="@(_busy || _accepted is null || string.IsNullOrWhiteSpace(_reply))" @onclick="ReplyAsync">@Localizer["Send"]</button>
     </FooterTemplate>
 </Modal>
 
@@ -21,20 +34,23 @@
     private string _reply = "";
     private bool _busy;
     private bool _failed;
-    private async Task ShowAsync() { _failed = false; await _modal.ShowAsync(); }
+    private bool? _accepted;
+    private readonly string _outcomeGroup = "report-outcome-" + Guid.NewGuid().ToString("N");
+    private async Task ShowAsync() { _failed = false; _accepted = null; await _modal.ShowAsync(); }
     private Task CloseAsync() => _modal.HideAsync();
     private async Task ReplyAsync()
     {
-        if (_busy || string.IsNullOrWhiteSpace(_reply)) return;
+        if (_busy || _accepted is null || string.IsNullOrWhiteSpace(_reply)) return;
         _busy = true;
         _failed = false;
         try
         {
             var state = await Authentication.GetAuthenticationStateAsync();
             if (state.User.Identity?.IsAuthenticated != true) throw new InvalidOperationException();
-            var request = new ReplyReportRequest { Id = Report.Id, Reply = _reply.Trim(), AdminName = state.User.Identity.Name ?? "?" };
+            var request = new ReplyReportRequest { Id = Report.Id, Reply = _reply.Trim(), AdminName = state.User.Identity.Name ?? "?", Accepted = _accepted };
             var result = await ServerBinding.SendAsync<ReplyReportRequest, ReplyReportResponse>(PipeMessageType.ReplyReport, request);
-            await AuditLogger.WriteAsync(AuditActions.ReplyReport, Report.Id.ToString(), request.Reply);
+            await AuditLogger.WriteAsync(AuditActions.ReplyReport, Report.Id.ToString(),
+                $"{(request.Accepted == true ? "Accepted" : "Rejected")}: {request.Reply}");
             await _modal.HideAsync();
             ToastService.Notify(new(ToastType.Success, Localizer[result.PlayerOnline ? "ReportReplySent" : "ReportReplyOffline"]));
             await OnReplied.InvokeAsync();

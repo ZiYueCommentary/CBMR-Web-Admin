@@ -14,4 +14,5 @@ public sealed class Report
     public string? Reply { get; set; }
     public string? RepliedBy { get; set; }
     public DateTime? ReplyDeliveredAtUtc { get; set; }
+    public bool? Accepted { get; set; }
 }

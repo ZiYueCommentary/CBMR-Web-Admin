@@ -350,6 +350,9 @@
   <data name="ReportActions" xml:space="preserve"><value>操作</value></data>
   <data name="ReportReply" xml:space="preserve"><value>回复</value></data>
   <data name="ReportHandled" xml:space="preserve"><value>已处理</value></data>
+  <data name="ReportOutcomeRequired" xml:space="preserve"><value>处理结果（必选）</value></data>
+  <data name="ReportAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="ReportRejected" xml:space="preserve"><value>已驳回</value></data>
   <data name="ReportPending" xml:space="preserve"><value>待处理</value></data>
   <data name="NoReports" xml:space="preserve"><value>暂无举报。</value></data>
   <data name="ReportsLoadFailed" xml:space="preserve"><value>无法加载举报，请重试。</value></data>

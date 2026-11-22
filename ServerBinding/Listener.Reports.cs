@@ -14,7 +14,8 @@ public static partial class Listener
         Handled = report.Handled,
         HandledAtUtc = report.HandledAtUtc is { } time ? DateTime.SpecifyKind(time, DateTimeKind.Utc) : null,
         Reply = report.Reply, RepliedBy = report.RepliedBy,
-        ReplyDeliveredAtUtc = report.ReplyDeliveredAtUtc is { } delivered ? DateTime.SpecifyKind(delivered, DateTimeKind.Utc) : null
+        ReplyDeliveredAtUtc = report.ReplyDeliveredAtUtc is { } delivered ? DateTime.SpecifyKind(delivered, DateTimeKind.Utc) : null,
+        Accepted = report.Accepted
     };
 
     private static async Task<PipeEnvelope> HandleListReportsAsync(PipeEnvelope request, string path, CancellationToken token)
@@ -29,7 +30,7 @@ public static partial class Listener
         PlayerLanguageSettings language, CancellationToken token)
     {
         ReplyReportRequest reply = request.DeserializePayload<ReplyReportRequest>();
-        if (string.IsNullOrWhiteSpace(reply.Reply) || reply.Reply.Length > 2000 || string.IsNullOrWhiteSpace(reply.AdminName))
+        if (reply.Accepted is null || string.IsNullOrWhiteSpace(reply.Reply) || reply.Reply.Length > 2000 || string.IsNullOrWhiteSpace(reply.AdminName))
             return PipeEnvelope.CreateError(request, "Invalid report reply.");
         await using WebPortalDbContext database = WebPortalDbContext.Create(path);
         Report? report = await database.Reports.SingleOrDefaultAsync(report => report.Id == reply.Id, token);
@@ -38,6 +39,7 @@ public static partial class Listener
         report.HandledAtUtc = DateTime.UtcNow;
         report.Reply = reply.Reply.Trim();
         report.RepliedBy = reply.AdminName.Trim();
+        report.Accepted = reply.Accepted;
         await database.SaveChangesAsync(token);
         EntryPoint.ChatEvents.PublishEvent(PipeEnvelope.CreateEvent(PipeMessageType.ReportsUpdated));
         bool online = await ReportReplyDelivery.DeliverAsync(path, report.ReporterSteamId, language, token, report.Id);

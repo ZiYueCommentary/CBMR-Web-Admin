@@ -27,7 +27,12 @@ else
                     <td>@report.ReporterName<br/><small>@report.ReporterSteamId</small></td>
                     <td>@report.ReportedName<br/><small>@report.ReportedSteamId</small></td>
                     <td style="white-space: pre-wrap">@report.Content</td>
-                    <td>@Localizer[report.Handled ? "ReportHandled" : "ReportPending"]</td>
+                    <td>@Localizer[report.Handled ? "ReportHandled" : "ReportPending"]
+                        @if (report.Accepted is { } accepted)
+                        {
+                            <span class="badge @(accepted ? "bg-success" : "bg-danger")">@Localizer[accepted ? "ReportAccepted" : "ReportRejected"]</span>
+                        }
+                    </td>
                     <td style="white-space: pre-wrap">@report.Reply
                         @if (report.Handled) { <div><small>@report.RepliedBy · @report.HandledAtUtc?.ToLocalTime().ToString("g")</small></div> }
                         @if (report.Handled)

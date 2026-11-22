@@ -40,7 +40,8 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "ReportedSteamId" TEXT NOT NULL, "ReportedName" TEXT NOT NULL,
                 "Content" TEXT NOT NULL, "CreatedAtUtc" TEXT NOT NULL,
                 "Handled" INTEGER NOT NULL, "HandledAtUtc" TEXT NULL,
-                "Reply" TEXT NULL, "RepliedBy" TEXT NULL, "ReplyDeliveredAtUtc" TEXT NULL
+                "Reply" TEXT NULL, "RepliedBy" TEXT NULL, "ReplyDeliveredAtUtc" TEXT NULL,
+                "Accepted" INTEGER NULL
             );
             CREATE TABLE IF NOT EXISTS "mutes" (
                 "id" INTEGER NOT NULL CONSTRAINT "PK_mutes" PRIMARY KEY AUTOINCREMENT,
@@ -91,13 +92,19 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             command.Transaction = transaction.GetDbTransaction();
             command.CommandText = """PRAGMA table_info("Reports")""";
             bool hasDeliveryColumn = false;
+            bool hasOutcomeColumn = false;
             using (DbDataReader reader = command.ExecuteReader())
             {
                 while (reader.Read())
+                {
                     if (reader.GetString(1) == "ReplyDeliveredAtUtc") hasDeliveryColumn = true;
+                    if (reader.GetString(1) == "Accepted") hasOutcomeColumn = true;
+                }
             }
             if (!hasDeliveryColumn)
                 Database.ExecuteSqlRaw("""ALTER TABLE "Reports" ADD COLUMN "ReplyDeliveredAtUtc" TEXT NULL""");
+            if (!hasOutcomeColumn)
+                Database.ExecuteSqlRaw("""ALTER TABLE "Reports" ADD COLUMN "Accepted" INTEGER NULL""");
         }
 
         SaveChanges();

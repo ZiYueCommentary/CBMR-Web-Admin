@@ -97,13 +97,14 @@ Current values in `Shared/PipeEnvelope.cs`:
 - `ChatUpdated` (20): events-pipe chat invalidation
 - `PlayerSessionLog` (21): paged join/leave history
 - `ListReports` (22): all reports, newest first, including handled reports; returns `List<ReportRecord>`
-- `ReplyReport` (23): `ReplyReportRequest` (id/reply/admin name at keys 0–2); saves handling metadata and returns `ReplyReportResponse.PlayerOnline` (key 0). An offline reporter does not prevent saving.
+- `ReplyReport` (23): `ReplyReportRequest` (id/reply/admin name at keys 0–2, nullable `Accepted` at key 3); saves handling metadata and returns `ReplyReportResponse.PlayerOnline` (key 0). New replies require an explicit accepted/rejected outcome. An offline reporter does not prevent saving.
 - `ReportCreated` (24): events-pipe event with `ReportRecord` payload for browser notifications
 - `ReportsUpdated` (25): payload-less events-pipe invalidation on replies and reconnect
 
 `ReportRecord` uses stable keys 0–10 for id, reporter SteamID/name, reported SteamID/name,
 content, created UTC, handled, handled UTC, reply, and admin name. Key 11 appends the nullable
-`ReplyDeliveredAtUtc` timestamp; null on a handled report means pending delivery. ServerBinding persists
+`ReplyDeliveredAtUtc` timestamp; null on a handled report means pending delivery. Key 12 appends
+nullable `Accepted` (true = accepted, false = rejected, null = legacy/undecided). ServerBinding persists
 reports permanently in SQLite (`Reports`, created explicitly for existing EnsureCreated databases).
 The events publisher coalesces chat invalidations separately; connected report events are not
 dropped behind chat traffic. Reports created while the portal is disconnected remain in the DB;
@@ -128,6 +129,10 @@ Initialization idempotently adds `Reports.ReplyDeliveredAtUtc` using PRAGMA/ALTE
 databases. Historical replies without delivery tracking are treated as pending and may be
 sent again on the reporter's next join. A crash between chat send and saving its timestamp
 can also cause redelivery; chat delivery and SQLite cannot be committed atomically.
+Initialization also adds nullable `Reports.Accepted` idempotently. Existing replies retain a null
+outcome and use the original private-message format. New live/on-join replies include the localized
+accepted/rejected outcome and reported player's name. The reply modal requires a radio selection;
+the table displays an outcome badge and the reply audit entry includes the outcome.
 
 Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
 the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`

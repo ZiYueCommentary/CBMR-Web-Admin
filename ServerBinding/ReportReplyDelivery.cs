@@ -34,8 +34,13 @@ internal static class ReportReplyDelivery
                     if (token.IsCancellationRequested) return false;
                     Player player = Player.List().FirstOrDefault(player => player.GetSteamID() == steamId);
                     if (player.Opaque.Pointer == 0) return false;
-                    GlobalProperties.Chat.SendPlayer(player, PlayerMessages.Get(language.Culture, "ReportReply",
-                        (report.RepliedBy ?? "").ReplaceLineEndings(" "), report.Reply!.ReplaceLineEndings(" ")));
+                    string admin = (report.RepliedBy ?? "").ReplaceLineEndings(" ");
+                    string reply = report.Reply!.ReplaceLineEndings(" ");
+                    string message = report.Accepted is { } accepted
+                        ? PlayerMessages.Get(language.Culture, accepted ? "ReportAcceptedReply" : "ReportRejectedReply",
+                            report.ReportedName.ReplaceLineEndings(" "), admin, reply)
+                        : PlayerMessages.Get(language.Culture, "ReportReply", admin, reply);
+                    GlobalProperties.Chat.SendPlayer(player, message);
                     return true;
                 });
                 if (!online) break;

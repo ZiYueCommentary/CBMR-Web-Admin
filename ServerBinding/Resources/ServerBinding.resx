@@ -23,6 +23,8 @@ Time remaining: {1}</value></data>
   <data name="ReportCooldown" xml:space="preserve"><value>Please wait 30 seconds between reports.</value></data>
   <data name="ReportFailed" xml:space="preserve"><value>Your report could not be saved. Please try again later.</value></data>
   <data name="ReportReply" xml:space="preserve"><value>Report reply from {0}: {1}</value></data>
+  <data name="ReportAcceptedReply" xml:space="preserve"><value>Your report against {0} was accepted. Reply from {1}: {2}</value></data>
+  <data name="ReportRejectedReply" xml:space="preserve"><value>Your report against {0} was rejected. Reply from {1}: {2}</value></data>
   <data name="ReportSelectPlayer" xml:space="preserve"><value>Report: select a player</value></data>
   <data name="ReportNext" xml:space="preserve"><value>Next</value></data>
   <data name="ReportCancel" xml:space="preserve"><value>Cancel</value></data>

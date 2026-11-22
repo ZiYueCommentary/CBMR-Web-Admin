@@ -17,6 +17,7 @@ public sealed class ReportRecord
     [Key(9)] public string? Reply { get; set; }
     [Key(10)] public string? RepliedBy { get; set; }
     [Key(11)] public DateTime? ReplyDeliveredAtUtc { get; set; }
+    [Key(12)] public bool? Accepted { get; set; }
 }
 
 [MessagePackObject]
@@ -25,6 +26,7 @@ public sealed class ReplyReportRequest
     [Key(0)] public long Id { get; set; }
     [Key(1)] public string Reply { get; set; } = "";
     [Key(2)] public string AdminName { get; set; } = "";
+    [Key(3)] public bool? Accepted { get; set; }
 }
 
 [MessagePackObject]
