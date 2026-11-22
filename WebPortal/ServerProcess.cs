@@ -5,6 +5,9 @@ namespace CbmrWebAdmin.WebPortal;
 
 internal static class ServerProcess
 {
+    private static readonly object CacheLock = new();
+    private static readonly Dictionary<string, int> ProcessIds = new(StringComparer.OrdinalIgnoreCase);
+
     public static bool MatchesPath(Process process, string targetPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath)) return false;
@@ -28,6 +31,29 @@ internal static class ServerProcess
     {
         if (string.IsNullOrWhiteSpace(targetPath)) return false;
 
+        lock (CacheLock)
+        {
+            return IsRunningCore(targetPath);
+        }
+    }
+
+    private static bool IsRunningCore(string targetPath)
+    {
+        if (ProcessIds.TryGetValue(targetPath, out int processId))
+        {
+            try
+            {
+                using Process cachedProcess = Process.GetProcessById(processId);
+                if (!cachedProcess.HasExited && MatchesPath(cachedProcess, targetPath)) return true;
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException
+                or Win32Exception or NotSupportedException)
+            {
+            }
+
+            ProcessIds.Remove(targetPath);
+        }
+
         Process[] processes;
         try
         {
@@ -41,7 +67,15 @@ internal static class ServerProcess
 
         try
         {
-            return processes.Any(process => MatchesPath(process, targetPath));
+            foreach (Process process in processes)
+            {
+                if (!MatchesPath(process, targetPath)) continue;
+
+                ProcessIds[targetPath] = process.Id;
+                return true;
+            }
+
+            return false;
         }
         finally
         {
