@@ -1,61 +1,40 @@
 @page "/audit-log"
 @attribute [Authorize]
 @using CbmrWebAdmin.WebPortal.Data
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<ApplicationUser> UserManager
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IServiceScopeFactory ScopeFactory
 
 <PageTitle>@Localizer["AuditLog"]</PageTitle>
 
-@if (_isPrimaryAdmin)
-{
-    <h1>@Localizer["AuditLog"]</h1>
+<h1>@Localizer["AuditLog"]</h1>
 
-    <p>@Localizer["AuditLogDescription"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
+<p>@Localizer["AuditLogDescription"] <span class="text-muted">(@TimeZoneInfo.Local.DisplayName)</span></p>
 
-    <Grid TItem="AuditLogEntry"
-          Class="table table-hover table-bordered table-striped"
-          DataProvider="AuditLogDataProvider"
-          AllowPaging="true"
-          PageSize="50"
-          Responsive="true">
-        <GridColumns>
-            <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Time"]">
-                @DateTime.SpecifyKind(context.TimestampUtc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
-            </GridColumn>
-            <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Username"]">
-                @context.UserName
-            </GridColumn>
-            <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditAction"]">
-                @Localizer["AuditAction" + context.Action]
-            </GridColumn>
-            <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditTarget"]">
-                @context.Target
-            </GridColumn>
-            <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditDetails"]">
-                <span style="white-space: pre-wrap">@context.Details</span>
-            </GridColumn>
-        </GridColumns>
-    </Grid>
-}
-else if (_loaded)
-{
-    <h1>@Localizer["AccessDenied"]</h1>
-}
+<Grid TItem="AuditLogEntry"
+      Class="table table-hover table-bordered table-striped"
+      DataProvider="AuditLogDataProvider"
+      AllowPaging="true"
+      PageSize="50"
+      Responsive="true">
+    <GridColumns>
+        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Time"]">
+            @DateTime.SpecifyKind(context.TimestampUtc, DateTimeKind.Utc).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")
+        </GridColumn>
+        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Username"]">
+            @context.UserName
+        </GridColumn>
+        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditAction"]">
+            @Localizer["AuditAction" + context.Action]
+        </GridColumn>
+        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditTarget"]">
+            @context.Target
+        </GridColumn>
+        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditDetails"]">
+            <span style="white-space: pre-wrap">@context.Details</span>
+        </GridColumn>
+    </GridColumns>
+</Grid>
 
 @code {
-    private bool _isPrimaryAdmin;
-    private bool _loaded;
-
-    protected override async Task OnInitializedAsync()
-    {
-        AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        ApplicationUser? currentUser = await UserManager.GetUserAsync(state.User);
-        _isPrimaryAdmin = currentUser?.IsPrimaryAdmin == true;
-        _loaded = true;
-    }
-
     private async Task<GridDataProviderResult<AuditLogEntry>> AuditLogDataProvider(GridDataProviderRequest<AuditLogEntry> request)
     {
         await using AsyncServiceScope scope = ScopeFactory.CreateAsyncScope();
