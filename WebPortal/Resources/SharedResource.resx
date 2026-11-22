@@ -98,9 +98,6 @@ If you are server admin, please log in first.</value></data>
   <data name="NoConnectionWithServer" xml:space="preserve">
     <value>No connection with server. You can't use Web Portal properly now. Please contact server owner.</value>
   </data>
-  <data name="ChatPerformanceIssue" xml:space="preserve">
-    <value>For performance, this page will refresh to show new messages every five (5) seconds.</value>
-  </data>
   <data name="ChatBox" xml:space="preserve">
     <value>Chat box</value>
   </data>
