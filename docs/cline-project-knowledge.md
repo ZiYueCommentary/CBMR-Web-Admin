@@ -137,8 +137,9 @@ the table displays an outcome badge and the reply audit entry includes the outco
 Player languages are listed in `Shared/PlayerLanguages.cs` (`en`, `zh-Hans`). ServerBinding owns
 the selection, defaults to `zh-Hans`, and loads `player-language.json` next to `Config.DatabasePath`
 on plugin load. Changes are persisted before being applied. Player-facing ban messages use
-`ServerBinding/ServerBinding*.resx` with an explicit selected culture, independent of the web UI language.
-Deploy the whole ServerBinding build output, including `zh-Hans/CbmrWebAdmin.ServerBinding.resources.dll`.
+`ServerBinding/Resources/ServerBinding*.resx` with an explicit selected culture, independent of the web UI language.
+All player-message resources are embedded in `CbmrWebAdmin.ServerBinding.dll`; no localization satellite DLL is needed.
+Dependencies such as `CbmrWebAdmin.Shared.dll` remain separate.
 
 When adding a message type, update the switch in `ServerBinding/Listener.cs` and add the corresponding WebPortal call where needed.
 
