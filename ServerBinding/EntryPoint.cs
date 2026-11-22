@@ -26,6 +26,7 @@ namespace CbmrWebAdmin.ServerBinding;
 public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> configProvider) : ILoad, IUnload
 {
     private readonly Config _config = configProvider.GetConfig();
+    private readonly PerPlayerCooldown _chatMuteNoticeCooldown = new(5_000);
     private PlayerLanguageSettings _playerLanguage = null!;
     private ModerationCache _moderationCache = null!;
     private MuteAttemptLog _muteAttemptLog = null!;
@@ -117,13 +118,29 @@ public class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config> config
     {
         string steamId = eventArg.Player.GetSteamID();
         DateTime utcNow = DateTime.UtcNow;
-        if (_moderationCache.FindActive(steamId, MuteKind.Chat, utcNow) is not null)
+        if (_moderationCache.FindActive(steamId, MuteKind.Chat, utcNow) is { } mute)
         {
             eventArg.EventResult = false;
             LogMuteAttempt(eventArg.Player, steamId, MuteKind.Chat, utcNow, eventArg.Text);
+            if (_chatMuteNoticeCooldown.TryStart(steamId))
+                SendChatMuteNotice(eventArg.Player, mute, utcNow);
             return;
         }
         ServerChatList.Add(eventArg.Player, eventArg.Text);
+    }
+
+    private void SendChatMuteNotice(Player player, ModerationCache.Entry mute, DateTime utcNow)
+    {
+        var culture = _playerLanguage.Culture;
+        string remaining = PlayerMessages.Get(culture, "Permanent");
+        if (mute.ExpiresAt is { } expiresAt)
+        {
+            TimeSpan timeLeft = expiresAt - utcNow;
+            remaining = PlayerMessages.Get(culture, "ChatMuteRemainingDuration",
+                timeLeft.Days, timeLeft.Hours, timeLeft.Minutes, timeLeft.Seconds);
+        }
+        GlobalProperties.Chat.SendPlayer(player,
+            PlayerMessages.Get(culture, "ChatMuteNotice", mute.Reason.ReplaceLineEndings(" "), remaining));
     }
 
     private void OnPlayerVoice(EventRegistry.PlayerVoiceEventArg eventArg)

@@ -5,6 +5,8 @@
   <data name="Permanent" xml:space="preserve"><value>Permanent</value></data>
   <data name="BanDuration" xml:space="preserve"><value>{0}d {1}h {2}m {3}s</value></data>
   <data name="RemainingDuration" xml:space="preserve"><value>{0}d {1}h {2}m</value></data>
+  <data name="ChatMuteRemainingDuration" xml:space="preserve"><value>{0}d {1}h {2}m {3}s</value></data>
+  <data name="ChatMuteNotice" xml:space="preserve"><value>You are muted in chat. Reason: {0} | Time remaining: {1}</value></data>
   <data name="BanKick" xml:space="preserve"><value>You have been banned from this server!
 Reason: {0}
 Ban duration: {1}</value></data>

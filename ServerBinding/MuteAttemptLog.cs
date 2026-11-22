@@ -23,9 +23,7 @@ namespace CbmrWebAdmin.ServerBinding;
 internal sealed class MuteAttemptLog : IDisposable
 {
     private const int BatchSize = 256;
-    private const long VoiceLogIntervalMs = 10_000;
-    private readonly Dictionary<string, long> _voiceLogDeadlines = new(StringComparer.Ordinal);
-    private long _nextVoiceLogCleanup;
+    private readonly PerPlayerCooldown _voiceLogCooldown = new(10_000);
     private readonly Channel<MuteAttempt> _attempts = Channel.CreateUnbounded<MuteAttempt>(new UnboundedChannelOptions
     {
         SingleReader = true
@@ -42,24 +40,7 @@ internal sealed class MuteAttemptLog : IDisposable
 
     public void Enqueue(MuteAttempt attempt) => _attempts.Writer.TryWrite(attempt);
 
-    public bool ShouldLogVoiceAttempt(string steamId)
-    {
-        long now = Environment.TickCount64;
-        if (now >= _nextVoiceLogCleanup)
-        {
-            foreach (var (playerId, expiresAt) in _voiceLogDeadlines)
-            {
-                if (now >= expiresAt) _voiceLogDeadlines.Remove(playerId);
-            }
-            _nextVoiceLogCleanup = now + VoiceLogIntervalMs;
-        }
-
-        if (_voiceLogDeadlines.TryGetValue(steamId, out long deadline) && now < deadline)
-            return false;
-
-        _voiceLogDeadlines[steamId] = now + VoiceLogIntervalMs;
-        return true;
-    }
+    public bool ShouldLogVoiceAttempt(string steamId) => _voiceLogCooldown.TryStart(steamId);
 
     private async Task WriteAsync(string databasePath)
     {
