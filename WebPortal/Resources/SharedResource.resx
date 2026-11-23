@@ -90,6 +90,9 @@ If you are server admin, please log in first.</value></data>
   <data name="CentralConsole" xml:space="preserve">
     <value>Central Console</value>
   </data>
+  <data name="PlayerCommunication" xml:space="preserve"><value>Player communication</value></data>
+  <data name="MapMaintenance" xml:space="preserve"><value>Map maintenance</value></data>
+  <data name="PlayerModeration" xml:space="preserve"><value>Player moderation</value></data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>

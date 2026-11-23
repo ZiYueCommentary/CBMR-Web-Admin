@@ -11,28 +11,47 @@
 
 <h1>@Localizer["CentralConsole"]</h1>
 
-<div class="mb-3">
-    <label for="player-language" class="form-label">@Localizer["PlayerLanguage"]</label>
-    <select @key="_languageBusy" id="player-language" class="form-select" value="@_playerLanguage" @onchange="SetPlayerLanguage" disabled="@_languageBusy">
-        @if (_playerLanguage is null)
-        {
-            <option value="">@(_languageBusy ? Localizer["Loading"] : Localizer["PlayerLanguage"])</option>
-        }
-        @foreach (string culture in PlayerLanguages.Supported)
-        {
-            <option value="@culture">@CultureInfo.GetCultureInfo(culture).NativeName</option>
-        }
-    </select>
+<div class="console-groups">
+    <fieldset class="console-group">
+        <legend>@Localizer["PlayerCommunication"]</legend>
+        <div class="mb-3">
+            <label for="player-language" class="form-label">@Localizer["PlayerLanguage"]</label>
+            <select @key="_languageBusy" id="player-language" class="form-select" value="@_playerLanguage" @onchange="SetPlayerLanguage" disabled="@_languageBusy">
+                @if (_playerLanguage is null)
+                {
+                    <option value="">@(_languageBusy ? Localizer["Loading"] : Localizer["PlayerLanguage"])</option>
+                }
+                @foreach (string culture in PlayerLanguages.Supported)
+                {
+                    <option value="@culture">@CultureInfo.GetCultureInfo(culture).NativeName</option>
+                }
+            </select>
+        </div>
+        <BroadcastModalButton/>
+    </fieldset>
+
+    <fieldset class="console-group">
+        <legend>@Localizer["MapMaintenance"]</legend>
+        <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" @onclick="FixElevator">@Localizer["FixElevator"]</button>
+            <button class="btn btn-primary" @onclick="ClearItems">@Localizer["ClearItems"]</button>
+        </div>
+    </fieldset>
+
+    <fieldset class="console-group">
+        <legend>@Localizer["PlayerModeration"]</legend>
+        <BanPlayerModalButton/>
+    </fieldset>
+
+    <fieldset class="console-group">
+        <legend>@Localizer["DangerZone"]</legend>
+        <div class="d-flex flex-wrap gap-2">
+            <RestartServerModalButton/>
+            <ForceRestartServerButton/>
+        </div>
+    </fieldset>
 </div>
 
-<button class="btn btn-primary" @onclick="FixElevator">@Localizer["FixElevator"]</button>
-<BroadcastModalButton/>
-<BanPlayerModalButton/>
-<button class="btn btn-primary" @onclick="ClearItems">@Localizer["ClearItems"]</button>
-<br/><br/>
-<h3>@Localizer["DangerZone"]</h3>
-<RestartServerModalButton/>
-<ForceRestartServerButton/>
 @code {
     private string? _playerLanguage;
     private bool _languageBusy;

@@ -121,6 +121,9 @@
   <data name="CentralConsole" xml:space="preserve">
     <value>中控台</value>
   </data>
+  <data name="PlayerCommunication" xml:space="preserve"><value>玩家沟通</value></data>
+  <data name="MapMaintenance" xml:space="preserve"><value>地图维护</value></data>
+  <data name="PlayerModeration" xml:space="preserve"><value>玩家管理</value></data>
   <data name="Close" xml:space="preserve">
     <value>关闭</value>
   </data>
