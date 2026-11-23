@@ -14,20 +14,22 @@
 <div class="console-groups">
     <fieldset class="console-group">
         <legend>@Localizer["PlayerCommunication"]</legend>
-        <div class="mb-3">
-            <label for="player-language" class="form-label">@Localizer["PlayerLanguage"]</label>
-            <select @key="_languageBusy" id="player-language" class="form-select" value="@_playerLanguage" @onchange="SetPlayerLanguage" disabled="@_languageBusy">
-                @if (_playerLanguage is null)
-                {
-                    <option value="">@(_languageBusy ? Localizer["Loading"] : Localizer["PlayerLanguage"])</option>
-                }
-                @foreach (string culture in PlayerLanguages.Supported)
-                {
-                    <option value="@culture">@CultureInfo.GetCultureInfo(culture).NativeName</option>
-                }
-            </select>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="console-language-setting d-flex align-items-center gap-2">
+                <label for="player-language" class="mb-0">@Localizer["PlayerLanguage"]</label>
+                <select @key="_languageBusy" id="player-language" class="form-select" value="@_playerLanguage" @onchange="SetPlayerLanguage" disabled="@_languageBusy">
+                    @if (_playerLanguage is null)
+                    {
+                        <option value="">@(_languageBusy ? Localizer["Loading"] : Localizer["SelectPlayerLanguage"])</option>
+                    }
+                    @foreach (string culture in PlayerLanguages.Supported)
+                    {
+                        <option value="@culture">@CultureInfo.GetCultureInfo(culture).NativeName</option>
+                    }
+                </select>
+            </div>
+            <BroadcastModalButton/>
         </div>
-        <BroadcastModalButton/>
     </fieldset>
 
     <fieldset class="console-group">

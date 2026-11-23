@@ -14,6 +14,7 @@
     min-width: 0;
     padding: .75rem 1rem 1rem;
     border: 2px groove var(--bs-border-color, #dee2e6);
+    border-radius: .375rem;
 }
 
 .console-group > legend {
@@ -23,4 +24,15 @@
     padding-inline: .375rem;
     font-size: 1rem;
     font-weight: 600;
+}
+
+.console-language-setting {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.console-language-setting > .form-select {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 8rem;
 }

@@ -263,6 +263,7 @@
   <data name="PasswordRequiresLower" xml:space="preserve"><value>密码必须至少包含一个小写字母（a-z）。</value></data>
   <data name="PasswordRequiresUpper" xml:space="preserve"><value>密码必须至少包含一个大写字母（A-Z）。</value></data>
   <data name="PlayerLanguage" xml:space="preserve"><value>发送给玩家的语言</value></data>
+  <data name="SelectPlayerLanguage" xml:space="preserve"><value>选择语言</value></data>
   <data name="PlayerLanguageSaved" xml:space="preserve"><value>玩家语言已保存。</value></data>
   <data name="PlayerLanguageFailed" xml:space="preserve"><value>无法加载或保存玩家语言，请检查服务器连接后重试。</value></data>
   <data name="PlayersLoadFailed" xml:space="preserve"><value>无法加载玩家列表，请检查服务器连接后重试。</value></data>
