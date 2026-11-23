@@ -26,3 +26,15 @@ jobs:
 
       - name: Build
         run: dotnet build ${{ matrix.project }}/${{ matrix.project }}.csproj --configuration Release --no-restore
+
+      - name: Publish WebPortal
+        if: matrix.project == 'WebPortal'
+        run: dotnet publish WebPortal/WebPortal.csproj --configuration Release --no-restore -p:UseAppHost=false --output out
+
+      - name: Upload WebPortal
+        if: matrix.project == 'WebPortal'
+        uses: actions/upload-artifact@v4
+        with:
+          name: WebPortal
+          path: out
+          if-no-files-found: error

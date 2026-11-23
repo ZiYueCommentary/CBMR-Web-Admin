@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Text.Json;
 using CbmrWebAdmin.Shared;
 using CbmrWebAdmin.WebPortal.Components.Account;
 using CbmrWebAdmin.WebPortal.Components;
@@ -29,7 +30,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseStaticWebAssets();
+        ConfigureBuildStaticWebAssets(builder);
 
         builder.Services.AddLocalization();
         builder.Services.AddRazorComponents()
@@ -96,5 +97,33 @@ public class Program
         app.MapLogoutEndpoint();
 
         await app.RunAsync();
+    }
+
+    private static void ConfigureBuildStaticWebAssets(WebApplicationBuilder builder)
+    {
+        if (builder.Environment.IsDevelopment())
+            return;
+
+        string manifestPath = Path.Combine(AppContext.BaseDirectory,
+            $"{builder.Environment.ApplicationName}.staticwebassets.runtime.json");
+        if (!File.Exists(manifestPath))
+            return;
+
+        manifestPath = builder.Configuration[WebHostDefaults.StaticWebAssetsKey] ?? manifestPath;
+        if (File.Exists(manifestPath))
+        {
+            using FileStream manifest = File.OpenRead(manifestPath);
+            using JsonDocument document = JsonDocument.Parse(manifest);
+            if (document.RootElement.GetProperty("ContentRoots").EnumerateArray()
+                .All(root => Directory.Exists(root.GetString())))
+            {
+                builder.WebHost.UseStaticWebAssets();
+                return;
+            }
+        }
+
+        throw new InvalidOperationException(
+            "The WebPortal build output references static web assets that are unavailable on this machine. " +
+            "Deploy the full `dotnet publish` output instead of the build output.");
     }
 }
