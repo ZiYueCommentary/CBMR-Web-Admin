@@ -1,0 +1,205 @@
+@using CbmrWebAdmin.Shared.Requests
+@using CbmrWebAdmin.WebPortal.Components.Dialogs
+@using CbmrWebAdmin.WebPortal.Data
+@inject ILogger<BanList> Logger
+
+<p>@Localizer["BanListDescription"] @if (TimeZone is not null) { <span>(@TimeZone.Id)</span> }</p>
+<form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label for="ban-from">@Localizer["AuditFrom"]</label>
+        <input id="ban-from" class="form-control" type="datetime-local" @bind="_from" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-md-3">
+        <label for="ban-to">@Localizer["AuditTo"]</label>
+        <input id="ban-to" class="form-control" type="datetime-local" @bind="_to" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-md-3">
+        <label for="ban-player">@Localizer["SteamID"]</label>
+        <input id="ban-player" class="form-control" type="search" @bind="_steamId" />
+    </div>
+    <div class="col-md-3">
+        <label for="ban-reason">@Localizer["ModerationReason"]</label>
+        <input id="ban-reason" class="form-control" type="search" @bind="_reason" />
+    </div>
+    <div class="col-md-3">
+        <label for="ban-status">@Localizer["BanListStatus"]</label>
+        <select id="ban-status" class="form-select" @bind="_status">
+            @foreach (BanStatus status in Enum.GetValues<BanStatus>())
+            {
+                <option value="@status">@Localizer["BanListStatus" + status]</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label for="ban-size">@Localizer["AuditPageSize"]</label>
+        <select id="ban-size" class="form-select" @bind="_pageSize">
+            @foreach (int size in new[] { 10, 25, 50, 100 })
+            {
+                <option value="@size">@size</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 align-self-end">
+        <button type="submit" class="btn btn-primary" disabled="@_busy">@Localizer["AuditApply"]</button>
+        <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReloadAsync">@Localizer["ModerationRefresh"]</button>
+    </div>
+</form>
+@if (_error is not null)
+{
+    <div class="alert alert-danger" role="alert">@Localizer[_error]</div>
+}
+<p aria-live="polite">@Localizer["AuditTotal", _total]</p>
+<div class="table-responsive">
+<table class="table table-hover table-bordered table-striped">
+    <thead><tr>
+        @foreach (var column in Columns)
+        {
+            <th scope="col" aria-sort="@(_sort == column.Key ? (_ascending ? "ascending" : "descending") : "none")">
+                <button type="button" class="btn btn-link p-0" disabled="@_busy" @onclick="() => SortAsync(column.Key)">
+                    @Localizer[column.Label] @(_sort == column.Key ? (_ascending ? "▲" : "▼") : "")
+                </button>
+            </th>
+        }
+        <th scope="col">@Localizer["Operations"]</th>
+    </tr></thead>
+    <tbody>
+        @foreach (BanRecord row in _records)
+        {
+            <tr @key="row.Id">
+                <td>@row.Id</td><td>@row.SteamId</td>
+                <td style="white-space: pre-wrap">@row.Reason</td>
+                <td><BrowserTimestamp Utc="row.StartedAtUtc" /></td>
+                <td>
+                    @if (row.ExpiresAtUtc is { } expiry)
+                    {
+                        <BrowserTimestamp Utc="expiry" />
+                    }
+                    else
+                    {
+                        @Localizer["ModerationPermanent"]
+                    }
+                </td>
+                <td><div class="d-flex gap-2">
+                    <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unban"]</button>
+                    <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
+                        ExpiresAtUtc="row.ExpiresAtUtc" Disabled="_busy" OnSaved="ReloadAsync" />
+                </div></td>
+            </tr>
+        }
+        @if (_records.Count == 0)
+        {
+            <tr><td colspan="6">@Localizer[_busy ? "Loading" : "BanListNoResults"]</td></tr>
+        }
+    </tbody>
+</table>
+</div>
+<nav aria-label="@Localizer["BanListPages"]" class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-secondary" disabled="@(_busy || _page <= 1)" @onclick="() => LoadAsync(_page - 1)">@Localizer["AuditPrevious"]</button>
+    @for (int number = Math.Max(1, _page - 2); number <= Math.Min(PageCount, _page + 2); number++)
+    {
+        int page = number;
+        <button class="btn @(page == _page ? "btn-primary" : "btn-outline-primary")" aria-current="@(page == _page ? "page" : null)" disabled="@_busy" @onclick="() => LoadAsync(page)">@(page)</button>
+    }
+    <button class="btn btn-secondary" disabled="@(_busy || _page >= PageCount)" @onclick="() => LoadAsync(_page + 1)">@Localizer["AuditNext"]</button>
+</nav>
+
+@code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+    private static readonly (BanSortColumn Key, string Label)[] Columns =
+    [
+        (BanSortColumn.Id, "ModerationId"), (BanSortColumn.SteamId, "SteamID"),
+        (BanSortColumn.Reason, "ModerationReason"), (BanSortColumn.StartedAt, "ModerationStartedAt"),
+        (BanSortColumn.ExpiresAt, "ModerationExpiresAt")
+    ];
+    private List<BanRecord> _records = [];
+    private DateTime? _from, _to, _fromUtc, _toUtc;
+    private string _steamId = "", _reason = "", _appliedSteamId = "", _appliedReason = "";
+    private BanStatus _status = BanStatus.Active, _appliedStatus = BanStatus.Active;
+    private BanSortColumn _sort = BanSortColumn.StartedAt;
+    private bool _ascending, _busy;
+    private int _page = 1, _pageSize = 50, _appliedSize = 50, _total;
+    private string? _error;
+    private int PageCount => Math.Max(1, (int)Math.Ceiling((double)_total / _appliedSize));
+
+    protected override Task OnInitializedAsync() => LoadAsync(1);
+    private Task ReloadAsync() => LoadAsync(_page);
+
+    private async Task ApplyAsync()
+    {
+        if (_busy) return;
+        DateTime? from = _from.HasValue ? TimeZone?.ToUtc(_from.Value) : null;
+        DateTime? to = _to.HasValue ? TimeZone?.ToUtc(_to.Value) : null;
+        if ((_from.HasValue && !from.HasValue) || (_to.HasValue && !to.HasValue) || from > to)
+        {
+            _error = "AuditInvalidRange";
+            return;
+        }
+        _fromUtc = from;
+        _toUtc = to;
+        _appliedSteamId = _steamId.Trim();
+        _appliedReason = _reason.Trim();
+        _appliedStatus = _status;
+        _appliedSize = _pageSize;
+        await LoadAsync(1);
+    }
+
+    private async Task SortAsync(BanSortColumn column)
+    {
+        if (_busy) return;
+        _ascending = _sort == column ? !_ascending : true;
+        _sort = column;
+        await LoadAsync(1);
+    }
+
+    private Task<BanListResponse> QueryAsync(int page) => ServerBinding.SendAsync<BanListRequest, BanListResponse>(PipeMessageType.QueryBans,
+        new BanListRequest
+        {
+            Offset = (page - 1) * _appliedSize, PageSize = _appliedSize,
+            FromUtc = _fromUtc, ToUtc = _toUtc, SteamId = _appliedSteamId, Reason = _appliedReason,
+            Status = _appliedStatus, SortColumn = _sort, SortAscending = _ascending
+        });
+
+    private async Task LoadAsync(int page)
+    {
+        if (_busy) return;
+        _busy = true;
+        _error = null;
+        try
+        {
+            BanListResponse result = await QueryAsync(page);
+            _total = result.TotalCount;
+            _page = Math.Clamp(page, 1, PageCount);
+            if (_page != page) result = await QueryAsync(_page);
+            _records = result.Records;
+            _total = result.TotalCount;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Error loading banned players");
+            _records = [];
+            _total = 0;
+            _page = 1;
+            _error = "ModerationLoadFailed";
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task RemoveAsync(BanRecord row)
+    {
+        if (_busy) return;
+        _busy = true;
+        _error = null;
+        try
+        {
+            await ServerBinding.SendAsync(PipeMessageType.RemoveBan, new RemoveModerationRequest { Id = row.Id });
+            await AuditLogger.WriteAsync(AuditActions.UnbanPlayer, row.SteamId, $"Record {row.Id}");
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Error removing ban {Id}", row.Id);
+            _error = "ModerationRemoveFailed";
+        }
+        finally { _busy = false; }
+        if (_error is null) await ReloadAsync();
+    }
+}

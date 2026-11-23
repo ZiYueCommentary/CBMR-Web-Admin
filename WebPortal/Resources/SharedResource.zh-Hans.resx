@@ -403,4 +403,11 @@
   <data name="AuditNext" xml:space="preserve"><value>下一页</value></data>
   <data name="AuditInvalidRange" xml:space="preserve"><value>请输入有效的本地时间范围。不支持夏令时引起的重复或不存在的时间。</value></data>
   <data name="AuditLoadFailed" xml:space="preserve"><value>无法加载审计日志，请重试。</value></data>
+  <data name="BanListDescription" xml:space="preserve"><value>按封禁创建时间、玩家 ID、原因和状态筛选。时间使用浏览器所在时区。</value></data>
+  <data name="BanListStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="BanListStatusAll" xml:space="preserve"><value>所有封禁</value></data>
+  <data name="BanListStatusActive" xml:space="preserve"><value>生效中</value></data>
+  <data name="BanListStatusExpired" xml:space="preserve"><value>已过期</value></data>
+  <data name="BanListNoResults" xml:space="preserve"><value>没有匹配的封禁记录。</value></data>
+  <data name="BanListPages" xml:space="preserve"><value>封禁玩家分页</value></data>
 </root>
