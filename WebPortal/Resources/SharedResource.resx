@@ -230,6 +230,8 @@ If you are server admin, please log in first.</value></data>
   <data name="CannotDemoteSelf" xml:space="preserve"><value>You cannot demote your own account.</value></data>
   <data name="LastMainAdminRequired" xml:space="preserve"><value>The last main admin cannot be demoted or deleted.</value></data>
   <data name="AccountRoleSignInNotice" xml:space="preserve"><value>After a role change, the user must sign in again to refresh their access.</value></data>
+  <data name="Mute" xml:space="preserve"><value>Mute</value></data>
+  <data name="MutePlayer" xml:space="preserve"><value>Mute player</value></data>
   <data name="MuteVoice" xml:space="preserve"><value>Mute voice</value></data>
   <data name="MuteChat" xml:space="preserve"><value>Mute chat</value></data>
   <data name="MuteUntil" xml:space="preserve"><value>Mute until:</value></data>
