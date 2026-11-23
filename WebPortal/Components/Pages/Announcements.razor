@@ -36,40 +36,89 @@ limitations under the License. *@
 }
 else
 {
+    var now = DateTime.UtcNow;
+    var matching = _announcements.Where(announcement =>
+        (announcement.ExpiresAtUtc <= now) == _showExpired && MatchesSearch(announcement)).ToList();
+    int pageCount = Math.Max(1, (matching.Count + ExpiredPageSize - 1) / ExpiredPageSize);
+    int page = Math.Min(_expiredPage, pageCount);
+    IEnumerable<AnnouncementRecord> visible = _showExpired
+        ? matching.Skip((page - 1) * ExpiredPageSize).Take(ExpiredPageSize)
+        : matching;
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item"><button type="button" class="nav-link @(!_showExpired ? "active" : "")" aria-pressed="@(!_showExpired)" @onclick="() => _showExpired = false">@Localizer["AnnouncementActive"]</button></li>
+        <li class="nav-item"><button type="button" class="nav-link @(_showExpired ? "active" : "")" aria-pressed="@_showExpired" @onclick="() => _showExpired = true">@Localizer["AnnouncementExpired"]</button></li>
+    </ul>
+    <TableFilterForm OnSubmit="ApplyFilter" SubmitText="@Localizer["PlayerSessionLogSearch"]">
+        <Fields>
+            <div class="col">
+                <label for="announcement-search" class="form-label">@Localizer["AnnouncementSearch"]</label>
+                <input id="announcement-search" class="form-control" type="search" @bind="_searchInput" @bind:event="oninput" />
+            </div>
+        </Fields>
+    </TableFilterForm>
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered" aria-label="@Localizer[_showExpired ? "AnnouncementExpired" : "AnnouncementActive"]">
             <thead><tr>
                 <th>@Localizer["AnnouncementTitle"]</th><th>@Localizer["AnnouncementContent"]</th>
                 <th>@Localizer["AnnouncementExpiry"]</th><th>@Localizer["AnnouncementCreated"]</th>
-                <th>@Localizer["AnnouncementUpdated"]</th><th>@Localizer["AnnouncementStatus"]</th>
+                <th>@Localizer["AnnouncementCreator"]</th>
                 <th>@Localizer["ReportActions"]</th>
             </tr></thead>
             <tbody>
-            @foreach (var announcement in _announcements)
+            @foreach (var announcement in visible)
             {
                 <tr @key="announcement.Id">
                     <td>@announcement.Title</td>
                     <td style="white-space: pre-wrap">@announcement.Content</td>
                     <td><BrowserTimestamp Utc="announcement.ExpiresAtUtc" Format="g" /></td>
-                    <td><BrowserTimestamp Utc="announcement.CreatedAtUtc" Format="g" /><br /><small>@announcement.CreatedBy</small></td>
                     <td><BrowserTimestamp Utc="announcement.UpdatedAtUtc" Format="g" /></td>
-                    <td><span class="badge @(announcement.Expired ? "bg-secondary" : "bg-success")">@Localizer[announcement.Expired ? "AnnouncementExpired" : "AnnouncementActive"]</span></td>
+                    <td>@(string.IsNullOrWhiteSpace(announcement.CreatedBy) ? "—" : announcement.CreatedBy)</td>
                     <td><AnnouncementModalButton Announcement="announcement" OnSaved="RefreshAsync" /></td>
                 </tr>
             }
             </tbody>
         </table>
-        @if (_announcements.Count == 0) { <p>@Localizer["NoAnnouncements"]</p> }
+        @if (matching.Count == 0) { <p>@Localizer["NoAnnouncements"]</p> }
     </div>
+    @if (_showExpired && pageCount > 1)
+    {
+        <nav class="d-flex align-items-center gap-2" aria-label="@Localizer["AnnouncementPagination"]">
+            <button type="button" class="btn btn-secondary" disabled="@(page == 1)" @onclick="() => _expiredPage = page - 1">
+                @Localizer["AuditPrevious"]
+            </button>
+            <span>@Localizer["PlayerSessionLogPage", page, pageCount]</span>
+            <button type="button" class="btn btn-secondary" disabled="@(page >= pageCount)" @onclick="() => _expiredPage = page + 1">
+                @Localizer["AuditNext"]
+            </button>
+        </nav>
+    }
 }
 
 @code {
+    private const int ExpiredPageSize = 25;
     private List<AnnouncementRecord>? _announcements;
+    private bool _showExpired;
+    private int _expiredPage = 1;
+    private string _searchInput = "";
+    private string _search = "";
     private bool _error;
     private bool _disposed;
     private readonly CancellationTokenSource _cancellation = new();
 
     protected override Task OnInitializedAsync() => RefreshAsync();
+
+    private void ApplyFilter()
+    {
+        _search = _searchInput.Trim();
+        _expiredPage = 1;
+    }
+
+    private bool MatchesSearch(AnnouncementRecord announcement) =>
+        _search.Length == 0 ||
+        announcement.Title.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+        announcement.Content.Contains(_search, StringComparison.OrdinalIgnoreCase) ||
+        announcement.CreatedBy?.Contains(_search, StringComparison.OrdinalIgnoreCase) == true;
 
     private async Task RefreshAsync()
     {
