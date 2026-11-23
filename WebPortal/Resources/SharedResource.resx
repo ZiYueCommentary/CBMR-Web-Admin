@@ -361,10 +361,10 @@ If you are server admin, please log in first.</value></data>
   <data name="AnnouncementExpired" xml:space="preserve"><value>Expired</value></data>
   <data name="AnnouncementActive" xml:space="preserve"><value>Active</value></data>
   <data name="NoAnnouncements" xml:space="preserve"><value>No announcements.</value></data>
-  <data name="NewAnnouncement" xml:space="preserve"><value>New announcement</value></data>
-  <data name="EditAnnouncement" xml:space="preserve"><value>Edit announcement</value></data>
+  <data name="NewAnnouncement" xml:space="preserve"><value>Create</value></data>
+  <data name="EditAnnouncement" xml:space="preserve"><value>Edit</value></data>
   <data name="AnnouncementResend" xml:space="preserve"><value>Show again to players who have already read it</value></data>
-  <data name="SaveAnnouncement" xml:space="preserve"><value>Save announcement</value></data>
+  <data name="SaveAnnouncement" xml:space="preserve"><value>Save</value></data>
   <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>Choose a valid, unambiguous future expiry.</value></data>
   <data name="AnnouncementSaved" xml:space="preserve"><value>Announcement saved.</value></data>
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>Could not save the announcement. It may have expired; reload the list.</value></data>
