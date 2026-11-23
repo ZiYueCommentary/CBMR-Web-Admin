@@ -8,33 +8,32 @@
 <h1>@Localizer["PlayerSessionLog"]</h1>
 <p>@Localizer["PlayerSessionLogDescription"]</p>
 
-<form class="row g-2 align-items-end mb-3" @onsubmit="SearchAsync" @onsubmit:preventDefault>
-    <div class="col-md">
-        <label for="player-session-search" class="form-label">@Localizer["PlayerSessionLogSearchLabel"]</label>
-        <input id="player-session-search" class="form-control" type="search" @bind="_searchInput" @bind:event="oninput" />
-    </div>
-    <div class="col-sm-auto">
-        <label for="player-session-event" class="form-label">@Localizer["PlayerSessionLogEvent"]</label>
-        <select id="player-session-event" class="form-select" @bind="_eventInput">
-            <option value="">@Localizer["PlayerSessionLogAllEvents"]</option>
-            <option value="@PlayerSessionEvent.Join">@Localizer["PlayerSessionLogJoin"]</option>
-            <option value="@PlayerSessionEvent.Leave">@Localizer["PlayerSessionLogLeave"]</option>
-        </select>
-    </div>
-    <div class="col-sm-auto">
-        <label for="player-session-from" class="form-label">@Localizer["PlayerSessionLogFromDate"]</label>
-        <input id="player-session-from" class="form-control" type="date" @bind="_fromDateInput"
-               min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
-    </div>
-    <div class="col-sm-auto">
-        <label for="player-session-through" class="form-label">@Localizer["PlayerSessionLogThroughDate"]</label>
-        <input id="player-session-through" class="form-control" type="date" @bind="_throughDateInput"
-               min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary" disabled="@(_loading || InvalidDateRange)">@Localizer["PlayerSessionLogSearch"]</button>
-    </div>
-</form>
+<TableFilterForm OnSubmit="SearchAsync" SubmitText="@Localizer["PlayerSessionLogSearch"]" SubmitDisabled="@(_loading || InvalidDateRange)">
+    <Fields>
+        <div class="col">
+            <label for="player-session-search" class="form-label">@Localizer["PlayerSessionLogSearchLabel"]</label>
+            <input id="player-session-search" class="form-control" type="search" @bind="_searchInput" @bind:event="oninput" />
+        </div>
+        <div class="col">
+            <label for="player-session-event" class="form-label">@Localizer["PlayerSessionLogEvent"]</label>
+            <select id="player-session-event" class="form-select" @bind="_eventInput">
+                <option value="">@Localizer["PlayerSessionLogAllEvents"]</option>
+                <option value="@PlayerSessionEvent.Join">@Localizer["PlayerSessionLogJoin"]</option>
+                <option value="@PlayerSessionEvent.Leave">@Localizer["PlayerSessionLogLeave"]</option>
+            </select>
+        </div>
+        <div class="col">
+            <label for="player-session-from" class="form-label">@Localizer["PlayerSessionLogFromDate"]</label>
+            <input id="player-session-from" class="form-control" type="date" @bind="_fromDateInput"
+                   min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
+        </div>
+        <div class="col">
+            <label for="player-session-through" class="form-label">@Localizer["PlayerSessionLogThroughDate"]</label>
+            <input id="player-session-through" class="form-control" type="date" @bind="_throughDateInput"
+                   min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
+        </div>
+    </Fields>
+</TableFilterForm>
 
 @if (InvalidDateRange)
 {

@@ -1,0 +1,20 @@
+<form @onsubmit="OnSubmit" @onsubmit:preventDefault class="border rounded bg-body-tertiary p-3 mb-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-2 align-items-end">
+        @Fields
+        <div class="col d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-light border d-flex align-items-center gap-2" disabled="@SubmitDisabled">
+                <span aria-hidden="true"><Icon Name="IconName.Funnel" /></span>
+                @SubmitText
+            </button>
+            @SecondaryActions
+        </div>
+    </div>
+</form>
+
+@code {
+    [Parameter, EditorRequired] public EventCallback OnSubmit { get; set; }
+    [Parameter, EditorRequired] public RenderFragment Fields { get; set; } = default!;
+    [Parameter, EditorRequired] public string SubmitText { get; set; } = "";
+    [Parameter] public bool SubmitDisabled { get; set; }
+    [Parameter] public RenderFragment? SecondaryActions { get; set; }
+}

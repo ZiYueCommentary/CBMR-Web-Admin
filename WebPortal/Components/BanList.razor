@@ -6,46 +6,47 @@
 <UnbanPlayerDialog @ref="_unbanDialog" />
 
 <p>@Localizer["BanListDescription"]</p>
-<form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
-    <div class="col-md-3">
-        <label for="ban-from">@Localizer["AuditFrom"]</label>
-        <input id="ban-from" class="form-control" type="datetime-local" @bind="_from" disabled="@(TimeZone is null)" />
-    </div>
-    <div class="col-md-3">
-        <label for="ban-to">@Localizer["AuditTo"]</label>
-        <input id="ban-to" class="form-control" type="datetime-local" @bind="_to" disabled="@(TimeZone is null)" />
-    </div>
-    <div class="col-md-3">
-        <label for="ban-player">@Localizer["SteamID"]</label>
-        <input id="ban-player" class="form-control" type="search" @bind="_steamId" />
-    </div>
-    <div class="col-md-3">
-        <label for="ban-reason">@Localizer["ModerationReason"]</label>
-        <input id="ban-reason" class="form-control" type="search" @bind="_reason" />
-    </div>
-    <div class="col-md-3">
-        <label for="ban-status">@Localizer["BanListStatus"]</label>
-        <select id="ban-status" class="form-select" @bind="_status">
-            @foreach (BanStatus status in Enum.GetValues<BanStatus>())
-            {
-                <option value="@status">@Localizer["BanListStatus" + status]</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3">
-        <label for="ban-size">@Localizer["AuditPageSize"]</label>
-        <select id="ban-size" class="form-select" @bind="_pageSize">
-            @foreach (int size in new[] { 10, 25, 50, 100 })
-            {
-                <option value="@size">@size</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-3 align-self-end">
-        <button type="submit" class="btn btn-primary" disabled="@_busy">@Localizer["AuditApply"]</button>
+<TableFilterForm OnSubmit="ApplyAsync" SubmitText="@Localizer["AuditApply"]" SubmitDisabled="@_busy">
+    <Fields>
+        <div class="col">
+            <label for="ban-from" class="form-label">@Localizer["AuditFrom"]</label>
+            <input id="ban-from" class="form-control" type="datetime-local" @bind="_from" disabled="@(TimeZone is null)" />
+        </div>
+        <div class="col">
+            <label for="ban-to" class="form-label">@Localizer["AuditTo"]</label>
+            <input id="ban-to" class="form-control" type="datetime-local" @bind="_to" disabled="@(TimeZone is null)" />
+        </div>
+        <div class="col">
+            <label for="ban-player" class="form-label">@Localizer["SteamID"]</label>
+            <input id="ban-player" class="form-control" type="search" @bind="_steamId" />
+        </div>
+        <div class="col">
+            <label for="ban-reason" class="form-label">@Localizer["ModerationReason"]</label>
+            <input id="ban-reason" class="form-control" type="search" @bind="_reason" />
+        </div>
+        <div class="col">
+            <label for="ban-status" class="form-label">@Localizer["BanListStatus"]</label>
+            <select id="ban-status" class="form-select" @bind="_status">
+                @foreach (BanStatus status in Enum.GetValues<BanStatus>())
+                {
+                    <option value="@status">@Localizer["BanListStatus" + status]</option>
+                }
+            </select>
+        </div>
+        <div class="col">
+            <label for="ban-size" class="form-label">@Localizer["AuditPageSize"]</label>
+            <select id="ban-size" class="form-select" @bind="_pageSize">
+                @foreach (int size in new[] { 10, 25, 50, 100 })
+                {
+                    <option value="@size">@size</option>
+                }
+            </select>
+        </div>
+    </Fields>
+    <SecondaryActions>
         <button type="button" class="btn btn-secondary" disabled="@_busy" @onclick="ReloadAsync">@Localizer["ModerationRefresh"]</button>
-    </div>
-</form>
+    </SecondaryActions>
+</TableFilterForm>
 @if (_error is not null)
 {
     <div class="alert alert-danger" role="alert">@Localizer[_error]</div>
