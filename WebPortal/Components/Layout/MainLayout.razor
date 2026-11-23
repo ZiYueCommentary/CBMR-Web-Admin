@@ -2,7 +2,6 @@
 @inject PipeConnectionState ConnectionState
 
 <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
-<AuthorizeView><Authorized><ReportNotifications /></Authorized></AuthorizeView>
 
 <div class="page">
     <div class="sidebar">
@@ -11,6 +10,7 @@
 
     <main>
         <div class="top-row px-4">
+            <AuthorizeView><Authorized><ReportNotifications /></Authorized></AuthorizeView>
             <a href="https://github.com/ZiYueCommentary/CBMR-Web-Admin/" target="_blank">@Localizer["About"]</a>
         </div>
 

@@ -2,8 +2,23 @@
 @inject ServerEvents Events
 @inject IJSRuntime JS
 
-<button class="btn btn-sm btn-outline-secondary m-2" @onclick="EnableAsync">@Localizer["EnableReportNotifications"]</button>
+<div class="d-flex align-items-center gap-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary text-nowrap" aria-pressed="@_enabled" disabled="@(!_interactive || _changing)" @onclick="ToggleAsync">
+        @Localizer[_enabled ? "DisableReportNotifications" : "EnableReportNotifications"]
+    </button>
+    @if (_enabled && _permission == "default")
+    {
+        <button type="button" class="btn btn-sm btn-link" @onclick="EnableAsync">@Localizer["ReportNotificationPermission"]</button>
+    }
+    else if (_enabled && _permission is "denied" or "unsupported")
+    {
+        <small class="text-muted">@Localizer["ReportNotificationsUnavailable"]</small>
+    }
+</div>
 @code {
+    private bool _enabled = true;
+    private bool _changing;
+    private string _permission = "";
     private bool _disposed;
     private bool _interactive;
     private bool _initialChecked;
@@ -13,12 +28,37 @@
     {
         if (!firstRender) return;
         _interactive = true;
-        await EnableAsync();
+        try
+        {
+            _enabled = await JS.InvokeAsync<bool>("reportNotifications.initialize");
+            _permission = await JS.InvokeAsync<string>("reportNotifications.permission");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        StateHasChanged();
         await CheckPendingAsync();
+    }
+    private async Task ToggleAsync()
+    {
+        if (_changing) return;
+        _changing = true;
+        try
+        {
+            _enabled = !_enabled;
+            await JS.InvokeVoidAsync("reportNotifications.setEnabled", _enabled);
+            _permission = await JS.InvokeAsync<string>("reportNotifications.permission");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        finally { _changing = false; }
     }
     private async Task EnableAsync()
     {
-        try { await JS.InvokeVoidAsync("reportNotifications.enable"); }
+        try
+        {
+            await JS.InvokeVoidAsync("reportNotifications.enable");
+            _permission = await JS.InvokeAsync<string>("reportNotifications.permission");
+        }
         catch (JSException) { }
         catch (JSDisconnectedException) { }
     }

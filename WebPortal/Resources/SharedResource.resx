@@ -375,4 +375,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportFilterReporter" xml:space="preserve"><value>Reporter name or Steam ID</value></data>
   <data name="ReportFilterPlayer" xml:space="preserve"><value>Reported player name or Steam ID</value></data>
   <data name="ReportListPages" xml:space="preserve"><value>Player reports pages</value></data>
+  <data name="DisableReportNotifications" xml:space="preserve"><value>Disable report notifications</value></data>
+  <data name="ReportNotificationPermission" xml:space="preserve"><value>Allow browser notifications</value></data>
+  <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>Notifications are blocked or unavailable in this browser.</value></data>
 </root>
