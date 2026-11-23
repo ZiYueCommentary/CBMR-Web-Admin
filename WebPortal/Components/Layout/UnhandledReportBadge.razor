@@ -1,0 +1,70 @@
+@using CbmrWebAdmin.Shared.Requests
+@implements IDisposable
+@inject ServerEvents Events
+
+@if (_count > 0)
+{
+    <span class="badge rounded-pill text-bg-danger ms-auto">
+        <span aria-hidden="true">@_count</span>
+        <span class="visually-hidden">@Localizer["PendingReportNotification", _count]</span>
+    </span>
+}
+
+@code {
+    private readonly CancellationTokenSource _cancellation = new();
+    private int _count;
+    private bool _disposed, _refreshing, _refreshPending;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return Task.CompletedTask;
+        Events.ReportsUpdated += OnReportsUpdated;
+        return RefreshAsync();
+    }
+
+    private void OnReportsUpdated(ReportRecord? report) => _ = InvokeAsync(RefreshAsync);
+
+    private async Task RefreshAsync()
+    {
+        if (_disposed) return;
+        if (_refreshing)
+        {
+            _refreshPending = true;
+            return;
+        }
+
+        _refreshing = true;
+        try
+        {
+            do
+            {
+                _refreshPending = false;
+                try
+                {
+                    var result = await ServerBinding.SendAsync<ReportListRequest, ReportListResponse>(
+                        PipeMessageType.QueryReports, new ReportListRequest { PageSize = 1 }, _cancellation.Token);
+                    if (!_disposed && _count != result.TotalCount)
+                    {
+                        _count = result.TotalCount;
+                        StateHasChanged();
+                    }
+                }
+                catch (Exception exception) when (exception is TimeoutException or InvalidOperationException or IOException or OperationCanceledException)
+                {
+                }
+            } while (!_disposed && _refreshPending);
+        }
+        finally
+        {
+            _refreshing = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Events.ReportsUpdated -= OnReportsUpdated;
+        _cancellation.Cancel();
+        _cancellation.Dispose();
+    }
+}
