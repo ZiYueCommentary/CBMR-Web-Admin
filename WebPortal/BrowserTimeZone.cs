@@ -2,10 +2,11 @@ namespace CbmrWebAdmin.WebPortal;
 
 public sealed class BrowserTimeZone(TimeZoneInfo zone)
 {
-    public (string Name, string Offset, string? City) GetDisplayDetails()
+    public (string Name, string Id, string Offset, bool IsDaylight) GetDisplayDetails()
     {
         DateTime now = DateTime.UtcNow;
-        string name = zone.IsDaylightSavingTime(now) ? zone.DaylightName : zone.StandardName;
+        bool isDaylight = zone.IsDaylightSavingTime(now);
+        string name = isDaylight ? zone.DaylightName : zone.StandardName;
 
         TimeSpan offset = zone.GetUtcOffset(now);
         string sign = offset < TimeSpan.Zero ? "-" : "+";
@@ -14,20 +15,7 @@ public sealed class BrowserTimeZone(TimeZoneInfo zone)
             ? FormattableString.Invariant($"UTC{sign}{magnitude.Hours}")
             : FormattableString.Invariant($"UTC{sign}{magnitude.Hours}:{magnitude.Minutes:00}");
 
-        return (string.IsNullOrEmpty(name) ? zone.DisplayName : name, offsetLabel, GetCity(zone.Id));
-    }
-
-    private static string? GetCity(string id)
-    {
-        int firstSlash = id.IndexOf('/');
-        if (firstSlash < 0) return null;
-
-        return id[..firstSlash] switch
-        {
-            "Africa" or "America" or "Antarctica" or "Arctic" or "Asia" or "Atlantic" or "Australia" or "Europe" or "Indian" or "Pacific"
-                => id[(id.LastIndexOf('/') + 1)..].Replace('_', ' '),
-            _ => null
-        };
+        return (string.IsNullOrEmpty(name) ? zone.DisplayName : name, zone.Id, offsetLabel, isDaylight);
     }
 
     public DateTime FromUtc(DateTime utc) =>

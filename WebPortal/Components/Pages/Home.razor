@@ -15,8 +15,9 @@
 
 @if (TimeZone is not null)
 {
-    (string name, string offset, string? city) = TimeZone.GetDisplayDetails();
-    <p>@(city is null ? Localizer["TimeZoneNotice", name, offset] : Localizer["TimeZoneNoticeWithCity", name, offset, city])</p>
+    (string name, string id, string offset, bool isDaylight) = TimeZone.GetDisplayDetails();
+    var localizedName = Localizer[isDaylight ? $"TimeZoneDaylightName.{id}" : $"TimeZoneStandardName.{id}"];
+    <p>@Localizer["TimeZoneNotice", localizedName.ResourceNotFound ? name : localizedName.Value, id, offset]</p>
 }
 
 <p>@Localizer["PortalVersion", PortalVersion]</p>
