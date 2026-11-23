@@ -15,7 +15,8 @@
 
 @if (TimeZone is not null)
 {
-    <p>@Localizer["TimeZoneNotice", TimeZone.Id, TimeZone.CurrentUtcOffsetLabel]</p>
+    (string name, string offset, string? city) = TimeZone.GetDisplayDetails();
+    <p>@(city is null ? Localizer["TimeZoneNotice", name, offset] : Localizer["TimeZoneNoticeWithCity", name, offset, city])</p>
 }
 
 <p>@Localizer["PortalVersion", PortalVersion]</p>

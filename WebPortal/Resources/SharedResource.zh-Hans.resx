@@ -426,4 +426,5 @@
   <data name="ShowPassword" xml:space="preserve"><value>显示密码</value></data>
   <data name="HidePassword" xml:space="preserve"><value>隐藏密码</value></data>
   <data name="TimeZoneNotice" xml:space="preserve"><value>所有时间均按 {0} ({1}) 时区显示。</value></data>
+  <data name="TimeZoneNoticeWithCity" xml:space="preserve"><value>所有时间均按 {0} ({1}，{2}) 时区显示。</value></data>
 </root>
