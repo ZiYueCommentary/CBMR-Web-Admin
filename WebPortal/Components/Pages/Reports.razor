@@ -1,8 +1,12 @@
 @page "/reports"
 @attribute [Authorize]
+@using CbmrWebAdmin.WebPortal.Components.Dialogs
 
 <PageTitle>@Localizer["Reports"]</PageTitle>
-<h1>@Localizer["Reports"]</h1>
+<div class="d-flex align-items-center gap-2 mb-2">
+    <h1 class="mb-0">@Localizer["Reports"]</h1>
+    <HelpModalButton Title="@Localizer["ReportsHelpTitle"]" Description="@Localizer["ReportsHelpDescription"]" />
+</div>
 <ul class="nav nav-tabs mb-3">
     <li class="nav-item"><button type="button" class="nav-link @(!_handled ? "active" : "")" aria-pressed="@(!_handled)" @onclick="() => _handled = false">@Localizer["ReportPending"]</button></li>
     <li class="nav-item"><button type="button" class="nav-link @(_handled ? "active" : "")" aria-pressed="@_handled" @onclick="() => _handled = true">@Localizer["ReportHandled"]</button></li>

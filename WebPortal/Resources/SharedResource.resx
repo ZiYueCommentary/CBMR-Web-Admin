@@ -317,6 +317,8 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerSessionLogPagination" xml:space="preserve"><value>Join-leave log pages</value></data>
   <data name="PlayerSessionLogPage" xml:space="preserve"><value>Page {0} of {1}</value></data>
   <data name="Reports" xml:space="preserve"><value>Reports</value></data>
+  <data name="ReportsHelpTitle" xml:space="preserve"><value>How player reports work</value></data>
+  <data name="ReportsHelpDescription" xml:space="preserve"><value>In game, players type /report in chat, select another online player, and enter a reason. The report appears in Pending. When an admin accepts or rejects it and saves a reply, the report moves to Handled. The result and reply go only to the reporter via private in-game chat, immediately if they are online or the next time they join.</value></data>
   <data name="PendingReportNotification" xml:space="preserve"><value>{0} unhandled reports</value></data>
   <data name="ReviewPendingReports" xml:space="preserve"><value>Open Reports to review and reply.</value></data>
   <data name="AuditActionReplyReport" xml:space="preserve"><value>Reply to report</value></data>
@@ -341,6 +343,8 @@ If you are server admin, please log in first.</value></data>
   <data name="EnableReportNotifications" xml:space="preserve"><value>Enable report notifications</value></data>
   <data name="NewReport" xml:space="preserve"><value>New report: {0} reported {1}</value></data>
   <data name="Announcements" xml:space="preserve"><value>Announcements</value></data>
+  <data name="AnnouncementsHelpTitle" xml:space="preserve"><value>How announcements work</value></data>
+  <data name="AnnouncementsHelpDescription" xml:space="preserve"><value>When players join the server, unexpired announcements they have not seen appear as in-game pop-ups, one at a time. The server marks each announcement as read when it is shown. To show an edited announcement again to players who have already seen it, select “Show again to players who have already read it” when saving. Expired announcements are no longer shown.</value></data>
   <data name="AnnouncementsLoadFailed" xml:space="preserve"><value>Could not load announcements.</value></data>
   <data name="AnnouncementTitle" xml:space="preserve"><value>Title</value></data>
   <data name="AnnouncementContent" xml:space="preserve"><value>Content</value></data>

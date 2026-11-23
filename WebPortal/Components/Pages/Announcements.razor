@@ -18,7 +18,10 @@ limitations under the License. *@
 @using CbmrWebAdmin.WebPortal.Components.Dialogs
 
 <PageTitle>@Localizer["Announcements"]</PageTitle>
-<h1>@Localizer["Announcements"]</h1>
+<div class="d-flex align-items-center gap-2 mb-2">
+    <h1 class="mb-0">@Localizer["Announcements"]</h1>
+    <HelpModalButton Title="@Localizer["AnnouncementsHelpTitle"]" Description="@Localizer["AnnouncementsHelpDescription"]" />
+</div>
 <div class="d-flex gap-2 mb-3">
     <AnnouncementModalButton OnSaved="RefreshAsync" />
     <button class="btn btn-secondary" @onclick="RefreshAsync">@Localizer["Reload"]</button>

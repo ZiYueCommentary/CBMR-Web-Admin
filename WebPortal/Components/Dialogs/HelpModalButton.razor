@@ -1,0 +1,22 @@
+<button type="button" class="btn btn-sm btn-outline-secondary" aria-label="@Title" title="@Title" @onclick="ShowModal">
+    <span class="bi bi-question-circle" aria-hidden="true"></span>
+</button>
+
+<Modal @ref="_modal" Title="@Title">
+    <BodyTemplate>
+        <p class="mb-0">@Description</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="HideModal">@Localizer["Close"]</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = null!;
+    [Parameter, EditorRequired] public string Description { get; set; } = null!;
+
+    private Modal _modal = null!;
+
+    private Task ShowModal() => _modal.ShowAsync();
+    private Task HideModal() => _modal.HideAsync();
+}

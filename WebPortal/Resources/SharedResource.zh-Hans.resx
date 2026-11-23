@@ -357,6 +357,8 @@
   <data name="PlayerSessionLogPagination" xml:space="preserve"><value>玩家进出日志分页</value></data>
   <data name="PlayerSessionLogPage" xml:space="preserve"><value>第 {0} 页，共 {1} 页</value></data>
   <data name="Reports" xml:space="preserve"><value>玩家举报</value></data>
+  <data name="ReportsHelpTitle" xml:space="preserve"><value>玩家举报如何运作</value></data>
+  <data name="ReportsHelpDescription" xml:space="preserve"><value>玩家在游戏聊天中输入 /report，选择另一名在线玩家并填写举报原因，提交后即可在「待处理」中看到该举报。管理员选择受理或驳回并保存回复后，举报会移至「已处理」。处理结果和回复仅通过游戏内私聊发送给举报人：在线时立即收到，离线时则在下次加入服务器时收到。</value></data>
   <data name="PendingReportNotification" xml:space="preserve"><value>{0} 条待处理举报</value></data>
   <data name="ReviewPendingReports" xml:space="preserve"><value>打开举报页面查看并回复。</value></data>
   <data name="AuditActionReplyReport" xml:space="preserve"><value>回复举报</value></data>
@@ -381,6 +383,8 @@
   <data name="EnableReportNotifications" xml:space="preserve"><value>启用举报通知</value></data>
   <data name="NewReport" xml:space="preserve"><value>新举报：{0} 举报了 {1}</value></data>
   <data name="Announcements" xml:space="preserve"><value>公告栏</value></data>
+  <data name="AnnouncementsHelpTitle" xml:space="preserve"><value>公告栏如何运作</value></data>
+  <data name="AnnouncementsHelpDescription" xml:space="preserve"><value>玩家加入服务器时，尚未看过且未过期的公告会在游戏中逐条弹出。公告一经显示即标记为已读。编辑公告时，若要让已读玩家再次看到该公告，请在保存前勾选「重新向已读玩家显示此公告」。已过期的公告不再显示。</value></data>
   <data name="AnnouncementsLoadFailed" xml:space="preserve"><value>无法加载公告。</value></data>
   <data name="AnnouncementTitle" xml:space="preserve"><value>标题</value></data>
   <data name="AnnouncementContent" xml:space="preserve"><value>内容</value></data>
