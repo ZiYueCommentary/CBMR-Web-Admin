@@ -12,12 +12,45 @@ A website that manages a CBMR server without launching the game, powered by *[CB
 
 </div>
 
+## Highlights
+
+- **Manage the server from a browser.** Broadcast to players, fix the elevator, clear dropped items, and restart the server without launching the game.
+- **Moderate players in one place.** See who's online, follow live chat, kick or ban players, and mute text or voice chat separately.
+- **Follow up on in-game reports.** Players submit reports with `/report`. Admins can filter the queue and reply from the portal; offline players receive replies when they return.
+- **Reach players as they join.** Publish announcements with an expiry date. Players see unread, unexpired announcements as in-game pop-ups on join.
+- **Share admin access without sharing an account.** The primary admin manages individual accounts. The audit log shows who performed admin actions, and the session log tracks player joins and departures.
+
+## Screenshots
+
+These screenshots show the actual web portal with fictional players, Steam IDs, reports, and announcements.
+
+**Central Console** — Broadcast, maintain the map, and restart the server.
+
+![Central Console with player communication, map maintenance, moderation, and restart controls](docs/screenshots/central-console.png)
+
+<details>
+<summary>See the Players, Reports, and Announcements pages</summary>
+
+**Players** — See who's online and take action from the player list.
+
+![Online players with fictional Steam IDs and Ban, Mute, and Kick controls](docs/screenshots/players.png)
+
+**Reports** — Filter incoming reports, track their status, and reply.
+
+![Pending reports with search filters and reply buttons](docs/screenshots/reports.png)
+
+**Announcements** — Create and edit in-game notices and check their expiry.
+
+![Announcement list showing active and expired notices](docs/screenshots/announcements.png)
+
+</details>
+
 ## Overview
 
 CBMR Web Admin has two parts that talk to each other over a local named pipe (`CbmrWebAdmin`), so both must run on the same machine:
 
-- **WebPortal**: an ASP.NET Core Blazor website for server administrators. It shows online players, chat, reports, bans, mutes and the join/leave history, and offers server controls (broadcast, kick, ban, mute, restart, fix elevator, clear items). Admin accounts and the audit log are stored in its own SQLite database.
-- **ServerBinding**: a [CCB](https://github.com/EasyT-T/ccb) plugin loaded by the CBMR game server. It answers the portal's requests, applies bans and mutes in game, and provides the in-game `/report` command. Its data (bans, mutes, reports, session log) is stored in a SQLite database next to the game server.
+- **WebPortal**: an ASP.NET Core Blazor site that serves the admin interface and stores admin accounts and audit events in SQLite.
+- **ServerBinding**: a [CCB](https://github.com/EasyT-T/ccb) plugin that applies admin actions in game and runs player-facing features like `/report`. It stores game-side records in a separate SQLite database.
 
 Always deploy the portal and the binding from the same version; a newer portal may send requests an older binding does not understand.
 
