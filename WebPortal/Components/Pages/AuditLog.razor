@@ -51,16 +51,19 @@
     private static Group? GetExpiryField(AuditLogEntry entry)
     {
         if (entry.Details is null) return null;
-        string? prefix = entry.Action switch
+        const string expiry = @"until (?<expiry>[0-9\-: ]{19}Z)";
+        string? pattern = entry.Action switch
         {
-            AuditActions.BanPlayer or AuditActions.MuteVoice or AuditActions.MuteChat => @"\A",
-            AuditActions.ModifyBan => @"\ARecord [0-9]+; ",
-            AuditActions.ModifyMute => @"\ARecord [0-9]+; (?:Voice|Chat); ",
+            AuditActions.BanPlayer or AuditActions.MuteVoice or AuditActions.MuteChat => @"\A" + expiry + ": ",
+            AuditActions.ModifyBan => @"\ARecord [0-9]+; " + expiry + ": ",
+            AuditActions.ModifyMute => @"\ARecord [0-9]+; (?:Voice|Chat); " + expiry + ": ",
+            AuditActions.CreateAnnouncement or AuditActions.UpdateAnnouncement =>
+                "; " + expiry + @"; revision [0-9]+; resend: (?:True|False)\z",
             _ => null
         };
-        if (prefix is null) return null;
+        if (pattern is null) return null;
 
-        Match match = Regex.Match(entry.Details, prefix + @"until (?<expiry>[0-9\-: ]{19}Z): ");
+        Match match = Regex.Match(entry.Details, pattern);
         return match.Success ? match.Groups["expiry"] : null;
     }
 
