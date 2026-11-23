@@ -26,11 +26,6 @@
     font-weight: 600;
 }
 
-.console-language-setting {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
 .console-language-setting > .form-select {
     flex: 1 1 auto;
     min-width: 0;
