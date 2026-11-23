@@ -59,4 +59,21 @@
       <ProjectReference Include="..\Shared\Shared.csproj" />
     </ItemGroup>
 
+    <Target Name="CopyPortableStaticWebAssets" AfterTargets="CopyStaticWebAssetsToOutputDirectory">
+      <ComputeStaticWebAssetsForCurrentProject Assets="@(StaticWebAsset)"
+          ProjectMode="$(StaticWebAssetProjectMode)" AssetKind="Build" Source="$(PackageId)">
+        <Output TaskParameter="StaticWebAssets" ItemName="_PortableStaticWebAssets" />
+      </ComputeStaticWebAssetsForCurrentProject>
+
+      <ComputeStaticWebAssetsTargetPaths Assets="@(_PortableStaticWebAssets)" PathPrefix="wwwroot">
+        <Output TaskParameter="AssetsWithTargetPath" ItemName="_PortableStaticWebAssetsWithTargetPath" />
+      </ComputeStaticWebAssetsTargetPaths>
+
+      <Copy SourceFiles="@(_PortableStaticWebAssetsWithTargetPath)"
+          DestinationFiles="@(_PortableStaticWebAssetsWithTargetPath->'$(OutDir)%(TargetPath)')"
+          SkipUnchangedFiles="true">
+        <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+      </Copy>
+    </Target>
+
 </Project>

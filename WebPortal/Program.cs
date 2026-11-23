@@ -29,8 +29,12 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        WebApplicationBuilder builder = WebApplication.CreateBuilder();
-        ConfigureBuildStaticWebAssets(builder);
+        string bundledWebRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            WebRootPath = Directory.Exists(bundledWebRoot) ? bundledWebRoot : null
+        });
+        bool useStaticAssetEndpoints = ConfigureStaticWebAssets(builder);
 
         builder.Services.AddLocalization();
         builder.Services.AddRazorComponents()
@@ -86,7 +90,10 @@ public class Program
         }
 
         app.UseHttpsRedirection();
-        app.MapStaticAssets();
+        if (useStaticAssetEndpoints)
+            app.MapStaticAssets();
+        else
+            app.UseStaticFiles();
 
         app.UseAuthentication();
         app.UseAuthorization();
@@ -99,31 +106,35 @@ public class Program
         await app.RunAsync();
     }
 
-    private static void ConfigureBuildStaticWebAssets(WebApplicationBuilder builder)
+    private static bool ConfigureStaticWebAssets(WebApplicationBuilder builder)
     {
         if (builder.Environment.IsDevelopment())
-            return;
+            return true;
 
-        string manifestPath = Path.Combine(AppContext.BaseDirectory,
-            $"{builder.Environment.ApplicationName}.staticwebassets.runtime.json");
-        if (!File.Exists(manifestPath))
-            return;
+        string manifestPrefix = Path.Combine(AppContext.BaseDirectory, builder.Environment.ApplicationName);
+        string endpointsPath = manifestPrefix + ".staticwebassets.endpoints.json";
+        if (!File.Exists(endpointsPath))
+            return false;
 
-        manifestPath = builder.Configuration[WebHostDefaults.StaticWebAssetsKey] ?? manifestPath;
-        if (File.Exists(manifestPath))
+        using (FileStream manifest = File.OpenRead(endpointsPath))
+        using (JsonDocument document = JsonDocument.Parse(manifest))
         {
-            using FileStream manifest = File.OpenRead(manifestPath);
-            using JsonDocument document = JsonDocument.Parse(manifest);
-            if (document.RootElement.GetProperty("ContentRoots").EnumerateArray()
-                .All(root => Directory.Exists(root.GetString())))
-            {
-                builder.WebHost.UseStaticWebAssets();
-                return;
-            }
+            if (document.RootElement.GetProperty("ManifestType").GetString() == "Publish")
+                return true;
         }
 
-        throw new InvalidOperationException(
-            "The WebPortal build output references static web assets that are unavailable on this machine. " +
-            "Deploy the full `dotnet publish` output instead of the build output.");
+        string runtimePath = builder.Configuration[WebHostDefaults.StaticWebAssetsKey] ??
+                             manifestPrefix + ".staticwebassets.runtime.json";
+        if (!File.Exists(runtimePath))
+            return false;
+
+        using FileStream runtimeManifest = File.OpenRead(runtimePath);
+        using JsonDocument runtimeDocument = JsonDocument.Parse(runtimeManifest);
+        if (!runtimeDocument.RootElement.GetProperty("ContentRoots").EnumerateArray()
+                .All(root => Directory.Exists(root.GetString())))
+            return false;
+
+        builder.WebHost.UseStaticWebAssets();
+        return true;
     }
 }

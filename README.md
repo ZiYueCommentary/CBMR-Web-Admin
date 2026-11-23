@@ -45,7 +45,7 @@ dotnet publish WebPortal/WebPortal.csproj -c Release -o publish/portal
 
 ### 3. Install the portal
 
-1. Copy the full `publish/portal` folder (or extract the `WebPortal` artifact from the Build workflow for the same version) to a folder on the same machine as the game server. Do not deploy `bin/` output from `dotnet build`, which can reference static assets on the build machine.
+1. Copy the full `publish/portal` folder (or extract the `WebPortal` artifact from the Build workflow for the same version) to a folder on the same machine as the game server. If deploying from `dotnet build` instead, rebuild with the current source and copy the entire output folder, including `wwwroot`.
 2. Edit `appsettings.json` there and add the database and listening address (change the port as you like):
 
    ```json
