@@ -44,6 +44,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
             );
             CREATE TABLE IF NOT EXISTS "announcement_reads" (
                 "SteamId" TEXT NOT NULL, "AnnouncementId" INTEGER NOT NULL, "Revision" INTEGER NOT NULL,
+                "PlayerName" TEXT NULL, "ReadAtUtc" TEXT NULL,
                 PRIMARY KEY ("SteamId", "AnnouncementId")
             );
             CREATE TABLE IF NOT EXISTS "Reports" (
@@ -117,6 +118,26 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 Database.ExecuteSqlRaw("""ALTER TABLE "Reports" ADD COLUMN "ReplyDeliveredAtUtc" TEXT NULL""");
             if (!hasOutcomeColumn)
                 Database.ExecuteSqlRaw("""ALTER TABLE "Reports" ADD COLUMN "Accepted" INTEGER NULL""");
+        }
+
+        using (DbCommand command = Database.GetDbConnection().CreateCommand())
+        {
+            command.Transaction = transaction.GetDbTransaction();
+            command.CommandText = """PRAGMA table_info("announcement_reads")""";
+            bool hasPlayerName = false;
+            bool hasReadAt = false;
+            using (DbDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    if (reader.GetString(1) == "PlayerName") hasPlayerName = true;
+                    if (reader.GetString(1) == "ReadAtUtc") hasReadAt = true;
+                }
+            }
+            if (!hasPlayerName)
+                Database.ExecuteSqlRaw("""ALTER TABLE "announcement_reads" ADD COLUMN "PlayerName" TEXT NULL""");
+            if (!hasReadAt)
+                Database.ExecuteSqlRaw("""ALTER TABLE "announcement_reads" ADD COLUMN "ReadAtUtc" TEXT NULL""");
         }
 
         SaveChanges();

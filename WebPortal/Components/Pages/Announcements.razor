@@ -74,7 +74,12 @@ else
                     <td><BrowserTimestamp Utc="announcement.ExpiresAtUtc" Format="g" /></td>
                     <td><BrowserTimestamp Utc="announcement.UpdatedAtUtc" Format="g" /></td>
                     <td>@(string.IsNullOrWhiteSpace(announcement.CreatedBy) ? "—" : announcement.CreatedBy)</td>
-                    <td><AnnouncementModalButton Announcement="announcement" OnSaved="RefreshAsync" /></td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <AnnouncementModalButton Announcement="announcement" OnSaved="RefreshAsync" />
+                            <AnnouncementReadersModalButton Announcement="announcement" />
+                        </div>
+                    </td>
                 </tr>
             }
             </tbody>

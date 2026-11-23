@@ -1,0 +1,77 @@
+<button type="button" class="btn btn-secondary" disabled="@_loading" @onclick="ShowAsync">@Localizer["AnnouncementViewReaders"]</button>
+<Modal @ref="_modal" Title="@Localizer["AnnouncementViewReaders"]">
+    <BodyTemplate>
+        <p class="fw-semibold">@Announcement.Title</p>
+        @if (_loading)
+        {
+            <p>@Localizer["Loading"]</p>
+        }
+        else if (_readers is null)
+        {
+            <p class="text-danger" role="alert">@Localizer["AnnouncementReadersLoadFailed"]</p>
+        }
+        else if (_readers.Count == 0)
+        {
+            <p>@Localizer["AnnouncementNoReaders"]</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped" aria-label="@Localizer["AnnouncementViewReaders"]">
+                    <thead><tr>
+                        <th scope="col">@Localizer["AnnouncementReadTime"]</th>
+                        <th scope="col">@Localizer["AnnouncementReaderName"]</th>
+                        <th scope="col">@Localizer["SteamID"]</th>
+                    </tr></thead>
+                    <tbody>
+                        @foreach (var reader in _readers)
+                        {
+                            <tr>
+                                <td>
+                                    @if (reader.ReadAtUtc is { } readAtUtc)
+                                    {
+                                        <BrowserTimestamp Utc="readAtUtc" />
+                                    }
+                                    else
+                                    {
+                                        <text>—</text>
+                                    }
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(reader.PlayerName) ? "—" : reader.PlayerName)</td>
+                                <td>@reader.SteamId</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <button type="button" class="btn btn-secondary" @onclick="CloseAsync">@Localizer["Close"]</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter, EditorRequired] public AnnouncementRecord Announcement { get; set; } = null!;
+
+    private Modal _modal = null!;
+    private List<AnnouncementReaderRecord>? _readers;
+    private bool _loading;
+
+    private async Task ShowAsync()
+    {
+        if (_loading) return;
+        _readers = null;
+        _loading = true;
+        try
+        {
+            await _modal.ShowAsync();
+            _readers = await ServerBinding.SendAsync<long, List<AnnouncementReaderRecord>>(
+                PipeMessageType.ListAnnouncementReaders, Announcement.Id);
+        }
+        catch { }
+        finally { _loading = false; }
+    }
+
+    private Task CloseAsync() => _modal.HideAsync();
+}

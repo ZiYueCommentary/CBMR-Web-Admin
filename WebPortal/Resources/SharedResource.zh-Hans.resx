@@ -391,6 +391,11 @@
   <data name="AnnouncementExpiry" xml:space="preserve"><value>截止时间</value></data>
   <data name="AnnouncementCreated" xml:space="preserve"><value>创建时间</value></data>
   <data name="AnnouncementCreator" xml:space="preserve"><value>创建者</value></data>
+  <data name="AnnouncementViewReaders" xml:space="preserve"><value>查看已读玩家</value></data>
+  <data name="AnnouncementReadTime" xml:space="preserve"><value>已读时间</value></data>
+  <data name="AnnouncementReaderName" xml:space="preserve"><value>当时用户名</value></data>
+  <data name="AnnouncementNoReaders" xml:space="preserve"><value>暂无玩家已读此公告。</value></data>
+  <data name="AnnouncementReadersLoadFailed" xml:space="preserve"><value>无法加载已读玩家。</value></data>
   <data name="AnnouncementSearch" xml:space="preserve"><value>标题、内容或创建者</value></data>
   <data name="AnnouncementPagination" xml:space="preserve"><value>过期公告分页</value></data>
   <data name="AnnouncementExpired" xml:space="preserve"><value>已过期</value></data>

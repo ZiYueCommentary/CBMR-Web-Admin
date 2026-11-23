@@ -43,6 +43,21 @@ public static partial class Listener
         return PipeEnvelope.CreateResponse(request, announcements.Select(ToRecord).ToList());
     }
 
+    private static async Task<PipeEnvelope> HandleListAnnouncementReadersAsync(PipeEnvelope request, string path, CancellationToken token)
+    {
+        long announcementId = request.DeserializePayload<long>();
+        await using WebPortalDbContext database = WebPortalDbContext.Create(path);
+        var reads = await database.AnnouncementReads.AsNoTracking()
+            .Where(read => read.AnnouncementId == announcementId)
+            .OrderByDescending(read => read.ReadAtUtc).ThenBy(read => read.SteamId).ToListAsync(token);
+        return PipeEnvelope.CreateResponse(request, reads.Select(read => new AnnouncementReaderRecord
+        {
+            SteamId = read.SteamId,
+            PlayerName = read.PlayerName,
+            ReadAtUtc = read.ReadAtUtc is { } utc ? DateTime.SpecifyKind(utc, DateTimeKind.Utc) : null
+        }).ToList());
+    }
+
     private static async Task<PipeEnvelope> HandleCreateAnnouncementAsync(PipeEnvelope request, string path, CancellationToken token)
     {
         var input = request.DeserializePayload<CreateAnnouncementRequest>();

@@ -351,6 +351,11 @@ If you are server admin, please log in first.</value></data>
   <data name="AnnouncementExpiry" xml:space="preserve"><value>Expiry</value></data>
   <data name="AnnouncementCreated" xml:space="preserve"><value>Created</value></data>
   <data name="AnnouncementCreator" xml:space="preserve"><value>Creator</value></data>
+  <data name="AnnouncementViewReaders" xml:space="preserve"><value>View readers</value></data>
+  <data name="AnnouncementReadTime" xml:space="preserve"><value>Read time</value></data>
+  <data name="AnnouncementReaderName" xml:space="preserve"><value>Player name at the time</value></data>
+  <data name="AnnouncementNoReaders" xml:space="preserve"><value>No players have read this announcement.</value></data>
+  <data name="AnnouncementReadersLoadFailed" xml:space="preserve"><value>Could not load readers.</value></data>
   <data name="AnnouncementSearch" xml:space="preserve"><value>Title, content, or creator</value></data>
   <data name="AnnouncementPagination" xml:space="preserve"><value>Expired announcement pages</value></data>
   <data name="AnnouncementExpired" xml:space="preserve"><value>Expired</value></data>

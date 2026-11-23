@@ -65,11 +65,13 @@ public partial class EntryPoint
                 player.ShowDialog(MessageDialogType, AnnouncementDialog, announcement.Title, announcement.Content,
                     PlayerMessages.Get(_playerLanguage.Culture, "AnnouncementOK"), "");
                 if (read is null)
-                    database.AnnouncementReads.Add(new AnnouncementRead
-                    {
-                        SteamId = steamId, AnnouncementId = id, Revision = announcement.Revision
-                    });
-                else read.Revision = announcement.Revision;
+                {
+                    read = new AnnouncementRead { SteamId = steamId, AnnouncementId = id };
+                    database.AnnouncementReads.Add(read);
+                }
+                read.Revision = announcement.Revision;
+                read.PlayerName = player.GetName();
+                read.ReadAtUtc = DateTime.UtcNow;
                 database.SaveChanges();
                 return;
             }

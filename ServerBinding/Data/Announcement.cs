@@ -31,4 +31,6 @@ public sealed class AnnouncementRead
     public string SteamId { get; set; } = "";
     public long AnnouncementId { get; set; }
     public int Revision { get; set; }
+    public string? PlayerName { get; set; }
+    public DateTime? ReadAtUtc { get; set; }
 }
