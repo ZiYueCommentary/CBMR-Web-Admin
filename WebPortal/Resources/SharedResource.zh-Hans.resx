@@ -420,4 +420,6 @@
   <data name="DisableReportNotifications" xml:space="preserve"><value>禁用举报通知</value></data>
   <data name="ReportNotificationPermission" xml:space="preserve"><value>允许浏览器通知</value></data>
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>浏览器已阻止通知或不支持通知。</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>显示密码</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>隐藏密码</value></data>
 </root>

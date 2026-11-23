@@ -42,10 +42,15 @@ limitations under the License.
                     <label for="Input.UserName" class="form-label">@Localizer["Username"]</label>
                     <ValidationMessage For="() => Input.UserName" class="text-danger"/>
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control"
-                               autocomplete="current-password" aria-required="true"/>
-                    <label for="Input.Password" class="form-label">@Localizer["Password"]</label>
+                <div class="mb-3">
+                    <div class="input-group">
+                        <div class="form-floating">
+                            <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control"
+                                       autocomplete="current-password" aria-required="true"/>
+                            <label for="Input.Password" class="form-label">@Localizer["Password"]</label>
+                        </div>
+                        <PasswordVisibilityToggle InputId="Input.Password"/>
+                    </div>
                     <ValidationMessage For="() => Input.Password" class="text-danger"/>
                 </div>
                 <div class="checkbox mb-3">

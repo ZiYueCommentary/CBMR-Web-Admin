@@ -39,6 +39,7 @@
                     <div class="input-group">
                         <InputText id="account-password" type="password" @bind-Value="_input.Password" class="form-control"
                                    autocomplete="new-password" disabled="@_saving"/>
+                        <PasswordVisibilityToggle InputId="account-password" Disabled="@_saving"/>
                         <button type="button" class="btn btn-outline-secondary" disabled="@_saving"
                                 @onclick="GeneratePassword">@Localizer["GeneratePassword"]</button>
                     </div>
