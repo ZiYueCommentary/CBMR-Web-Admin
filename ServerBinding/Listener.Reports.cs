@@ -1,11 +1,59 @@
 using CbmrWebAdmin.ServerBinding.Data;
 using CbmrWebAdmin.Shared;
+using CbmrWebAdmin.Shared.Requests;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace CbmrWebAdmin.ServerBinding;
 
 public static partial class Listener
 {
+    private static async Task<PipeEnvelope> HandleQueryReportsAsync(PipeEnvelope request, string path, CancellationToken token)
+    {
+        ReportListRequest filter = request.DeserializePayload<ReportListRequest>();
+        if (filter.Offset < 0 || filter.PageSize is < 1 or > 100 || !Enum.IsDefined(filter.SortColumn))
+            throw new InvalidDataException("Invalid reports page or sort column.");
+        if (filter.FromUtc is { Kind: not DateTimeKind.Utc } || filter.ToUtc is { Kind: not DateTimeKind.Utc } || filter.FromUtc > filter.ToUtc)
+            throw new InvalidDataException("Invalid UTC date range.");
+        await using WebPortalDbContext database = WebPortalDbContext.Create(path);
+        IQueryable<Report> query = database.Reports.AsNoTracking().Where(report => report.Handled == filter.Handled);
+        if (filter.FromUtc is { } from) query = query.Where(report => report.CreatedAtUtc >= from);
+        if (filter.ToUtc is { } to) query = query.Where(report => report.CreatedAtUtc <= to);
+        if (!string.IsNullOrWhiteSpace(filter.Reporter))
+        {
+            string pattern = ReportSearchPattern(filter.Reporter);
+            query = query.Where(report => EF.Functions.Like(report.ReporterName, pattern, @"\") || EF.Functions.Like(report.ReporterSteamId, pattern, @"\"));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.ReportedPlayer))
+        {
+            string pattern = ReportSearchPattern(filter.ReportedPlayer);
+            query = query.Where(report => EF.Functions.Like(report.ReportedName, pattern, @"\") || EF.Functions.Like(report.ReportedSteamId, pattern, @"\"));
+        }
+        if (!string.IsNullOrWhiteSpace(filter.Content))
+        {
+            string pattern = ReportSearchPattern(filter.Content);
+            query = query.Where(report => EF.Functions.Like(report.Content, pattern, @"\"));
+        }
+        IOrderedQueryable<Report> ordered = filter.SortColumn switch
+        {
+            ReportSortColumn.Reporter => SortReports(query, report => report.ReporterName, filter.SortAscending),
+            ReportSortColumn.ReportedPlayer => SortReports(query, report => report.ReportedName, filter.SortAscending),
+            ReportSortColumn.Content => SortReports(query, report => report.Content, filter.SortAscending),
+            ReportSortColumn.Reply => SortReports(query, report => report.Reply, filter.SortAscending),
+            _ => SortReports(query, report => report.CreatedAtUtc, filter.SortAscending)
+        };
+        ordered = filter.SortAscending ? ordered.ThenBy(report => report.Id) : ordered.ThenByDescending(report => report.Id);
+        int total = await query.CountAsync(token);
+        List<Report> reports = await ordered.Skip(filter.Offset).Take(filter.PageSize).ToListAsync(token);
+        return PipeEnvelope.CreateResponse(request, new ReportListResponse { Records = reports.Select(ToRecord).ToList(), TotalCount = total });
+    }
+
+    private static string ReportSearchPattern(string value) =>
+        "%" + value.Trim().Replace(@"\", @"\\").Replace("%", @"\%").Replace("_", @"\_") + "%";
+
+    private static IOrderedQueryable<Report> SortReports<TKey>(IQueryable<Report> query, Expression<Func<Report, TKey>> key, bool ascending) =>
+        ascending ? query.OrderBy(key) : query.OrderByDescending(key);
+
     internal static ReportRecord ToRecord(Report report) => new()
     {
         Id = report.Id, ReporterSteamId = report.ReporterSteamId, ReporterName = report.ReporterName,

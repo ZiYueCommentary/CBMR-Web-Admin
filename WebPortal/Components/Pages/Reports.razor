@@ -1,85 +1,15 @@
 @page "/reports"
 @attribute [Authorize]
-@implements IDisposable
-@inject ServerEvents Events
 
 <PageTitle>@Localizer["Reports"]</PageTitle>
 <h1>@Localizer["Reports"]</h1>
-@if (_error)
-{
-    <div class="alert alert-danger">@Localizer["ReportsLoadFailed"]</div>
-    <button class="btn btn-secondary" @onclick="RefreshAsync">@Localizer["Reload"]</button>
-}
-@if (_reports is null)
-{
-    <p>@Localizer["Loading"]</p>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead><tr><th>@Localizer["Time"]</th><th>@Localizer["Reporter"]</th><th>@Localizer["ReportedPlayer"]</th><th>@Localizer["ReportContent"]</th><th>@Localizer["ReportStatus"]</th><th>@Localizer["ReportReply"]</th><th>@Localizer["ReportActions"]</th></tr></thead>
-            <tbody>
-            @foreach (var report in _reports)
-            {
-                <tr @key="report.Id">
-                    <td><BrowserTimestamp Utc="report.CreatedAtUtc" Format="g" /></td>
-                    <td>@report.ReporterName<br/><small>@report.ReporterSteamId</small></td>
-                    <td>@report.ReportedName<br/><small>@report.ReportedSteamId</small></td>
-                    <td style="white-space: pre-wrap">@report.Content</td>
-                    <td>@Localizer[report.Handled ? "ReportHandled" : "ReportPending"]
-                        @if (report.Accepted is { } accepted)
-                        {
-                            <span class="badge @(accepted ? "bg-success" : "bg-danger")">@Localizer[accepted ? "ReportAccepted" : "ReportRejected"]</span>
-                        }
-                    </td>
-                    <td style="white-space: pre-wrap">@report.Reply
-                        @if (report.Handled) { <div><small>@report.RepliedBy · <BrowserTimestamp Utc="report.HandledAtUtc" Format="g" /></small></div> }
-                        @if (report.Handled)
-                        {
-                            <div><small>@Localizer[report.ReplyDeliveredAtUtc is null ? "ReportReplyPendingDelivery" : "ReportReplyDelivered"]
-                                <BrowserTimestamp Utc="report.ReplyDeliveredAtUtc" Format="g" /></small></div>
-                        }
-                    </td>
-                    <td><CbmrWebAdmin.WebPortal.Components.Dialogs.ReplyReportModalButton Report="report" OnReplied="RefreshAsync" /></td>
-                </tr>
-            }
-            </tbody>
-        </table>
-        @if (_reports.Count == 0) { <p>@Localizer["NoReports"]</p> }
-    </div>
-}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><button type="button" class="nav-link @(!_handled ? "active" : "")" aria-pressed="@(!_handled)" @onclick="() => _handled = false">@Localizer["ReportPending"]</button></li>
+    <li class="nav-item"><button type="button" class="nav-link @(_handled ? "active" : "")" aria-pressed="@_handled" @onclick="() => _handled = true">@Localizer["ReportHandled"]</button></li>
+</ul>
+<section hidden="@_handled" aria-label="@Localizer["ReportPending"]"><ReportList Handled="false" /></section>
+<section hidden="@(!_handled)" aria-label="@Localizer["ReportHandled"]"><ReportList Handled="true" /></section>
 
 @code {
-    private List<ReportRecord>? _reports;
-    private bool _error;
-    private bool _disposed;
-    private readonly CancellationTokenSource _cancellation = new();
-    protected override async Task OnInitializedAsync()
-    {
-        Events.ReportsUpdated += OnUpdated;
-        await RefreshAsync();
-    }
-    private void OnUpdated(ReportRecord? report) => _ = InvokeAsync(RefreshAsync);
-    private async Task RefreshAsync()
-    {
-        if (_disposed) return;
-        try
-        {
-            var reports = await ServerBinding.SendAsync<List<ReportRecord>>(PipeMessageType.ListReports, _cancellation.Token);
-            if (_disposed) return;
-            _reports = reports;
-            _error = false;
-        }
-        catch (OperationCanceledException) when (_disposed) { return; }
-        catch { _error = true; }
-        if (!_disposed) StateHasChanged();
-    }
-    public void Dispose()
-    {
-        _disposed = true;
-        Events.ReportsUpdated -= OnUpdated;
-        _cancellation.Cancel();
-        _cancellation.Dispose();
-    }
+    private bool _handled;
 }

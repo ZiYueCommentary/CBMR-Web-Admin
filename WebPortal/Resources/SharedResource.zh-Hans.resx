@@ -411,4 +411,8 @@
   <data name="BanListStatusExpired" xml:space="preserve"><value>已过期</value></data>
   <data name="BanListNoResults" xml:space="preserve"><value>没有匹配的封禁记录。</value></data>
   <data name="BanListPages" xml:space="preserve"><value>封禁玩家分页</value></data>
+  <data name="ReportListDescription" xml:space="preserve"><value>按举报创建时间、举报人、被举报玩家和内容筛选。时间使用浏览器所在时区。</value></data>
+  <data name="ReportFilterReporter" xml:space="preserve"><value>举报人名称或 Steam ID</value></data>
+  <data name="ReportFilterPlayer" xml:space="preserve"><value>被举报玩家名称或 Steam ID</value></data>
+  <data name="ReportListPages" xml:space="preserve"><value>玩家举报分页</value></data>
 </root>

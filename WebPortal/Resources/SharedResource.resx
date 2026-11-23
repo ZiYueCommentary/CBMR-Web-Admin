@@ -371,4 +371,8 @@ If you are server admin, please log in first.</value></data>
   <data name="BanListStatusExpired" xml:space="preserve"><value>Expired</value></data>
   <data name="BanListNoResults" xml:space="preserve"><value>No matching bans.</value></data>
   <data name="BanListPages" xml:space="preserve"><value>Banned players pages</value></data>
+  <data name="ReportListDescription" xml:space="preserve"><value>Filter reports by creation time, reporter, reported player and content. Times use your browser’s time zone.</value></data>
+  <data name="ReportFilterReporter" xml:space="preserve"><value>Reporter name or Steam ID</value></data>
+  <data name="ReportFilterPlayer" xml:space="preserve"><value>Reported player name or Steam ID</value></data>
+  <data name="ReportListPages" xml:space="preserve"><value>Player reports pages</value></data>
 </root>
