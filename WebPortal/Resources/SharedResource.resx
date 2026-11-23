@@ -275,6 +275,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ModerationExpiresAt" xml:space="preserve"><value>Expires at</value></data>
   <data name="ModerationPermanent" xml:space="preserve"><value>Permanent</value></data>
   <data name="Unban" xml:space="preserve"><value>Unban</value></data>
+  <data name="UnbanConfirmation" xml:space="preserve"><value>Are you sure you want to unban the player with Steam ID {0}?</value></data>
   <data name="Unmute" xml:space="preserve"><value>Unmute</value></data>
   <data name="ModifyModeration" xml:space="preserve"><value>Modify</value></data>
   <data name="ModifyBan" xml:space="preserve"><value>Modify ban</value></data>

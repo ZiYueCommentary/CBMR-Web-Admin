@@ -3,6 +3,11 @@
 @using CbmrWebAdmin.WebPortal.Data
 @using Serilog
 
+@if (!IsMute)
+{
+    <UnbanPlayerDialog @ref="_unbanDialog" />
+}
+
 <p>@Localizer["ModerationActiveOnly"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
 <button type="button" class="btn btn-secondary mb-3" disabled="@_busy" @onclick="LoadAsync">@Localizer["ModerationRefresh"]</button>
 
@@ -82,6 +87,7 @@ else if (_records is not null)
     public bool IsMute { get; set; }
 
     private List<ModerationRow>? _records;
+    private UnbanPlayerDialog _unbanDialog = default!;
     private bool _loading = true;
     private bool _busy;
     private string? _errorMessage;
@@ -125,9 +131,10 @@ else if (_records is not null)
     {
         if (_busy) return;
         _busy = true;
-        _errorMessage = null;
         try
         {
+            if (!IsMute && !await _unbanDialog.ShowAsync(row.SteamId)) return;
+            _errorMessage = null;
             await ServerBinding.SendAsync(IsMute ? PipeMessageType.RemoveMute : PipeMessageType.RemoveBan,
                 new RemoveModerationRequest { Id = row.Id });
             await AuditLogger.WriteAsync(IsMute ? AuditActions.UnmutePlayer : AuditActions.UnbanPlayer,

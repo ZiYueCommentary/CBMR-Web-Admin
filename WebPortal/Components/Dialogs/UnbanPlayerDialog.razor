@@ -1,0 +1,17 @@
+<ConfirmDialog @ref="_dialog" />
+
+@code {
+    private ConfirmDialog _dialog = default!;
+
+    public Task<bool> ShowAsync(string steamId) => _dialog.ShowAsync(
+        title: Localizer["AuditActionUnbanPlayer"],
+        message1: Localizer["UnbanConfirmation", steamId],
+        new ConfirmDialogOptions
+        {
+            AutoFocusYesButton = false,
+            Dismissable = true,
+            NoButtonText = Localizer["Cancel"],
+            YesButtonText = Localizer["Unban"],
+            YesButtonColor = ButtonColor.Danger
+        });
+}

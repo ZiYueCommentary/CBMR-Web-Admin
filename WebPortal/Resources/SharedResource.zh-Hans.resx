@@ -315,6 +315,7 @@
   <data name="ModerationExpiresAt" xml:space="preserve"><value>到期时间</value></data>
   <data name="ModerationPermanent" xml:space="preserve"><value>永久</value></data>
   <data name="Unban" xml:space="preserve"><value>解封</value></data>
+  <data name="UnbanConfirmation" xml:space="preserve"><value>确定要解封 Steam ID 为 {0} 的玩家吗？</value></data>
   <data name="Unmute" xml:space="preserve"><value>解除禁言</value></data>
   <data name="ModifyModeration" xml:space="preserve"><value>修改</value></data>
   <data name="ModifyBan" xml:space="preserve"><value>修改封禁</value></data>

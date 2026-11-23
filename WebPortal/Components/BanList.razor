@@ -3,6 +3,8 @@
 @using CbmrWebAdmin.WebPortal.Data
 @inject ILogger<BanList> Logger
 
+<UnbanPlayerDialog @ref="_unbanDialog" />
+
 <p>@Localizer["BanListDescription"] @if (TimeZone is not null) { <span>(@TimeZone.Id)</span> }</p>
 <form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
     <div class="col-md-3">
@@ -112,6 +114,7 @@
         (BanSortColumn.ExpiresAt, "ModerationExpiresAt")
     ];
     private List<BanRecord> _records = [];
+    private UnbanPlayerDialog _unbanDialog = default!;
     private DateTime? _from, _to, _fromUtc, _toUtc;
     private string _steamId = "", _reason = "", _appliedSteamId = "", _appliedReason = "";
     private BanStatus _status = BanStatus.Active, _appliedStatus = BanStatus.Active;
@@ -188,9 +191,10 @@
     {
         if (_busy) return;
         _busy = true;
-        _error = null;
         try
         {
+            if (!await _unbanDialog.ShowAsync(row.SteamId)) return;
+            _error = null;
             await ServerBinding.SendAsync(PipeMessageType.RemoveBan, new RemoveModerationRequest { Id = row.Id });
             await AuditLogger.WriteAsync(AuditActions.UnbanPlayer, row.SteamId, $"Record {row.Id}");
         }
