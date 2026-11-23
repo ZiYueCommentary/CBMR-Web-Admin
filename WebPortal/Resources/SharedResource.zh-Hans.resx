@@ -384,4 +384,17 @@
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>无法保存公告，公告可能已过期，请重新加载列表。</value></data>
   <data name="CreateAnnouncement" xml:space="preserve"><value>新建公告</value></data>
   <data name="UpdateAnnouncement" xml:space="preserve"><value>修改公告</value></data>
+  <data name="AuditFrom" xml:space="preserve"><value>开始（本地时间）</value></data>
+  <data name="AuditTo" xml:space="preserve"><value>结束（本地时间）</value></data>
+  <data name="AuditAllActions" xml:space="preserve"><value>所有操作</value></data>
+  <data name="AuditSearch" xml:space="preserve"><value>搜索目标 / 详情</value></data>
+  <data name="AuditPageSize" xml:space="preserve"><value>每页条数</value></data>
+  <data name="AuditApply" xml:space="preserve"><value>应用筛选</value></data>
+  <data name="AuditTotal" xml:space="preserve"><value>共 {0} 条</value></data>
+  <data name="AuditNoResults" xml:space="preserve"><value>没有匹配的审计记录。</value></data>
+  <data name="AuditPages" xml:space="preserve"><value>审计日志分页</value></data>
+  <data name="AuditPrevious" xml:space="preserve"><value>上一页</value></data>
+  <data name="AuditNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="AuditInvalidRange" xml:space="preserve"><value>请输入有效的本地时间范围。不支持夏令时引起的重复或不存在的时间。</value></data>
+  <data name="AuditLoadFailed" xml:space="preserve"><value>无法加载审计日志，请重试。</value></data>
 </root>

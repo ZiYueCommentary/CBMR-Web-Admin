@@ -7,6 +7,13 @@ public sealed class BrowserTimeZone(TimeZoneInfo zone)
     public DateTime FromUtc(DateTime utc) =>
         TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), zone);
 
+    public DateTime? ToUtc(DateTime local)
+    {
+        local = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+        if (zone.IsInvalidTime(local) || zone.IsAmbiguousTime(local)) return null;
+        return TimeZoneInfo.ConvertTimeToUtc(local, zone);
+    }
+
     public DateTime? ToFutureUtc(DateOnly date, TimeOnly time)
     {
         DateTime local = date.ToDateTime(time);

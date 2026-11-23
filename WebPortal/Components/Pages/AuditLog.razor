@@ -6,32 +6,75 @@
 @inject IServiceScopeFactory ScopeFactory
 
 <PageTitle>@Localizer["AuditLog"]</PageTitle>
-
 <h1>@Localizer["AuditLog"]</h1>
-
-<p>@Localizer["AuditLogDescription"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
-
-<Grid TItem="AuditLogEntry"
-      Class="table table-hover table-bordered table-striped"
-      DataProvider="AuditLogDataProvider"
-      AllowPaging="true"
-      PageSize="50"
-      Responsive="true">
-    <GridColumns>
-        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Time"]">
-            <BrowserTimestamp Utc="context.TimestampUtc" />
-        </GridColumn>
-        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["Username"]">
-            @context.UserName
-        </GridColumn>
-        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditAction"]">
-            @Localizer["AuditAction" + context.Action]
-        </GridColumn>
-        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditTarget"]">
-            @context.Target
-        </GridColumn>
-        <GridColumn TItem="AuditLogEntry" HeaderText="@Localizer["AuditDetails"]">
-            @if (context.Details is { } details && GetExpiryField(context) is { } field &&
+<p>@Localizer["AuditLogDescription"] @if (TimeZone is not null) { <span>(@TimeZone.Id)</span> }</p>
+<form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label for="audit-from">@Localizer["AuditFrom"]</label>
+        <input id="audit-from" class="form-control" type="datetime-local" @bind="_from" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-md-3">
+        <label for="audit-to">@Localizer["AuditTo"]</label>
+        <input id="audit-to" class="form-control" type="datetime-local" @bind="_to" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-md-3">
+        <label for="audit-actor">@Localizer["Username"]</label>
+        <input id="audit-actor" class="form-control" @bind="_actor" />
+    </div>
+    <div class="col-md-3">
+        <label for="audit-action">@Localizer["AuditAction"]</label>
+        <select id="audit-action" class="form-select" @bind="_action">
+            <option value="">@Localizer["AuditAllActions"]</option>
+            @foreach (string action in Actions)
+            {
+                <option value="@action">@Localizer["AuditAction" + action]</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-6">
+        <label for="audit-search">@Localizer["AuditSearch"]</label>
+        <input id="audit-search" class="form-control" @bind="_search" />
+    </div>
+    <div class="col-md-3">
+        <label for="audit-size">@Localizer["AuditPageSize"]</label>
+        <select id="audit-size" class="form-select" @bind="_pageSize">
+            @foreach (int size in new[] { 10, 25, 50, 100 })
+            {
+                <option value="@size">@size</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 align-self-end">
+        <button type="submit" class="btn btn-primary" disabled="@_loading">@Localizer["AuditApply"]</button>
+    </div>
+</form>
+@if (_error is not null)
+{
+    <div class="alert alert-danger" role="alert">@Localizer[_error]</div>
+}
+<p aria-live="polite">@Localizer["AuditTotal", _total]</p>
+<div class="table-responsive">
+<table class="table table-hover table-bordered table-striped">
+    <thead><tr>
+        @foreach (var column in Columns)
+        {
+            <th scope="col" aria-sort="@(_sort == column.Key ? (_descending ? "descending" : "ascending") : "none")">
+                <button type="button" class="btn btn-link p-0" disabled="@_loading" @onclick="() => SortAsync(column.Key)">
+                    @Localizer[column.Label] @(_sort == column.Key ? (_descending ? "▼" : "▲") : "")
+                </button>
+            </th>
+        }
+    </tr></thead>
+    <tbody>
+        @foreach (AuditLogEntry entry in _entries)
+        {
+            <tr>
+                <td><BrowserTimestamp Utc="entry.TimestampUtc" /></td>
+                <td>@entry.UserName</td>
+                <td>@Localizer["AuditAction" + entry.Action]</td>
+                <td>@entry.Target</td>
+                <td>
+            @if (entry.Details is { } details && GetExpiryField(entry) is { } field &&
                  DateTime.TryParseExact(field.Value, "u", CultureInfo.InvariantCulture,
                      DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out DateTime expiryUtc))
             {
@@ -39,14 +82,123 @@
             }
             else
             {
-                <span style="white-space: pre-wrap">@context.Details</span>
+                <span style="white-space: pre-wrap">@entry.Details</span>
             }
-        </GridColumn>
-    </GridColumns>
-</Grid>
+
+                </td>
+            </tr>
+        }
+        @if (_entries.Count == 0)
+        {
+            <tr><td colspan="5">@Localizer["AuditNoResults"]</td></tr>
+        }
+    </tbody>
+</table>
+</div>
+<nav aria-label="@Localizer["AuditPages"]" class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-secondary" disabled="@(_loading || _page <= 1)" @onclick="() => LoadAsync(_page - 1)">@Localizer["AuditPrevious"]</button>
+    @for (int number = Math.Max(1, _page - 2); number <= Math.Min(PageCount, _page + 2); number++)
+    {
+        int page = number;
+        <button class="btn @(page == _page ? "btn-primary" : "btn-outline-primary")" aria-current="@(page == _page ? "page" : null)" disabled="@_loading" @onclick="() => LoadAsync(page)">@(page)</button>
+    }
+    <button class="btn btn-secondary" disabled="@(_loading || _page >= PageCount)" @onclick="() => LoadAsync(_page + 1)">@Localizer["AuditNext"]</button>
+</nav>
 
 @code {
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+    private static readonly (string Key, string Label)[] Columns =
+    [
+        ("TimestampUtc", "Time"), ("UserName", "Username"), ("Action", "AuditAction"),
+        ("Target", "AuditTarget"), ("Details", "AuditDetails")
+    ];
+    private static readonly string[] Actions = typeof(AuditActions).GetFields()
+        .Where(field => field.IsLiteral).Select(field => (string)field.GetRawConstantValue()!).Order().ToArray();
+    private List<AuditLogEntry> _entries = [];
+    private DateTime? _from, _to, _fromUtc, _toUtc;
+    private string _actor = "", _action = "", _search = "";
+    private string _appliedActor = "", _appliedAction = "", _appliedSearch = "";
+    private string _sort = "TimestampUtc";
+    private bool _descending = true, _loading;
+    private int _page = 1, _pageSize = 50, _appliedSize = 50, _total;
+    private string? _error;
+    private int PageCount => Math.Max(1, (int)Math.Ceiling((double)_total / _appliedSize));
+
+    protected override Task OnInitializedAsync() => LoadAsync(1);
+
+    private async Task ApplyAsync()
+    {
+        DateTime? from = _from.HasValue ? TimeZone?.ToUtc(_from.Value) : null;
+        DateTime? to = _to.HasValue ? TimeZone?.ToUtc(_to.Value) : null;
+        if ((_from.HasValue && !from.HasValue) || (_to.HasValue && !to.HasValue) ||
+            (from.HasValue && to.HasValue && from > to))
+        {
+            _error = "AuditInvalidRange";
+            return;
+        }
+        _fromUtc = from;
+        _toUtc = to;
+        _appliedActor = _actor.Trim();
+        _appliedAction = _action;
+        _appliedSearch = _search.Trim();
+        _appliedSize = _pageSize;
+        await LoadAsync(1);
+    }
+
+    private async Task SortAsync(string column)
+    {
+        _descending = _sort == column ? !_descending : false;
+        _sort = column;
+        await LoadAsync(1);
+    }
+
+    private async Task LoadAsync(int page)
+    {
+        if (_loading) return;
+        _loading = true;
+        _error = null;
+        try
+        {
+            await using AsyncServiceScope scope = ScopeFactory.CreateAsyncScope();
+            ApplicationDbContext db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            IQueryable<AuditLogEntry> query = db.AuditLogs.AsNoTracking();
+            if (_fromUtc.HasValue) query = query.Where(entry => entry.TimestampUtc >= _fromUtc.Value);
+            if (_toUtc.HasValue) query = query.Where(entry => entry.TimestampUtc <= _toUtc.Value);
+            if (_appliedActor.Length > 0) query = query.Where(entry => entry.UserName.Contains(_appliedActor));
+            if (_appliedAction.Length > 0) query = query.Where(entry => entry.Action == _appliedAction);
+            if (_appliedSearch.Length > 0)
+                query = query.Where(entry => (entry.Target != null && entry.Target.Contains(_appliedSearch)) ||
+                    (entry.Details != null && entry.Details.Contains(_appliedSearch)));
+            _total = await query.CountAsync();
+            _page = Math.Clamp(page, 1, PageCount);
+            IOrderedQueryable<AuditLogEntry> ordered = (_sort, _descending) switch
+            {
+                ("UserName", false) => query.OrderBy(entry => entry.UserName),
+                ("UserName", true) => query.OrderByDescending(entry => entry.UserName),
+                ("Action", false) => query.OrderBy(entry => entry.Action),
+                ("Action", true) => query.OrderByDescending(entry => entry.Action),
+                ("Target", false) => query.OrderBy(entry => entry.Target),
+                ("Target", true) => query.OrderByDescending(entry => entry.Target),
+                ("Details", false) => query.OrderBy(entry => entry.Details),
+                ("Details", true) => query.OrderByDescending(entry => entry.Details),
+                (_, false) => query.OrderBy(entry => entry.TimestampUtc),
+                _ => query.OrderByDescending(entry => entry.TimestampUtc)
+            };
+            _entries = await ordered.ThenByDescending(entry => entry.Id)
+                .Skip((_page - 1) * _appliedSize).Take(_appliedSize).ToListAsync();
+        }
+        catch (Exception)
+        {
+            _entries = [];
+            _total = 0;
+            _page = 1;
+            _error = "AuditLoadFailed";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
     private static Group? GetExpiryField(AuditLogEntry entry)
     {
@@ -67,16 +219,4 @@
         return match.Success ? match.Groups["expiry"] : null;
     }
 
-    private async Task<GridDataProviderResult<AuditLogEntry>> AuditLogDataProvider(GridDataProviderRequest<AuditLogEntry> request)
-    {
-        await using AsyncServiceScope scope = ScopeFactory.CreateAsyncScope();
-        ApplicationDbContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        IQueryable<AuditLogEntry> query = dbContext.AuditLogs.AsNoTracking().OrderByDescending(entry => entry.Id);
-        int totalCount = await query.CountAsync(request.CancellationToken);
-        List<AuditLogEntry> entries = await query
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(request.CancellationToken);
-        return new GridDataProviderResult<AuditLogEntry> { Data = entries, TotalCount = totalCount };
-    }
 }

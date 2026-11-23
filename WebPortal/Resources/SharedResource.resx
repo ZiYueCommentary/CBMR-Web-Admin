@@ -344,4 +344,17 @@ If you are server admin, please log in first.</value></data>
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>Could not save the announcement. It may have expired; reload the list.</value></data>
   <data name="CreateAnnouncement" xml:space="preserve"><value>Create announcement</value></data>
   <data name="UpdateAnnouncement" xml:space="preserve"><value>Update announcement</value></data>
+  <data name="AuditFrom" xml:space="preserve"><value>From (local time)</value></data>
+  <data name="AuditTo" xml:space="preserve"><value>To (local time)</value></data>
+  <data name="AuditAllActions" xml:space="preserve"><value>All actions</value></data>
+  <data name="AuditSearch" xml:space="preserve"><value>Search target / details</value></data>
+  <data name="AuditPageSize" xml:space="preserve"><value>Rows per page</value></data>
+  <data name="AuditApply" xml:space="preserve"><value>Apply filters</value></data>
+  <data name="AuditTotal" xml:space="preserve"><value>Total: {0}</value></data>
+  <data name="AuditNoResults" xml:space="preserve"><value>No matching audit entries.</value></data>
+  <data name="AuditPages" xml:space="preserve"><value>Audit log pages</value></data>
+  <data name="AuditPrevious" xml:space="preserve"><value>Previous</value></data>
+  <data name="AuditNext" xml:space="preserve"><value>Next</value></data>
+  <data name="AuditInvalidRange" xml:space="preserve"><value>Enter a valid local date range. Ambiguous or nonexistent daylight-saving times are not accepted.</value></data>
+  <data name="AuditLoadFailed" xml:space="preserve"><value>Could not load the audit log. Please try again.</value></data>
 </root>
