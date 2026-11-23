@@ -29,6 +29,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseStaticWebAssets();
 
         builder.Services.AddLocalization();
         builder.Services.AddRazorComponents()
