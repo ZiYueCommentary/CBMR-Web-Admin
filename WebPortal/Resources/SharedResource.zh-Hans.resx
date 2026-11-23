@@ -270,6 +270,8 @@
   <data name="CannotDemoteSelf" xml:space="preserve"><value>不能将自己的账号降级为普通管理员。</value></data>
   <data name="LastMainAdminRequired" xml:space="preserve"><value>不能将最后一位主管理员降级或删除。</value></data>
   <data name="AccountRoleSignInNotice" xml:space="preserve"><value>角色变更后，用户必须重新登录以刷新权限。</value></data>
+  <data name="RegularAdminDescription" xml:space="preserve"><value>可使用除账户管理外的所有管理功能。</value></data>
+  <data name="MainAdminDescription" xml:space="preserve"><value>拥有全部权限，包括管理管理员账户。</value></data>
   <data name="Mute" xml:space="preserve"><value>禁言</value></data>
   <data name="MutePlayer" xml:space="preserve"><value>禁言玩家</value></data>
   <data name="MuteVoice" xml:space="preserve"><value>语音禁言</value></data>

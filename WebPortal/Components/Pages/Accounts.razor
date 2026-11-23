@@ -52,7 +52,11 @@
                         <option value="false">@Localizer["RegularAdmin"]</option>
                         <option value="true">@Localizer["MainAdmin"]</option>
                     </InputSelect>
-                    <div class="form-text">@Localizer["AccountRoleSignInNotice"]</div>
+                    <div class="form-text">@Localizer[_input.IsPrimaryAdmin ? "MainAdminDescription" : "RegularAdminDescription"]</div>
+                    @if (_editingUserId is not null)
+                    {
+                        <div class="form-text">@Localizer["AccountRoleSignInNotice"]</div>
+                    }
                 </div>
             </EditForm>
         </BodyTemplate>
