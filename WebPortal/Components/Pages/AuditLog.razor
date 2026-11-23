@@ -7,6 +7,11 @@
 
 <PageTitle>@Localizer["AuditLog"]</PageTitle>
 <h1>@Localizer["AuditLog"]</h1>
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><button type="button" class="nav-link @(!_sessionTab ? "active" : "")" aria-pressed="@(!_sessionTab)" @onclick="() => _sessionTab = false">@Localizer["AuditAdminActions"]</button></li>
+    <li class="nav-item"><button type="button" class="nav-link @(_sessionTab ? "active" : "")" aria-pressed="@_sessionTab" @onclick="ShowSessionLog">@Localizer["PlayerSessionLog"]</button></li>
+</ul>
+<section hidden="@_sessionTab" aria-label="@Localizer["AuditAdminActions"]">
 <p>@Localizer["AuditLogDescription"]</p>
 <form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
     <div class="col-md-3">
@@ -104,6 +109,11 @@
     }
     <button class="btn btn-secondary" disabled="@(_loading || _page >= PageCount)" @onclick="() => LoadAsync(_page + 1)">@Localizer["AuditNext"]</button>
 </nav>
+</section>
+@if (_sessionLogShown)
+{
+    <section hidden="@(!_sessionTab)" aria-label="@Localizer["PlayerSessionLog"]"><PlayerSessionLogList /></section>
+}
 
 @code {
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
@@ -122,9 +132,12 @@
     private bool _descending = true, _loading;
     private int _page = 1, _pageSize = 50, _appliedSize = 50, _total;
     private string? _error;
+    private bool _sessionTab, _sessionLogShown;
     private int PageCount => Math.Max(1, (int)Math.Ceiling((double)_total / _appliedSize));
 
     protected override Task OnInitializedAsync() => LoadAsync(1);
+
+    private void ShowSessionLog() => _sessionTab = _sessionLogShown = true;
 
     private async Task ApplyAsync()
     {

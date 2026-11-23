@@ -1,11 +1,6 @@
-@page "/join-leave-log"
-@attribute [Authorize]
 @using CbmrWebAdmin.Shared.Requests
-@inject ILogger<PlayerSessionLog> Logger
+@inject ILogger<PlayerSessionLogList> Logger
 
-<PageTitle>@Localizer["PlayerSessionLog"]</PageTitle>
-
-<h1>@Localizer["PlayerSessionLog"]</h1>
 <p>@Localizer["PlayerSessionLogDescription"]</p>
 
 <TableFilterForm OnSubmit="SearchAsync" SubmitText="@Localizer["PlayerSessionLogSearch"]" SubmitDisabled="@(_loading || InvalidDateRange)">
