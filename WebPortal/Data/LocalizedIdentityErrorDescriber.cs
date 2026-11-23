@@ -11,7 +11,8 @@ public sealed class LocalizedIdentityErrorDescriber(IStringLocalizer<SharedResou
 
     public override IdentityError DefaultError() => Error(nameof(DefaultError));
     public override IdentityError ConcurrencyFailure() => Error(nameof(ConcurrencyFailure));
-    public override IdentityError InvalidUserName(string? userName) => Error(nameof(InvalidUserName), userName ?? string.Empty);
+    public override IdentityError InvalidUserName(string? userName) =>
+        new() { Code = nameof(InvalidUserName), Description = localizer["UsernameRequired"] };
     public override IdentityError DuplicateUserName(string userName) => Error(nameof(DuplicateUserName), userName);
     public override IdentityError InvalidToken() => Error(nameof(InvalidToken));
     public override IdentityError PasswordTooShort(int length) =>

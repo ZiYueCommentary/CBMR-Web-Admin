@@ -52,7 +52,8 @@ public class Program
                                       "Connection string 'DefaultConnection' not found.");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString));
-        builder.Services.AddIdentityCore<ApplicationUser>()
+        builder.Services.AddIdentityCore<ApplicationUser>(options =>
+                options.User.AllowedUserNameCharacters = string.Empty)
             .AddErrorDescriber<LocalizedIdentityErrorDescriber>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager()

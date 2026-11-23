@@ -254,7 +254,6 @@
   <data name="PasswordMinimumLength" xml:space="preserve"><value>密码必须至少包含 {0} 个字符。</value></data>
   <data name="DefaultError" xml:space="preserve"><value>发生未知错误。</value></data>
   <data name="ConcurrencyFailure" xml:space="preserve"><value>此账号已被其他请求修改，请重试。</value></data>
-  <data name="InvalidUserName" xml:space="preserve"><value>用户名“{0}”无效，请仅使用字母或数字。</value></data>
   <data name="DuplicateUserName" xml:space="preserve"><value>用户名“{0}”已被使用。</value></data>
   <data name="InvalidToken" xml:space="preserve"><value>账号操作令牌无效。</value></data>
   <data name="PasswordRequiresUniqueChars" xml:space="preserve"><value>密码必须至少包含 {0} 个不同字符。</value></data>
