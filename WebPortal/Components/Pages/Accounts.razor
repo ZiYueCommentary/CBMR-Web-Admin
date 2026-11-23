@@ -15,44 +15,53 @@
     <h1>@Localizer["AccountManagement"]</h1>
     <StatusMessage Message="@_message" IsError="@_hasError"/>
 
-    <EditForm Model="_input" OnValidSubmit="SaveAccount" FormName="account">
-        <DataAnnotationsValidator/>
-        <ValidationSummary class="text-danger"/>
-        <div class="row g-3 align-items-end mb-4">
-            <div class="col-md-4">
-                <label for="account-name" class="form-label">@Localizer["Username"]</label>
-                <InputText id="account-name" @bind-Value="_input.UserName" class="form-control" autocomplete="off"/>
-                <ValidationMessage For="() => _input.UserName" class="text-danger"/>
-            </div>
-            <div class="col-md-4">
-                <label for="account-password" class="form-label">@Localizer["Password"]</label>
-                <div class="input-group">
-                    <InputText id="account-password" type="password" @bind-Value="_input.Password" class="form-control"
-                               autocomplete="new-password"/>
-                    <button type="button" class="btn btn-outline-secondary"
-                            @onclick="GeneratePassword">@Localizer["GeneratePassword"]</button>
-                </div>
-                <ValidationMessage For="() => _input.Password" class="text-danger"/>
-            </div>
-            <div class="col-md-4">
-                <label for="account-role" class="form-label">@Localizer["AccountRole"]</label>
-                <InputSelect id="account-role" @bind-Value="_input.IsPrimaryAdmin" class="form-select">
-                    <option value="false">@Localizer["RegularAdmin"]</option>
-                    <option value="true">@Localizer["MainAdmin"]</option>
-                </InputSelect>
-                <div class="form-text">@Localizer["AccountRoleSignInNotice"]</div>
-            </div>
-            <div class="col-auto">
-                <button type="submit"
-                        class="btn btn-primary">@(_editingUserId is null ? Localizer["AddAccount"] : Localizer["Save"])</button>
-                @if (_editingUserId is not null)
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" @onclick="BeginAdd">@Localizer["AddAccount"]</button>
+    </div>
+
+    <Modal @ref="_modal" Title="@Localizer[_editingUserId is null ? "AddAccount" : "EditAccount"]" OnHidden="ResetInput">
+        <BodyTemplate>
+            <EditForm id="account-form" EditContext="_editContext" OnValidSubmit="SaveAccount">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="text-danger"/>
+                @if (_modalError is not null)
                 {
-                    <button type="button" class="btn btn-secondary ms-2"
-                            @onclick="CancelEdit">@Localizer["Cancel"]</button>
+                    <div class="alert alert-danger" role="alert">@_modalError</div>
                 }
-            </div>
-        </div>
-    </EditForm>
+                <div class="mb-3">
+                    <label for="account-name" class="form-label">@Localizer["Username"]</label>
+                    <InputText id="account-name" @bind-Value="_input.UserName" class="form-control" autocomplete="off"
+                               disabled="@_saving"/>
+                    <ValidationMessage For="() => _input.UserName" class="text-danger"/>
+                </div>
+                <div class="mb-3">
+                    <label for="account-password" class="form-label">@Localizer["Password"]</label>
+                    <div class="input-group">
+                        <InputText id="account-password" type="password" @bind-Value="_input.Password" class="form-control"
+                                   autocomplete="new-password" disabled="@_saving"/>
+                        <button type="button" class="btn btn-outline-secondary" disabled="@_saving"
+                                @onclick="GeneratePassword">@Localizer["GeneratePassword"]</button>
+                    </div>
+                    <ValidationMessage For="() => _input.Password" class="text-danger"/>
+                </div>
+                <div>
+                    <label for="account-role" class="form-label">@Localizer["AccountRole"]</label>
+                    <InputSelect id="account-role" @bind-Value="_input.IsPrimaryAdmin" class="form-select"
+                                 disabled="@_saving">
+                        <option value="false">@Localizer["RegularAdmin"]</option>
+                        <option value="true">@Localizer["MainAdmin"]</option>
+                    </InputSelect>
+                    <div class="form-text">@Localizer["AccountRoleSignInNotice"]</div>
+                </div>
+            </EditForm>
+        </BodyTemplate>
+        <FooterTemplate>
+            <button type="button" class="btn btn-secondary" disabled="@_saving"
+                    @onclick="HideModal">@Localizer["Cancel"]</button>
+            <button type="submit" form="account-form" class="btn btn-primary"
+                    disabled="@_saving">@(_editingUserId is null ? Localizer["AddAccount"] : Localizer["Save"])</button>
+        </FooterTemplate>
+    </Modal>
 
     <div class="table-responsive">
         <table class="table table-striped align-middle">
@@ -87,15 +96,20 @@ else
 }
 
 @code {
-    private readonly AccountInput _input = new();
+    private AccountInput _input = new();
+    private EditContext _editContext = null!;
+    private Modal _modal = null!;
     private List<ApplicationUser> _users = [];
     private string? _editingUserId;
     private string? _message;
+    private string? _modalError;
+    private bool _saving;
     private bool _hasError;
     private bool _isPrimaryAdmin;
 
     protected override async Task OnInitializedAsync()
     {
+        _editContext = new EditContext(_input);
         AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         ApplicationUser? currentUser = await UserManager.GetUserAsync(state.User);
         _isPrimaryAdmin = currentUser?.IsPrimaryAdmin == true;
@@ -114,13 +128,28 @@ else
 
     private async Task SaveAccount()
     {
+        if (_saving) return;
+        _saving = true;
+        _modalError = null;
+        try
+        {
+            await SaveAccountCore();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task SaveAccountCore()
+    {
         await using var scope = ScopeFactory.CreateAsyncScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         await using var transaction = await db.Database.BeginTransactionAsync();
         if (!_isPrimaryAdmin || !await IsCurrentUserPrimaryAdmin(userManager))
         {
-            SetMessage(Localizer["AccessDenied"], true);
+            _modalError = Localizer["AccessDenied"];
             return;
         }
 
@@ -129,7 +158,7 @@ else
         {
             if (string.IsNullOrWhiteSpace(_input.Password))
             {
-                SetMessage(Localizer["PasswordRequired"], true);
+                _modalError = Localizer["PasswordRequired"];
                 return;
             }
 
@@ -141,7 +170,7 @@ else
             ApplicationUser? user = await userManager.FindByIdAsync(_editingUserId);
             if (user is null)
             {
-                SetMessage(Localizer["AccountOperationFailed"], true);
+                _modalError = Localizer["AccountOperationFailed"];
                 return;
             }
 
@@ -151,13 +180,13 @@ else
                 AuthenticationState state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
                 if (user.Id == userManager.GetUserId(state.User))
                 {
-                    SetMessage(Localizer["CannotDemoteSelf"], true);
+                    _modalError = Localizer["CannotDemoteSelf"];
                     return;
                 }
 
                 if (await userManager.Users.CountAsync(account => account.IsPrimaryAdmin) <= 1)
                 {
-                    SetMessage(Localizer["LastMainAdminRequired"], true);
+                    _modalError = Localizer["LastMainAdminRequired"];
                     return;
                 }
             }
@@ -176,7 +205,7 @@ else
 
         if (!result.Succeeded)
         {
-            SetMessage(string.Join(" ", result.Errors.Select(error => error.Description)), true);
+            _modalError = string.Join(" ", result.Errors.Select(error => error.Description));
             return;
         }
 
@@ -185,19 +214,29 @@ else
                               (_editingUserId is not null && !string.IsNullOrEmpty(_input.Password) ? ", password changed" : "");
         await AuditLogger.WriteAsync(_editingUserId is null ? AuditActions.CreateAccount : AuditActions.UpdateAccount,
             _input.UserName.Trim(), auditDetails);
-        CancelEdit();
+        await _modal.HideAsync();
         await LoadUsers();
         SetMessage(Localizer["AccountSaved"], false);
     }
 
-    private void BeginEdit(ApplicationUser user)
+    private async Task BeginAdd()
     {
+        ResetInput();
+        _message = null;
+        await _modal.ShowAsync();
+    }
+
+    private async Task BeginEdit(ApplicationUser user)
+    {
+        ResetInput();
         _editingUserId = user.Id;
         _input.UserName = user.UserName ?? string.Empty;
         _input.IsPrimaryAdmin = user.IsPrimaryAdmin;
-        _input.Password = string.Empty;
         _message = null;
+        await _modal.ShowAsync();
     }
+
+    private async Task HideModal() => await _modal.HideAsync();
 
     private async Task DeleteAccount(ApplicationUser user)
     {
@@ -233,7 +272,6 @@ else
 
         await transaction.CommitAsync();
         await AuditLogger.WriteAsync(AuditActions.DeleteAccount, target.UserName);
-        if (_editingUserId == user.Id) CancelEdit();
         await LoadUsers();
         SetMessage(Localizer["AccountDeleted"], false);
     }
@@ -245,12 +283,13 @@ else
         return user?.IsPrimaryAdmin == true;
     }
 
-    private void CancelEdit()
+    private void ResetInput()
     {
+        if (_saving) return;
         _editingUserId = null;
-        _input.UserName = string.Empty;
-        _input.Password = string.Empty;
-        _input.IsPrimaryAdmin = false;
+        _modalError = null;
+        _input = new AccountInput();
+        _editContext = new EditContext(_input);
     }
 
     private void GeneratePassword()

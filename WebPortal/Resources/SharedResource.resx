@@ -28,6 +28,7 @@
   <data name="Login" xml:space="preserve"><value>Log in</value></data>
   <data name="AccountManagement" xml:space="preserve"><value>Account management</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Add account</value></data>
+  <data name="EditAccount" xml:space="preserve"><value>Edit account</value></data>
   <data name="AccountSaved" xml:space="preserve"><value>Account saved.</value></data>
   <data name="AccountDeleted" xml:space="preserve"><value>Account deleted.</value></data>
   <data name="AccountOperationFailed" xml:space="preserve"><value>The account operation failed.</value></data>

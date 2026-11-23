@@ -58,6 +58,7 @@
   </data>
   <data name="AccountManagement" xml:space="preserve"><value>账户管理</value></data>
   <data name="AddAccount" xml:space="preserve"><value>添加账户</value></data>
+  <data name="EditAccount" xml:space="preserve"><value>编辑账户</value></data>
   <data name="AccountSaved" xml:space="preserve"><value>账户已保存。</value></data>
   <data name="AccountDeleted" xml:space="preserve"><value>账户已删除。</value></data>
   <data name="AccountOperationFailed" xml:space="preserve"><value>账户操作失败。</value></data>
