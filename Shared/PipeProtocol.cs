@@ -26,7 +26,7 @@ public static class PipeProtocol
         PipeEnvelope envelope,
         CancellationToken cancellationToken = default)
     {
-        byte[] body = MessagePackSerializer.Serialize(envelope, cancellationToken: cancellationToken);
+        byte[] body = MessagePackSerializer.Serialize(envelope);
         if (body.Length > MaxFrameLength)
         {
             throw new InvalidDataException($"Pipe frame length {body.Length} exceeds the limit {MaxFrameLength}.");
@@ -60,7 +60,7 @@ public static class PipeProtocol
         byte[] body = new byte[bodyLength];
         await ReadFramePartAsync(stream, body, allowEndOfStream: false, cancellationToken);
 
-        PipeEnvelope envelope = MessagePackSerializer.Deserialize<PipeEnvelope>(body, cancellationToken: cancellationToken);
+        PipeEnvelope envelope = MessagePackSerializer.Deserialize<PipeEnvelope>(body);
         if (envelope.Version != PipeEnvelope.CurrentVersion)
         {
             throw new InvalidDataException(
