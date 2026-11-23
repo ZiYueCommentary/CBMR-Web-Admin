@@ -9,40 +9,39 @@
 </div>
 
 <input type="checkbox" title="@Localizer["NavigationMenu"]" class="navbar-toggler"/>
-<span class="material-symbols-rounded navbar-toggle-icon" aria-hidden="true">menu</span>
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">home</span> @Localizer["Home"]
+                <span class="nav-icon nav-icon-home" aria-hidden="true"></span> @Localizer["Home"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="central-console">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">instant_mix</span> @Localizer["CentralConsole"]
+                <span class="nav-icon nav-icon-instant-mix" aria-hidden="true"></span> @Localizer["CentralConsole"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="players">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">groups</span> @Localizer["Players"]
+                <span class="nav-icon nav-icon-groups" aria-hidden="true"></span> @Localizer["Players"]
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="banned-players">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">block</span> @Localizer["BannedPlayers"]
+                <span class="nav-icon nav-icon-block" aria-hidden="true"></span> @Localizer["BannedPlayers"]
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="muted-players">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">mic_off</span> @Localizer["MutedPlayers"]
+                <span class="nav-icon nav-icon-mic-off" aria-hidden="true"></span> @Localizer["MutedPlayers"]
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="chat">
-                <span class="material-symbols-rounded nav-icon" aria-hidden="true">chat</span> @Localizer["ChatBox"]
+                <span class="nav-icon nav-icon-chat" aria-hidden="true"></span> @Localizer["ChatBox"]
             </NavLink>
         </div>
 
@@ -50,31 +49,31 @@
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="reports">
-                        <span class="material-symbols-rounded nav-icon" aria-hidden="true">flag</span> @Localizer["Reports"]
+                        <span class="nav-icon nav-icon-flag" aria-hidden="true"></span> @Localizer["Reports"]
                         <UnhandledReportBadge />
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="announcements">
-                        <span class="material-symbols-rounded nav-icon" aria-hidden="true">campaign</span> @Localizer["Announcements"]
+                        <span class="nav-icon nav-icon-campaign" aria-hidden="true"></span> @Localizer["Announcements"]
                     </NavLink>
                 </div>
                 @if (context.User.Identity?.Name is not null && context.User.HasClaim("primary-admin", "true"))
                 {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="accounts">
-                            <span class="material-symbols-rounded nav-icon" aria-hidden="true">manage_accounts</span> @Localizer["AccountManagement"]
+                            <span class="nav-icon nav-icon-manage-accounts" aria-hidden="true"></span> @Localizer["AccountManagement"]
                         </NavLink>
                     </div>
                 }
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="audit-log">
-                        <span class="material-symbols-rounded nav-icon" aria-hidden="true">fact_check</span> @Localizer["AuditLog"]
+                        <span class="nav-icon nav-icon-fact-check" aria-hidden="true"></span> @Localizer["AuditLog"]
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
                     <span class="nav-link">
-                        <span class="material-symbols-rounded nav-icon" aria-hidden="true">person</span> @context.User.Identity?.Name
+                        <span class="nav-icon nav-icon-person" aria-hidden="true"></span> @context.User.Identity?.Name
                     </span>
                 </div>
                 <div class="nav-item px-3">
@@ -82,7 +81,7 @@
                         <AntiforgeryToken/>
                         <input type="hidden" name="ReturnUrl" value="@_currentUrl"/>
                         <button type="submit" class="nav-link">
-                            <span class="material-symbols-rounded nav-icon" aria-hidden="true">logout</span> @Localizer["Logout"]
+                            <span class="nav-icon nav-icon-logout" aria-hidden="true"></span> @Localizer["Logout"]
                         </button>
                     </form>
                 </div>
@@ -90,7 +89,7 @@
             <NotAuthorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="Account/Login">
-                        <span class="material-symbols-rounded nav-icon" aria-hidden="true">login</span> @Localizer["Login"]
+                        <span class="nav-icon nav-icon-login" aria-hidden="true"></span> @Localizer["Login"]
                     </NavLink>
                 </div>
             </NotAuthorized>
