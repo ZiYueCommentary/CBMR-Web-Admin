@@ -4,6 +4,20 @@ public sealed class BrowserTimeZone(TimeZoneInfo zone)
 {
     public string Id => zone.Id;
 
+    public string CurrentUtcOffsetLabel
+    {
+        get
+        {
+            TimeSpan offset = zone.GetUtcOffset(DateTime.UtcNow);
+            string sign = offset < TimeSpan.Zero ? "-" : "+";
+            TimeSpan magnitude = offset.Duration();
+
+            return magnitude.Minutes == 0
+                ? FormattableString.Invariant($"UTC{sign}{magnitude.Hours}")
+                : FormattableString.Invariant($"UTC{sign}{magnitude.Hours}:{magnitude.Minutes:00}");
+        }
+    }
+
     public DateTime FromUtc(DateTime utc) =>
         TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), zone);
 

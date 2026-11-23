@@ -385,5 +385,5 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>Notifications are blocked or unavailable in this browser.</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>Show password</value></data>
   <data name="HidePassword" xml:space="preserve"><value>Hide password</value></data>
-  <data name="TimeZoneNotice" xml:space="preserve"><value>All times are shown in {0}.</value></data>
+  <data name="TimeZoneNotice" xml:space="preserve"><value>All times are shown in {0} ({1}).</value></data>
 </root>
