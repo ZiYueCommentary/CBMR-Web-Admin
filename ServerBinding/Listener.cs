@@ -45,6 +45,7 @@ public static partial class Listener
                 LogLevel logLevel = request.MessageType is PipeMessageType.Heartbeat or PipeMessageType.Chats
                     or PipeMessageType.Players or PipeMessageType.WhereAreYou or PipeMessageType.GetPlayerLanguage
                     or PipeMessageType.ListBans or PipeMessageType.ListMutes or PipeMessageType.PlayerSessionLog
+                    or PipeMessageType.QueryPlayerSessionLog
                     ? LogLevel.Debug : LogLevel.Information;
                 logger.Log(logLevel, "Received Web Admin request: {RequestMessageType}", request.MessageType);
 
@@ -71,7 +72,8 @@ public static partial class Listener
                     PipeMessageType.MuteChat => await HandleMutePlayerAsync(request, databasePath, moderationCache, MuteKind.Chat, cancellationToken),
                     PipeMessageType.ListBans => await HandleListBansAsync(request, databasePath, cancellationToken),
                     PipeMessageType.ListMutes => await HandleListMutesAsync(request, databasePath, cancellationToken),
-                    PipeMessageType.PlayerSessionLog => await HandlePlayerSessionLogAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.PlayerSessionLog or PipeMessageType.QueryPlayerSessionLog =>
+                        await HandlePlayerSessionLogAsync(request, databasePath, cancellationToken),
                     PipeMessageType.UpdateBan => await HandleUpdateModerationAsync(request, databasePath, moderationCache, false, cancellationToken),
                     PipeMessageType.UpdateMute => await HandleUpdateModerationAsync(request, databasePath, moderationCache, true, cancellationToken),
                     PipeMessageType.RemoveBan => await HandleRemoveModerationAsync(request, databasePath, moderationCache, false, cancellationToken),

@@ -14,6 +14,18 @@ public sealed class BrowserTimeZone(TimeZoneInfo zone)
         return TimeZoneInfo.ConvertTimeToUtc(local, zone);
     }
 
+    public DateTime StartOfDayUtc(DateOnly date)
+    {
+        DateTime local = date.ToDateTime(TimeOnly.MinValue);
+        // A midnight transition can skip or repeat the start of a local day.
+        while (zone.IsInvalidTime(local))
+            local = local.AddMinutes(1);
+        if (zone.IsAmbiguousTime(local))
+            return new DateTimeOffset(local, zone.GetAmbiguousTimeOffsets(local).Max()).UtcDateTime;
+
+        return TimeZoneInfo.ConvertTimeToUtc(local, zone);
+    }
+
     public DateTime? ToFutureUtc(DateOnly date, TimeOnly time)
     {
         DateTime local = date.ToDateTime(time);

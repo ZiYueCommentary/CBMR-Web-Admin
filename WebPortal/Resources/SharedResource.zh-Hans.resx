@@ -329,9 +329,13 @@
   <data name="AuditActionModifyBan" xml:space="preserve"><value>修改封禁</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>修改禁言</value></data>
   <data name="PlayerSessionLog" xml:space="preserve"><value>玩家进出日志</value></data>
-  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>按时间倒序显示玩家加入和离开服务器的记录。</value></data>
+  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>查看玩家加入和离开服务器的记录。日期和时间使用浏览器所在的时区。</value></data>
   <data name="PlayerSessionLogSearchLabel" xml:space="preserve"><value>玩家名称、SteamID 或 IP 地址</value></data>
   <data name="PlayerSessionLogSearch" xml:space="preserve"><value>搜索</value></data>
+  <data name="PlayerSessionLogFromDate" xml:space="preserve"><value>开始日期</value></data>
+  <data name="PlayerSessionLogThroughDate" xml:space="preserve"><value>结束日期（含当天）</value></data>
+  <data name="PlayerSessionLogInvalidDateRange" xml:space="preserve"><value>开始日期不能晚于结束日期。</value></data>
+  <data name="PlayerSessionLogAllEvents" xml:space="preserve"><value>所有事件</value></data>
   <data name="PlayerSessionLogIpAddress" xml:space="preserve"><value>IP 地址</value></data>
   <data name="PlayerSessionLogEvent" xml:space="preserve"><value>事件</value></data>
   <data name="PlayerSessionLogJoin" xml:space="preserve"><value>加入</value></data>
@@ -340,6 +344,8 @@
   <data name="PlayerSessionLogLoadFailed" xml:space="preserve"><value>无法加载玩家进出日志。请检查服务器连接后重试。</value></data>
   <data name="PlayerSessionLogPrevious" xml:space="preserve"><value>上一页</value></data>
   <data name="PlayerSessionLogNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="PlayerSessionLogPagination" xml:space="preserve"><value>玩家进出日志分页</value></data>
+  <data name="PlayerSessionLogPage" xml:space="preserve"><value>第 {0} 页，共 {1} 页</value></data>
   <data name="Reports" xml:space="preserve"><value>玩家举报</value></data>
   <data name="PendingReportNotification" xml:space="preserve"><value>{0} 条待处理举报</value></data>
   <data name="ReviewPendingReports" xml:space="preserve"><value>打开举报页面查看并回复。</value></data>

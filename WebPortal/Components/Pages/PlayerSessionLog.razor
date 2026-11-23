@@ -8,13 +8,38 @@
 <h1>@Localizer["PlayerSessionLog"]</h1>
 <p>@Localizer["PlayerSessionLogDescription"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
 
-<form class="mb-3" @onsubmit="SearchAsync" @onsubmit:preventDefault>
-    <label for="player-session-search" class="form-label">@Localizer["PlayerSessionLogSearchLabel"]</label>
-    <div class="input-group">
+<form class="row g-2 align-items-end mb-3" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+    <div class="col-md">
+        <label for="player-session-search" class="form-label">@Localizer["PlayerSessionLogSearchLabel"]</label>
         <input id="player-session-search" class="form-control" type="search" @bind="_searchInput" @bind:event="oninput" />
-        <button type="submit" class="btn btn-primary" disabled="@_loading">@Localizer["PlayerSessionLogSearch"]</button>
+    </div>
+    <div class="col-sm-auto">
+        <label for="player-session-event" class="form-label">@Localizer["PlayerSessionLogEvent"]</label>
+        <select id="player-session-event" class="form-select" @bind="_eventInput">
+            <option value="">@Localizer["PlayerSessionLogAllEvents"]</option>
+            <option value="@PlayerSessionEvent.Join">@Localizer["PlayerSessionLogJoin"]</option>
+            <option value="@PlayerSessionEvent.Leave">@Localizer["PlayerSessionLogLeave"]</option>
+        </select>
+    </div>
+    <div class="col-sm-auto">
+        <label for="player-session-from" class="form-label">@Localizer["PlayerSessionLogFromDate"]</label>
+        <input id="player-session-from" class="form-control" type="date" @bind="_fromDateInput"
+               min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-sm-auto">
+        <label for="player-session-through" class="form-label">@Localizer["PlayerSessionLogThroughDate"]</label>
+        <input id="player-session-through" class="form-control" type="date" @bind="_throughDateInput"
+               min="0001-01-01" max="9999-12-31" disabled="@(TimeZone is null)" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary" disabled="@(_loading || InvalidDateRange)">@Localizer["PlayerSessionLogSearch"]</button>
     </div>
 </form>
+
+@if (InvalidDateRange)
+{
+    <p class="text-danger" role="alert">@Localizer["PlayerSessionLogInvalidDateRange"]</p>
+}
 
 @if (_loading)
 {
@@ -31,14 +56,17 @@ else if (_page.Records.Count == 0)
 else
 {
     <div class="table-responsive">
-        <table class="table table-striped">
+        <table class="table table-striped" aria-label="@Localizer["PlayerSessionLog"]">
             <thead>
                 <tr>
-                    <th scope="col">@Localizer["Time"]</th>
-                    <th scope="col">@Localizer["PlayerSessionLogEvent"]</th>
-                    <th scope="col">@Localizer["SteamID"]</th>
-                    <th scope="col">@Localizer["Name"]</th>
-                    <th scope="col">@Localizer["PlayerSessionLogIpAddress"]</th>
+                    @foreach ((PlayerSessionLogSortColumn column, string label) in SortColumns)
+                    {
+                        <th scope="col" aria-sort="@(_sortColumn == column ? (_sortAscending ? "ascending" : "descending") : null)">
+                            <button type="button" class="btn btn-link p-0 fw-bold text-reset text-nowrap" @onclick="() => SortAsync(column)">
+                                @Localizer[label]<span aria-hidden="true">@SortIndicator(column)</span>
+                            </button>
+                        </th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -55,37 +83,72 @@ else
             </tbody>
         </table>
     </div>
-    @if (_page.TotalCount > PageSize)
-    {
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-secondary" disabled="@(_offset == 0)" @onclick="() => LoadAsync(_offset - PageSize)">
-                @Localizer["PlayerSessionLogPrevious"]
-            </button>
-            <button type="button" class="btn btn-secondary" disabled="@(_offset + _page.Records.Count >= _page.TotalCount)"
-                    @onclick="() => LoadAsync(_offset + PageSize)">
-                @Localizer["PlayerSessionLogNext"]
-            </button>
-        </div>
-    }
+    <nav class="d-flex align-items-center gap-2" aria-label="@Localizer["PlayerSessionLogPagination"]">
+        <button type="button" class="btn btn-secondary" disabled="@(PageNumber == 1)" @onclick="() => LoadAsync(_offset - PageSize)">
+            @Localizer["PlayerSessionLogPrevious"]
+        </button>
+        <span>@Localizer["PlayerSessionLogPage", PageNumber, PageCount]</span>
+        <button type="button" class="btn btn-secondary" disabled="@(PageNumber >= PageCount)" @onclick="() => LoadAsync(_offset + PageSize)">
+            @Localizer["PlayerSessionLogNext"]
+        </button>
+    </nav>
 }
 
 @code {
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
 
     private const int PageSize = 50;
+    private static readonly (PlayerSessionLogSortColumn Column, string Label)[] SortColumns =
+    [
+        (PlayerSessionLogSortColumn.Time, "Time"),
+        (PlayerSessionLogSortColumn.Event, "PlayerSessionLogEvent"),
+        (PlayerSessionLogSortColumn.SteamId, "SteamID"),
+        (PlayerSessionLogSortColumn.Name, "Name"),
+        (PlayerSessionLogSortColumn.IpAddress, "PlayerSessionLogIpAddress")
+    ];
+
     private string _searchInput = string.Empty;
     private string _search = string.Empty;
+    private DateOnly? _fromDateInput;
+    private DateOnly? _throughDateInput;
+    private DateTime? _fromUtc;
+    private DateTime? _beforeUtc;
+    private PlayerSessionEvent? _eventInput;
+    private PlayerSessionEvent? _event;
+    private PlayerSessionLogSortColumn _sortColumn = PlayerSessionLogSortColumn.Time;
+    private bool _sortAscending;
     private int _offset;
     private bool _loading;
     private PlayerSessionLogResponse? _page;
+
+    private bool InvalidDateRange => _fromDateInput > _throughDateInput;
+    private int PageNumber => _offset / PageSize + 1;
+    private int PageCount => _page?.TotalCount is > 0 and var count ? (count - 1) / PageSize + 1 : 0;
 
     protected override Task OnInitializedAsync() => LoadAsync(0);
 
     private Task SearchAsync()
     {
-        if (_loading) return Task.CompletedTask;
+        if (_loading || InvalidDateRange) return Task.CompletedTask;
 
         _search = _searchInput;
+        _event = _eventInput;
+        _fromUtc = _fromDateInput is { } from ? TimeZone?.StartOfDayUtc(from) : null;
+        _beforeUtc = _throughDateInput is { } through && through < DateOnly.MaxValue
+            ? TimeZone?.StartOfDayUtc(through.AddDays(1))
+            : null;
+        return LoadAsync(0);
+    }
+
+    private string SortIndicator(PlayerSessionLogSortColumn column) =>
+        _sortColumn == column ? (_sortAscending ? " ↑" : " ↓") : " ↕";
+
+    private Task SortAsync(PlayerSessionLogSortColumn column)
+    {
+        if (_loading) return Task.CompletedTask;
+
+        _sortAscending = _sortColumn == column ? !_sortAscending : column != PlayerSessionLogSortColumn.Time;
+        _sortColumn = column;
         return LoadAsync(0);
     }
 
@@ -96,8 +159,18 @@ else
         try
         {
             _page = await ServerBinding.SendAsync<PlayerSessionLogRequest, PlayerSessionLogResponse>(
-                PipeMessageType.PlayerSessionLog,
-                new PlayerSessionLogRequest { Search = _search, Offset = offset, PageSize = PageSize });
+                PipeMessageType.QueryPlayerSessionLog,
+                new PlayerSessionLogRequest
+                {
+                    Search = _search,
+                    Offset = offset,
+                    PageSize = PageSize,
+                    FromUtc = _fromUtc,
+                    BeforeUtc = _beforeUtc,
+                    Event = _event,
+                    SortColumn = _sortColumn,
+                    SortAscending = _sortAscending
+                });
             _offset = offset;
         }
         catch (Exception exception)

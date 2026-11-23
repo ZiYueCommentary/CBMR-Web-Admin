@@ -16,6 +16,15 @@ using MessagePack;
 
 namespace CbmrWebAdmin.Shared.Requests;
 
+public enum PlayerSessionLogSortColumn
+{
+    Time,
+    Event,
+    SteamId,
+    Name,
+    IpAddress
+}
+
 [MessagePackObject]
 public sealed class PlayerSessionLogRequest
 {
@@ -24,4 +33,14 @@ public sealed class PlayerSessionLogRequest
     [Key(1)] public int Offset { get; init; }
 
     [Key(2)] public int PageSize { get; init; }
+
+    [Key(3)] public DateTime? FromUtc { get; init; }
+
+    [Key(4)] public DateTime? BeforeUtc { get; init; }
+
+    [Key(5)] public PlayerSessionEvent? Event { get; init; }
+
+    [Key(6)] public PlayerSessionLogSortColumn SortColumn { get; init; }
+
+    [Key(7)] public bool SortAscending { get; init; }
 }

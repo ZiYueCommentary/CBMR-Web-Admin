@@ -289,9 +289,13 @@ If you are server admin, please log in first.</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>Modify ban</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>Modify mute</value></data>
   <data name="PlayerSessionLog" xml:space="preserve"><value>Join-Leave Log</value></data>
-  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>Player joins and leaves, newest first.</value></data>
+  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>Player joins and leaves. Times and dates use your browser's time zone.</value></data>
   <data name="PlayerSessionLogSearchLabel" xml:space="preserve"><value>Player name, SteamID or IP address</value></data>
   <data name="PlayerSessionLogSearch" xml:space="preserve"><value>Search</value></data>
+  <data name="PlayerSessionLogFromDate" xml:space="preserve"><value>From date</value></data>
+  <data name="PlayerSessionLogThroughDate" xml:space="preserve"><value>Through date</value></data>
+  <data name="PlayerSessionLogInvalidDateRange" xml:space="preserve"><value>The start date must be on or before the end date.</value></data>
+  <data name="PlayerSessionLogAllEvents" xml:space="preserve"><value>All events</value></data>
   <data name="PlayerSessionLogIpAddress" xml:space="preserve"><value>IP address</value></data>
   <data name="PlayerSessionLogEvent" xml:space="preserve"><value>Event</value></data>
   <data name="PlayerSessionLogJoin" xml:space="preserve"><value>Join</value></data>
@@ -300,6 +304,8 @@ If you are server admin, please log in first.</value></data>
   <data name="PlayerSessionLogLoadFailed" xml:space="preserve"><value>Could not load the join-leave log. Check the server connection and try again.</value></data>
   <data name="PlayerSessionLogPrevious" xml:space="preserve"><value>Previous</value></data>
   <data name="PlayerSessionLogNext" xml:space="preserve"><value>Next</value></data>
+  <data name="PlayerSessionLogPagination" xml:space="preserve"><value>Join-leave log pages</value></data>
+  <data name="PlayerSessionLogPage" xml:space="preserve"><value>Page {0} of {1}</value></data>
   <data name="Reports" xml:space="preserve"><value>Reports</value></data>
   <data name="PendingReportNotification" xml:space="preserve"><value>{0} unhandled reports</value></data>
   <data name="ReviewPendingReports" xml:space="preserve"><value>Open Reports to review and reply.</value></data>
