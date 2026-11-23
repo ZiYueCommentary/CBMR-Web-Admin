@@ -13,6 +13,11 @@
 
 <p>@Localizer["Welcome"]</p>
 
+@if (TimeZone is not null)
+{
+    <p>@Localizer["TimeZoneNotice", TimeZone.Id]</p>
+}
+
 <p>@Localizer["PortalVersion", PortalVersion]</p>
 
 @if (!string.IsNullOrEmpty(_bindingVersion))
@@ -30,6 +35,8 @@
 }
 
 @code {
+    [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
+
     private static readonly string PortalVersion = AssemblyVersion.GetVersion(typeof(Home).Assembly);
     private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(3));
     private Task? _refreshTask;

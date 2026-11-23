@@ -8,7 +8,7 @@
     <UnbanPlayerDialog @ref="_unbanDialog" />
 }
 
-<p>@Localizer["ModerationActiveOnly"] @if (TimeZone is not null) { <span class="text-muted">(@TimeZone.Id)</span> }</p>
+<p>@Localizer["ModerationActiveOnly"]</p>
 <button type="button" class="btn btn-secondary mb-3" disabled="@_busy" @onclick="LoadAsync">@Localizer["ModerationRefresh"]</button>
 
 @if (_errorMessage is not null)

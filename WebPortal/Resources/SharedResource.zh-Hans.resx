@@ -334,7 +334,7 @@
   <data name="AuditActionModifyBan" xml:space="preserve"><value>修改封禁</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>修改禁言</value></data>
   <data name="PlayerSessionLog" xml:space="preserve"><value>玩家进出日志</value></data>
-  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>查看玩家加入和离开服务器的记录。日期和时间使用浏览器所在的时区。</value></data>
+  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>查看玩家加入和离开服务器的记录。</value></data>
   <data name="PlayerSessionLogSearchLabel" xml:space="preserve"><value>玩家名称、SteamID 或 IP 地址</value></data>
   <data name="PlayerSessionLogSearch" xml:space="preserve"><value>搜索</value></data>
   <data name="PlayerSessionLogFromDate" xml:space="preserve"><value>开始日期</value></data>
@@ -390,7 +390,7 @@
   <data name="EditAnnouncement" xml:space="preserve"><value>修改公告</value></data>
   <data name="AnnouncementResend" xml:space="preserve"><value>重新向已读玩家显示此公告</value></data>
   <data name="SaveAnnouncement" xml:space="preserve"><value>保存公告</value></data>
-  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>请按浏览器时区选择未来的截止时间（不能是有歧义或无效的时间）。</value></data>
+  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>请选择有效且无歧义的未来截止时间。</value></data>
   <data name="AnnouncementSaved" xml:space="preserve"><value>公告已保存。</value></data>
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>无法保存公告，公告可能已过期，请重新加载列表。</value></data>
   <data name="CreateAnnouncement" xml:space="preserve"><value>新建公告</value></data>
@@ -408,14 +408,14 @@
   <data name="AuditNext" xml:space="preserve"><value>下一页</value></data>
   <data name="AuditInvalidRange" xml:space="preserve"><value>请输入有效的本地时间范围。不支持夏令时引起的重复或不存在的时间。</value></data>
   <data name="AuditLoadFailed" xml:space="preserve"><value>无法加载审计日志，请重试。</value></data>
-  <data name="BanListDescription" xml:space="preserve"><value>按封禁创建时间、玩家 ID、原因和状态筛选。时间使用浏览器所在时区。</value></data>
+  <data name="BanListDescription" xml:space="preserve"><value>按封禁创建时间、玩家 ID、原因和状态筛选。</value></data>
   <data name="BanListStatus" xml:space="preserve"><value>状态</value></data>
   <data name="BanListStatusAll" xml:space="preserve"><value>所有封禁</value></data>
   <data name="BanListStatusActive" xml:space="preserve"><value>生效中</value></data>
   <data name="BanListStatusExpired" xml:space="preserve"><value>已过期</value></data>
   <data name="BanListNoResults" xml:space="preserve"><value>没有匹配的封禁记录。</value></data>
   <data name="BanListPages" xml:space="preserve"><value>封禁玩家分页</value></data>
-  <data name="ReportListDescription" xml:space="preserve"><value>按举报创建时间、举报人、被举报玩家和内容筛选。时间使用浏览器所在时区。</value></data>
+  <data name="ReportListDescription" xml:space="preserve"><value>按举报创建时间、举报人、被举报玩家和内容筛选。</value></data>
   <data name="ReportFilterReporter" xml:space="preserve"><value>举报人名称或 Steam ID</value></data>
   <data name="ReportFilterPlayer" xml:space="preserve"><value>被举报玩家名称或 Steam ID</value></data>
   <data name="ReportListPages" xml:space="preserve"><value>玩家举报分页</value></data>
@@ -424,4 +424,5 @@
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>浏览器已阻止通知或不支持通知。</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>显示密码</value></data>
   <data name="HidePassword" xml:space="preserve"><value>隐藏密码</value></data>
+  <data name="TimeZoneNotice" xml:space="preserve"><value>所有时间均按 {0} 时区显示。</value></data>
 </root>

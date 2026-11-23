@@ -5,7 +5,7 @@
 
 <UnbanPlayerDialog @ref="_unbanDialog" />
 
-<p>@Localizer["BanListDescription"] @if (TimeZone is not null) { <span>(@TimeZone.Id)</span> }</p>
+<p>@Localizer["BanListDescription"]</p>
 <form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
     <div class="col-md-3">
         <label for="ban-from">@Localizer["AuditFrom"]</label>

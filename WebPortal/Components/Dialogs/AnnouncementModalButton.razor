@@ -23,7 +23,7 @@ limitations under the License. *@
         <input id="@(_inputId + "-title")" class="form-control mb-3" maxlength="200" @bind="_title" disabled="@_busy" />
         <label class="form-label" for="@(_inputId + "-content")">@Localizer["AnnouncementContent"]</label>
         <textarea id="@(_inputId + "-content")" class="form-control mb-3" rows="6" maxlength="10000" @bind="_content" disabled="@_busy"></textarea>
-        <div class="mb-2">@Localizer["AnnouncementExpiry"] <span class="text-muted">(@TimeZone?.Id)</span></div>
+        <div class="mb-2">@Localizer["AnnouncementExpiry"]</div>
         <div class="d-flex gap-2 align-items-center mb-3">
             <DateInput TValue="DateOnly?" @bind-Value="_date" Disabled="_busy" />
             <TimeInput TValue="TimeOnly?" @bind-Value="_time" Disabled="_busy" />

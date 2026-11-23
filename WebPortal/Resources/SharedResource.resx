@@ -294,7 +294,7 @@ If you are server admin, please log in first.</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>Modify ban</value></data>
   <data name="AuditActionModifyMute" xml:space="preserve"><value>Modify mute</value></data>
   <data name="PlayerSessionLog" xml:space="preserve"><value>Join-Leave Log</value></data>
-  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>Player joins and leaves. Times and dates use your browser's time zone.</value></data>
+  <data name="PlayerSessionLogDescription" xml:space="preserve"><value>Player joins and leaves.</value></data>
   <data name="PlayerSessionLogSearchLabel" xml:space="preserve"><value>Player name, SteamID or IP address</value></data>
   <data name="PlayerSessionLogSearch" xml:space="preserve"><value>Search</value></data>
   <data name="PlayerSessionLogFromDate" xml:space="preserve"><value>From date</value></data>
@@ -350,7 +350,7 @@ If you are server admin, please log in first.</value></data>
   <data name="EditAnnouncement" xml:space="preserve"><value>Edit announcement</value></data>
   <data name="AnnouncementResend" xml:space="preserve"><value>Show again to players who have already read it</value></data>
   <data name="SaveAnnouncement" xml:space="preserve"><value>Save announcement</value></data>
-  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>Choose a future expiry in your browser time zone (not an ambiguous or invalid time).</value></data>
+  <data name="InvalidAnnouncementExpiry" xml:space="preserve"><value>Choose a valid, unambiguous future expiry.</value></data>
   <data name="AnnouncementSaved" xml:space="preserve"><value>Announcement saved.</value></data>
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>Could not save the announcement. It may have expired; reload the list.</value></data>
   <data name="CreateAnnouncement" xml:space="preserve"><value>Create announcement</value></data>
@@ -368,14 +368,14 @@ If you are server admin, please log in first.</value></data>
   <data name="AuditNext" xml:space="preserve"><value>Next</value></data>
   <data name="AuditInvalidRange" xml:space="preserve"><value>Enter a valid local date range. Ambiguous or nonexistent daylight-saving times are not accepted.</value></data>
   <data name="AuditLoadFailed" xml:space="preserve"><value>Could not load the audit log. Please try again.</value></data>
-  <data name="BanListDescription" xml:space="preserve"><value>Filter bans by creation time, player ID, reason and status. Times use your browser's time zone.</value></data>
+  <data name="BanListDescription" xml:space="preserve"><value>Filter bans by creation time, player ID, reason and status.</value></data>
   <data name="BanListStatus" xml:space="preserve"><value>Status</value></data>
   <data name="BanListStatusAll" xml:space="preserve"><value>All bans</value></data>
   <data name="BanListStatusActive" xml:space="preserve"><value>Active</value></data>
   <data name="BanListStatusExpired" xml:space="preserve"><value>Expired</value></data>
   <data name="BanListNoResults" xml:space="preserve"><value>No matching bans.</value></data>
   <data name="BanListPages" xml:space="preserve"><value>Banned players pages</value></data>
-  <data name="ReportListDescription" xml:space="preserve"><value>Filter reports by creation time, reporter, reported player and content. Times use your browser’s time zone.</value></data>
+  <data name="ReportListDescription" xml:space="preserve"><value>Filter reports by creation time, reporter, reported player and content.</value></data>
   <data name="ReportFilterReporter" xml:space="preserve"><value>Reporter name or Steam ID</value></data>
   <data name="ReportFilterPlayer" xml:space="preserve"><value>Reported player name or Steam ID</value></data>
   <data name="ReportListPages" xml:space="preserve"><value>Player reports pages</value></data>
@@ -384,4 +384,5 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>Notifications are blocked or unavailable in this browser.</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>Show password</value></data>
   <data name="HidePassword" xml:space="preserve"><value>Hide password</value></data>
+  <data name="TimeZoneNotice" xml:space="preserve"><value>All times are shown in {0}.</value></data>
 </root>

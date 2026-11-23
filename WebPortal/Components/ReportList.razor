@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject ServerEvents Events
 
-<p>@Localizer["ReportListDescription"] @if (TimeZone is not null) { <span>(@TimeZone.Id)</span> }</p>
+<p>@Localizer["ReportListDescription"]</p>
 <form @onsubmit="ApplyAsync" @onsubmit:preventDefault class="row g-3 mb-3">
 <div class="col-md-3"><label for="@(_id + "-from")">@Localizer["AuditFrom"]</label>
 <input id="@(_id + "-from")" class="form-control" type="datetime-local" @bind="_from" disabled="@(TimeZone is null)" /></div>
