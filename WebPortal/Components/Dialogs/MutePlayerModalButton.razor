@@ -2,7 +2,7 @@
 @using CbmrWebAdmin.Shared.Requests
 @using Serilog
 
-<button type="button" class="btn btn-warning" disabled="@(_sending || TimeZone is null)" @onclick="ShowModal">@Localizer["Mute"]</button>
+<button type="button" class="btn btn-secondary" disabled="@(_sending || TimeZone is null)" @onclick="ShowModal">@Localizer["Mute"]</button>
 
 <Modal @ref="_modal" Title="@Localizer["MutePlayer"]">
     <BodyTemplate>

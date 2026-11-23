@@ -355,8 +355,8 @@ If you are server admin, please log in first.</value></data>
   <data name="AnnouncementSaveFailed" xml:space="preserve"><value>Could not save the announcement. It may have expired; reload the list.</value></data>
   <data name="CreateAnnouncement" xml:space="preserve"><value>Create announcement</value></data>
   <data name="UpdateAnnouncement" xml:space="preserve"><value>Update announcement</value></data>
-  <data name="AuditFrom" xml:space="preserve"><value>From (local time)</value></data>
-  <data name="AuditTo" xml:space="preserve"><value>To (local time)</value></data>
+  <data name="AuditFrom" xml:space="preserve"><value>From</value></data>
+  <data name="AuditTo" xml:space="preserve"><value>To</value></data>
   <data name="AuditAllActions" xml:space="preserve"><value>All actions</value></data>
   <data name="AuditSearch" xml:space="preserve"><value>Search target / details</value></data>
   <data name="AuditPageSize" xml:space="preserve"><value>Rows per page</value></data>

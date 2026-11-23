@@ -44,15 +44,14 @@ else if (_webPlayers is not null)
                 <td>@player.SteamId</td>
                 <td>
                     <div class="btn-group" role="group">
-                        <BanPlayerModalButton @key="player.SteamId" Player="player"/>
                         <MutePlayerModalButton @key="player.SteamId" Player="player"/>
                         <button type="button"
-                                class="btn btn-secondary"
+                                class="btn btn-warning"
                                 disabled="@_pendingKicks.Contains(player.SteamId)"
                                 @onclick="() => KickPlayerAsync(player)">
                             @Localizer["Kick"]
                         </button>
-                        <button type="button" class="btn btn-success">Right</button>
+                        <BanPlayerModalButton @key="player.SteamId" Player="player"/>
                     </div>
                 </td>
             </tr>
