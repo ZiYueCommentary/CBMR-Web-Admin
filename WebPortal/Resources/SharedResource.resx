@@ -389,6 +389,6 @@ If you are server admin, please log in first.</value></data>
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>Notifications are blocked or unavailable in this browser.</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>Show password</value></data>
   <data name="HidePassword" xml:space="preserve"><value>Hide password</value></data>
-  <data name="TimeZoneNotice" xml:space="preserve"><value>{0} {1} ({2})</value></data>
+  <data name="TimeZoneNotice" xml:space="preserve"><value>Times shown are in: {0} {1} ({2})</value></data>
   <data name="TimeZoneStandardName.Asia/Shanghai" xml:space="preserve"><value>China Standard Time</value></data>
 </root>

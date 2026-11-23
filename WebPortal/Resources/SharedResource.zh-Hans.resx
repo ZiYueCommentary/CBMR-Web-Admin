@@ -429,6 +429,6 @@
   <data name="ReportNotificationsUnavailable" xml:space="preserve"><value>浏览器已阻止通知或不支持通知。</value></data>
   <data name="ShowPassword" xml:space="preserve"><value>显示密码</value></data>
   <data name="HidePassword" xml:space="preserve"><value>隐藏密码</value></data>
-  <data name="TimeZoneNotice" xml:space="preserve"><value>{0} {1} （{2}）</value></data>
+  <data name="TimeZoneNotice" xml:space="preserve"><value>当前显示时间对应时区：{0} {1} （{2}）</value></data>
   <data name="TimeZoneStandardName.Asia/Shanghai" xml:space="preserve"><value>中国标准时间</value></data>
 </root>
