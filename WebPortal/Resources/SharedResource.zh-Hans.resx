@@ -315,6 +315,7 @@
   <data name="ModerationActiveOnly" xml:space="preserve"><value>仅显示尚未过期的记录。</value></data>
   <data name="ModerationRefresh" xml:space="preserve"><value>刷新</value></data>
   <data name="NoActiveModeration" xml:space="preserve"><value>暂无生效中的记录。</value></data>
+  <data name="NoExpiredModeration" xml:space="preserve"><value>暂无已过期的记录。</value></data>
   <data name="ModerationId" xml:space="preserve"><value>记录 ID</value></data>
   <data name="MuteKind" xml:space="preserve"><value>禁言类型</value></data>
   <data name="MuteKindVoice" xml:space="preserve"><value>语音</value></data>
@@ -413,7 +414,7 @@
   <data name="AuditNext" xml:space="preserve"><value>下一页</value></data>
   <data name="AuditInvalidRange" xml:space="preserve"><value>请输入有效的本地时间范围。不支持夏令时引起的重复或不存在的时间。</value></data>
   <data name="AuditLoadFailed" xml:space="preserve"><value>无法加载审计日志，请重试。</value></data>
-  <data name="BanListDescription" xml:space="preserve"><value>按封禁创建时间、玩家 ID、原因和状态筛选。</value></data>
+  <data name="BanListDescription" xml:space="preserve"><value>按封禁创建时间、玩家 ID 和原因筛选。</value></data>
   <data name="BanListStatus" xml:space="preserve"><value>状态</value></data>
   <data name="BanListStatusAll" xml:space="preserve"><value>所有封禁</value></data>
   <data name="BanListStatusActive" xml:space="preserve"><value>生效中</value></data>

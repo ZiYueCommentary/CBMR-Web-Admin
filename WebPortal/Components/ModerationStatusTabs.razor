@@ -1,0 +1,13 @@
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><button type="button" class="nav-link @(!_expired ? "active" : "")" aria-pressed="@(!_expired)" @onclick="() => _expired = false">@Localizer["BanListStatusActive"]</button></li>
+    <li class="nav-item"><button type="button" class="nav-link @(_expired ? "active" : "")" aria-pressed="@_expired" @onclick="() => _expired = true">@Localizer["BanListStatusExpired"]</button></li>
+</ul>
+<section @key="_expired" aria-label="@Localizer[_expired ? "BanListStatusExpired" : "BanListStatusActive"]">
+    @ChildContent(_expired)
+</section>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment<bool> ChildContent { get; set; } = default!;
+
+    private bool _expired;
+}

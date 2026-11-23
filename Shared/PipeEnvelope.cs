@@ -57,7 +57,8 @@ public enum PipeMessageType : byte
     UpdateAnnouncement,
     QueryPlayerSessionLog,
     QueryBans,
-    QueryReports
+    QueryReports,
+    ListExpiredMutes
 }
 
 [MessagePackObject]

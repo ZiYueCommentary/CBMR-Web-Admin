@@ -25,15 +25,6 @@
             <input id="ban-reason" class="form-control" type="search" @bind="_reason" />
         </div>
         <div class="col">
-            <label for="ban-status" class="form-label">@Localizer["BanListStatus"]</label>
-            <select id="ban-status" class="form-select" @bind="_status">
-                @foreach (BanStatus status in Enum.GetValues<BanStatus>())
-                {
-                    <option value="@status">@Localizer["BanListStatus" + status]</option>
-                }
-            </select>
-        </div>
-        <div class="col">
             <label for="ban-size" class="form-label">@Localizer["AuditPageSize"]</label>
             <select id="ban-size" class="form-select" @bind="_pageSize">
                 @foreach (int size in new[] { 10, 25, 50, 100 })
@@ -107,6 +98,7 @@
 </nav>
 
 @code {
+    [Parameter] public bool Expired { get; set; }
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
     private static readonly (BanSortColumn Key, string Label)[] Columns =
     [
@@ -118,7 +110,6 @@
     private UnbanPlayerDialog _unbanDialog = default!;
     private DateTime? _from, _to, _fromUtc, _toUtc;
     private string _steamId = "", _reason = "", _appliedSteamId = "", _appliedReason = "";
-    private BanStatus _status = BanStatus.Active, _appliedStatus = BanStatus.Active;
     private BanSortColumn _sort = BanSortColumn.StartedAt;
     private bool _ascending, _busy;
     private int _page = 1, _pageSize = 50, _appliedSize = 50, _total;
@@ -142,7 +133,6 @@
         _toUtc = to;
         _appliedSteamId = _steamId.Trim();
         _appliedReason = _reason.Trim();
-        _appliedStatus = _status;
         _appliedSize = _pageSize;
         await LoadAsync(1);
     }
@@ -160,7 +150,7 @@
         {
             Offset = (page - 1) * _appliedSize, PageSize = _appliedSize,
             FromUtc = _fromUtc, ToUtc = _toUtc, SteamId = _appliedSteamId, Reason = _appliedReason,
-            Status = _appliedStatus, SortColumn = _sort, SortAscending = _ascending
+            Status = Expired ? BanStatus.Expired : BanStatus.Active, SortColumn = _sort, SortAscending = _ascending
         });
 
     private async Task LoadAsync(int page)

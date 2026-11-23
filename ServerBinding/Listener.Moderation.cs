@@ -43,7 +43,10 @@ public static partial class Listener
     {
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
         DateTime utcNow = DateTime.UtcNow;
-        List<Mute> mutes = await database.ActiveMutes(utcNow).OrderByDescending(mute => mute.Id).ToListAsync(cancellationToken);
+        IQueryable<Mute> query = request.MessageType == PipeMessageType.ListExpiredMutes
+            ? database.Mutes.AsNoTracking().Where(mute => mute.ExpiresAt != null && mute.ExpiresAt <= utcNow)
+            : database.ActiveMutes(utcNow);
+        List<Mute> mutes = await query.OrderByDescending(mute => mute.Id).ToListAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request, mutes
             .Select(mute => new MuteRecord
             {
