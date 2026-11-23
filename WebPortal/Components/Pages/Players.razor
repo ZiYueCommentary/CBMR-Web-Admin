@@ -44,6 +44,7 @@ else if (_webPlayers is not null)
                 <td>@player.SteamId</td>
                 <td>
                     <div class="btn-group" role="group">
+                        <BanPlayerModalButton @key="player.SteamId" Player="player"/>
                         <MutePlayerModalButton @key="player.SteamId" Player="player"/>
                         <button type="button"
                                 class="btn btn-warning"
@@ -51,7 +52,6 @@ else if (_webPlayers is not null)
                                 @onclick="() => KickPlayerAsync(player)">
                             @Localizer["Kick"]
                         </button>
-                        <BanPlayerModalButton @key="player.SteamId" Player="player"/>
                     </div>
                 </td>
             </tr>
