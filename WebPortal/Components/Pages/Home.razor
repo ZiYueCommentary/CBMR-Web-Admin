@@ -7,8 +7,6 @@
 
 <PageTitle>@Localizer["Home"]</PageTitle>
 
-<ServerHeartbeat/>
-
 <h1>@Localizer["HelloWorld"]</h1>
 
 <p>@Localizer["Welcome"]</p>
@@ -33,20 +31,28 @@
 
 @if (!string.IsNullOrWhiteSpace(_processPath))
 {
-    <p>
-        @Localizer["ServerProcessLabel"]
-        <span class="badge @(_isRunning ? "text-bg-success" : "text-bg-danger")">
-            @Localizer[_isRunning ? "ServerProcessRunning" : "ServerProcessStopped"]
-        </span>
-        — @_processPath
-    </p>
+    <ServerHeartbeat @key="(_processPath, _isRunning)" Enabled="_isRunning" RefreshInterval="StatusRefreshInterval" Context="serverNotResponding">
+        @{
+            (string badgeColor, string statusKey) = (_isRunning, serverNotResponding) switch
+            {
+                (false, _) => ("text-bg-danger", "ServerProcessStopped"),
+                (true, true) => ("text-bg-warning", "ServerProcessNotResponding"),
+                _ => ("text-bg-success", "ServerProcessRunning")
+            };
+        }
+        <p>
+            @Localizer["ServerProcessLabel"]
+            <span class="badge @badgeColor">@Localizer[statusKey]</span> @_processPath
+        </p>
+    </ServerHeartbeat>
 }
 
 @code {
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
 
     private static readonly string PortalVersion = AssemblyVersion.GetVersion(typeof(Home).Assembly);
-    private readonly PeriodicTimer _refreshTimer = new(TimeSpan.FromSeconds(3));
+    private static readonly TimeSpan StatusRefreshInterval = TimeSpan.FromSeconds(3);
+    private readonly PeriodicTimer _refreshTimer = new(StatusRefreshInterval);
     private Task? _refreshTask;
     private string? _processPath;
     private bool _isRunning;

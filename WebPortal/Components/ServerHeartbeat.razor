@@ -1,41 +1,70 @@
 @implements IDisposable
 @inject PipeConnectionState ConnectionState
 
-@if (_serverNotResponding)
+@if (ChildContent is not null)
+{
+    @ChildContent(_serverNotResponding)
+}
+else if (_serverNotResponding)
 {
     <Alert Color="AlertColor.Danger"> <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>@Localizer["ServerNotResponding"]</Alert>
 }
 
 @code {
+    [Parameter] public RenderFragment<bool>? ChildContent { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public TimeSpan? RefreshInterval { get; set; }
+
     private readonly CancellationTokenSource _cancellation = new();
     private bool _serverNotResponding;
-    private bool _disposed;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender) return;
+        if (!firstRender || !Enabled) return;
 
+        CancellationToken cancellationToken = _cancellation.Token;
         try
         {
-            if (!ConnectionState.IsConnected) return;
+            if (RefreshInterval is not { } interval)
+            {
+                if (ConnectionState.IsConnected)
+                    await CheckHeartbeatAsync(cancellationToken);
+                return;
+            }
 
-            await ServerBinding.SendAsync(PipeMessageType.Heartbeat, cancellationToken: _cancellation.Token);
+            using PeriodicTimer timer = new(interval);
+            do
+            {
+                await CheckHeartbeatAsync(cancellationToken);
+            }
+            while (await timer.WaitForNextTickAsync(cancellationToken));
         }
-        catch (OperationCanceledException) when (_disposed)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
         }
-        catch (Exception)
-        {
-            if (_disposed) return;
+    }
 
-            _serverNotResponding = true;
-            await InvokeAsync(StateHasChanged);
+    private async Task CheckHeartbeatAsync(CancellationToken cancellationToken)
+    {
+        bool serverNotResponding;
+        try
+        {
+            await ServerBinding.SendAsync(PipeMessageType.Heartbeat, cancellationToken: cancellationToken);
+            serverNotResponding = false;
         }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            serverNotResponding = true;
+        }
+
+        if (cancellationToken.IsCancellationRequested || _serverNotResponding == serverNotResponding) return;
+
+        _serverNotResponding = serverNotResponding;
+        StateHasChanged();
     }
 
     public void Dispose()
     {
-        _disposed = true;
         _cancellation.Cancel();
         _cancellation.Dispose();
     }

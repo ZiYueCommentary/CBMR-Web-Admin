@@ -259,6 +259,8 @@
   </data>
   <data name="ServerProcessStopped" xml:space="preserve"><value>已停止</value>
   </data>
+  <data name="ServerProcessNotResponding" xml:space="preserve"><value>无响应</value>
+  </data>
   <data name="ServerNotResponding" xml:space="preserve"><value>服务器无响应，可能已停止运行。</value>
   </data>
   <data name="PortalVersion" xml:space="preserve"><value>网页管理版本：{0}</value>
