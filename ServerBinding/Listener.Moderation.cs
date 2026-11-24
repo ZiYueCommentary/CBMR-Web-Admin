@@ -83,6 +83,7 @@ public static partial class Listener
         {
             Ban? ban = await database.Bans.SingleOrDefaultAsync(ban => ban.Id == update.Id, cancellationToken);
             if (ban is null) return PipeEnvelope.CreateError(request, "Ban record not found.");
+            if (ban.ExpiresAt <= DateTime.UtcNow) return PipeEnvelope.CreateError(request, PipeEnvelope.BanExpiredError);
             ban.Reason = update.Reason.Trim();
             ban.Duration = update.ExpiresAtUtc - ban.StartedAt;
             ban.ExpiresAt = update.ExpiresAtUtc;
@@ -110,6 +111,7 @@ public static partial class Listener
         {
             Ban? ban = await database.Bans.SingleOrDefaultAsync(ban => ban.Id == id, cancellationToken);
             if (ban is null) return PipeEnvelope.CreateError(request, "Moderation record not found.");
+            if (ban.ExpiresAt <= DateTime.UtcNow) return PipeEnvelope.CreateError(request, PipeEnvelope.BanExpiredError);
             database.Bans.Remove(ban);
             await database.SaveChangesAsync(cancellationToken);
             moderationCache.Remove(ban);

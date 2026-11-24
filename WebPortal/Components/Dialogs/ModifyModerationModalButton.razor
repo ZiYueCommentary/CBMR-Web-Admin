@@ -95,6 +95,10 @@
             await _modal.HideAsync();
             await OnSaved.InvokeAsync();
         }
+        catch (InvalidOperationException exception) when (exception.Message == PipeEnvelope.BanExpiredError)
+        {
+            _errorMessage = Localizer[PipeEnvelope.BanExpiredError];
+        }
         catch (Exception exception)
         {
             Log.Error(exception, "Error modifying moderation record {Id} (IsMute: {IsMute})", Id, IsMute);

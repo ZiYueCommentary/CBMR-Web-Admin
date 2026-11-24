@@ -294,6 +294,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ModerationLoadFailed" xml:space="preserve"><value>Could not load records. Check the server connection and try again.</value></data>
   <data name="ModerationRemoveFailed" xml:space="preserve"><value>Could not confirm removal. Refresh the list and check the server connection and logs.</value></data>
   <data name="ModerationUpdateFailed" xml:space="preserve"><value>Could not confirm the changes were saved. Check the server connection and logs.</value></data>
+  <data name="BanExpired" xml:space="preserve"><value>This ban has expired and can no longer be changed or removed.</value></data>
   <data name="AuditActionUnbanPlayer" xml:space="preserve"><value>Unban player</value></data>
   <data name="AuditActionUnmutePlayer" xml:space="preserve"><value>Unmute player</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>Modify ban</value></data>

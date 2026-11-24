@@ -3,7 +3,10 @@
 @using CbmrWebAdmin.WebPortal.Data
 @inject ILogger<BanList> Logger
 
-<UnbanPlayerDialog @ref="_unbanDialog" />
+@if (!Expired)
+{
+    <UnbanPlayerDialog @ref="_unbanDialog" />
+}
 
 <p>@Localizer["BanListDescription"]</p>
 <TableFilterForm OnSubmit="ApplyAsync" SubmitText="@Localizer["AuditApply"]" SubmitDisabled="@_busy">
@@ -54,7 +57,10 @@
                 </button>
             </th>
         }
-        <th scope="col">@Localizer["Operations"]</th>
+        @if (!Expired)
+        {
+            <th scope="col">@Localizer["Operations"]</th>
+        }
     </tr></thead>
     <tbody>
         @foreach (BanRecord row in _records)
@@ -73,16 +79,19 @@
                         @Localizer["ModerationPermanent"]
                     }
                 </td>
-                <td><div class="d-flex gap-2">
-                    <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unban"]</button>
-                    <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
-                        ExpiresAtUtc="row.ExpiresAtUtc" Disabled="_busy" OnSaved="ReloadAsync" />
-                </div></td>
+                @if (!Expired)
+                {
+                    <td><div class="d-flex gap-2">
+                        <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unban"]</button>
+                        <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
+                            ExpiresAtUtc="row.ExpiresAtUtc" Disabled="_busy" OnSaved="ReloadAsync" />
+                    </div></td>
+                }
             </tr>
         }
         @if (_records.Count == 0)
         {
-            <tr><td colspan="6">@Localizer[_busy ? "Loading" : "BanListNoResults"]</td></tr>
+            <tr><td colspan="@(Expired ? 5 : 6)">@Localizer[_busy ? "Loading" : "BanListNoResults"]</td></tr>
         }
     </tbody>
 </table>
@@ -188,6 +197,10 @@
             _error = null;
             await ServerBinding.SendAsync(PipeMessageType.RemoveBan, new RemoveModerationRequest { Id = row.Id });
             await AuditLogger.WriteAsync(AuditActions.UnbanPlayer, row.SteamId, $"Record {row.Id}");
+        }
+        catch (InvalidOperationException exception) when (exception.Message == PipeEnvelope.BanExpiredError)
+        {
+            _error = PipeEnvelope.BanExpiredError;
         }
         catch (Exception exception)
         {

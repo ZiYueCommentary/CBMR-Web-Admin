@@ -67,6 +67,7 @@ public sealed class PipeEnvelope
 {
     public const byte CurrentVersion = 1;
     public const string EventsPipeSuffix = ".Events";
+    public const string BanExpiredError = "BanExpired";
 
     [Key(0)] public byte Version { get; init; }
 

@@ -445,6 +445,8 @@
   </data>
   <data name="ModerationUpdateFailed" xml:space="preserve"><value>无法确认更改是否已保存。请检查服务器连接和日志。</value>
   </data>
+  <data name="BanExpired" xml:space="preserve"><value>此封禁已过期，无法修改或移除。</value>
+  </data>
   <data name="AuditActionUnbanPlayer" xml:space="preserve"><value>解封玩家</value>
   </data>
   <data name="AuditActionUnmutePlayer" xml:space="preserve"><value>解除玩家禁言</value>
