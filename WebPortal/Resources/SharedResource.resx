@@ -198,9 +198,9 @@ If you are server admin, please log in first.</value></data>
   <data name="BanFailed" xml:space="preserve">
     <value>Could not confirm the ban was saved. Check the server connection and logs.</value>
   </data>
-  <data name="ConnectedServerProcess" xml:space="preserve"><value>Server process: {0} — {1}</value></data>
+  <data name="ServerProcessLabel" xml:space="preserve"><value>Server process:</value></data>
   <data name="ServerProcessRunning" xml:space="preserve"><value>Running</value></data>
-  <data name="ServerProcessDead" xml:space="preserve"><value>Dead</value></data>
+  <data name="ServerProcessStopped" xml:space="preserve"><value>Stopped</value></data>
   <data name="ServerNotResponding" xml:space="preserve"><value>The server is not responding and may have stopped.</value></data>
   <data name="PortalVersion" xml:space="preserve"><value>Portal version: {0}</value></data>
   <data name="BindingVersion" xml:space="preserve"><value>Binding version: {0}</value></data>

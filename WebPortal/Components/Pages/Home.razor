@@ -33,7 +33,13 @@
 
 @if (!string.IsNullOrWhiteSpace(_processPath))
 {
-    <p>@Localizer["ConnectedServerProcess", Localizer[_isRunning ? "ServerProcessRunning" : "ServerProcessDead"], _processPath]</p>
+    <p>
+        @Localizer["ServerProcessLabel"]
+        <span class="badge @(_isRunning ? "text-bg-success" : "text-bg-danger")">
+            @Localizer[_isRunning ? "ServerProcessRunning" : "ServerProcessStopped"]
+        </span>
+        — @_processPath
+    </p>
 }
 
 @code {

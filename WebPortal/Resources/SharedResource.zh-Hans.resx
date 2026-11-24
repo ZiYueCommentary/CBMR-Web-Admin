@@ -253,11 +253,11 @@
   <data name="BanFailed" xml:space="preserve">
     <value>无法确认封禁记录是否已保存，请检查服务器连接和日志。</value>
   </data>
-  <data name="ConnectedServerProcess" xml:space="preserve"><value>服务器进程：{0} — {1}</value>
+  <data name="ServerProcessLabel" xml:space="preserve"><value>服务器进程：</value>
   </data>
   <data name="ServerProcessRunning" xml:space="preserve"><value>运行中</value>
   </data>
-  <data name="ServerProcessDead" xml:space="preserve"><value>已停止</value>
+  <data name="ServerProcessStopped" xml:space="preserve"><value>已停止</value>
   </data>
   <data name="ServerNotResponding" xml:space="preserve"><value>服务器无响应，可能已停止运行。</value>
   </data>
