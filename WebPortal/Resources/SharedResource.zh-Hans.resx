@@ -232,6 +232,9 @@
   <data name="BanOfflinePlayer" xml:space="preserve">
     <value>封禁离线玩家</value>
   </data>
+  <data name="MuteOfflinePlayer" xml:space="preserve">
+    <value>禁言离线玩家</value>
+  </data>
   <data name="SteamIdPlaceholder" xml:space="preserve">
     <value>请输入 SteamID</value>
   </data>

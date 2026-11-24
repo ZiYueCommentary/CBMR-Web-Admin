@@ -2,14 +2,24 @@
 @using CbmrWebAdmin.Shared.Requests
 @using Serilog
 
-<button type="button" class="btn btn-success" disabled="@(_sending || TimeZone is null)" @onclick="ShowModal">@Localizer["Mute"]</button>
+<button type="button" class="btn btn-success" disabled="@(_sending || TimeZone is null)" @onclick="ShowModal">@Localizer[Player is null ? "MuteOfflinePlayer" : "Mute"]</button>
 
-<Modal @ref="_modal" Title="@Localizer["MutePlayer"]">
+<Modal @ref="_modal" Title="@Localizer[Player is null ? "MuteOfflinePlayer" : "MutePlayer"]">
     <BodyTemplate>
-        <div class="d-flex gap-2 align-items-center mb-3">
-            <span>@Player.Name</span>
-            <span class="text-muted">@Player.SteamId</span>
-        </div>
+        @if (Player is null)
+        {
+            <div class="mb-3">
+                <input class="form-control" type="text" @bind="_steamId" @bind:event="oninput" required maxlength="64"
+                       disabled="@_sending" placeholder="@Localizer["SteamIdPlaceholder"]" aria-label="@Localizer["SteamIdPlaceholder"]" />
+            </div>
+        }
+        else
+        {
+            <div class="d-flex gap-2 align-items-center mb-3">
+                <span>@Player.Name</span>
+                <span class="text-muted">@Player.SteamId</span>
+            </div>
+        }
         <div class="mb-2">@Localizer["MuteKind"]</div>
         <div class="d-flex gap-3 mb-3">
             <div class="form-check">
@@ -52,8 +62,8 @@
 @code {
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
 
-    [Parameter, EditorRequired]
-    public WebPlayer Player { get; set; } = null!;
+    [Parameter]
+    public WebPlayer? Player { get; set; }
 
     private Modal _modal = null!;
     private bool _muteChat = true;
@@ -63,8 +73,12 @@
     private bool _permanent;
     private string? _reason;
     private bool _sending;
+    private string? _steamId;
 
-    private bool InvalidInput => (!_muteChat && !_muteVoice)
+    private bool InvalidSteamId => Player is null && (string.IsNullOrWhiteSpace(_steamId) || _steamId.Trim().Length > 64);
+
+    private bool InvalidInput => InvalidSteamId
+                                 || (!_muteChat && !_muteVoice)
                                  || (!_permanent && (_muteDate is null || _muteTime is null))
                                  || string.IsNullOrWhiteSpace(_reason);
 
@@ -86,10 +100,11 @@
         _sending = true;
         try
         {
+            string steamId = Player?.SteamId ?? _steamId!.Trim();
             string reason = _reason!.Trim();
-            if (_muteChat && await TrySendMuteAsync(voice: false, expiresAtUtc, reason))
+            if (_muteChat && await TrySendMuteAsync(steamId, voice: false, expiresAtUtc, reason))
                 _muteChat = false;
-            if (_muteVoice && await TrySendMuteAsync(voice: true, expiresAtUtc, reason))
+            if (_muteVoice && await TrySendMuteAsync(steamId, voice: true, expiresAtUtc, reason))
                 _muteVoice = false;
 
             if (!_muteChat && !_muteVoice)
@@ -100,6 +115,7 @@
                 _muteTime = null;
                 _permanent = false;
                 _reason = null;
+                _steamId = null;
             }
         }
         finally
@@ -108,26 +124,26 @@
         }
     }
 
-    private async Task<bool> TrySendMuteAsync(bool voice, DateTime? expiresAtUtc, string reason)
+    private async Task<bool> TrySendMuteAsync(string steamId, bool voice, DateTime? expiresAtUtc, string reason)
     {
         try
         {
             await ServerBinding.SendAsync(voice ? PipeMessageType.MuteVoice : PipeMessageType.MuteChat, new MutePlayerRequest
             {
-                SteamId = Player.SteamId,
-                PlayerName = Player.Name,
+                SteamId = steamId,
+                PlayerName = Player?.Name,
                 ExpiresAtUtc = expiresAtUtc,
                 Reason = reason
             });
             await AuditLogger.WriteAsync(voice ? AuditActions.MuteVoice : AuditActions.MuteChat,
-                $"{Player.Name} ({Player.SteamId})",
+                Player is null ? steamId : $"{Player.Name} ({steamId})",
                 $"{(expiresAtUtc is null ? "permanent" : $"until {expiresAtUtc:u}")}: {reason}");
             ToastService.Notify(new(ToastType.Success, Localizer[voice ? "PlayerVoiceMuted" : "PlayerChatMuted"]));
             return true;
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Error on muting player {SteamId} ({MuteType})", Player.SteamId, voice ? "MuteVoice" : "MuteChat");
+            Log.Error(exception, "Error on muting player {SteamId} ({MuteType})", steamId, voice ? "MuteVoice" : "MuteChat");
             ToastService.Notify(new(ToastType.Danger, Localizer["MuteFailed"]));
             return false;
         }
