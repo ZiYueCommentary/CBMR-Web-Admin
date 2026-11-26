@@ -24,9 +24,9 @@ public partial class EntryPoint
 {
     private const int ReportPlayerDialog = 28401;
     private const int ReportContentDialog = 28402;
-    private const int ListDialogType = 2;
+    private const int ListDialogType = 1;
     private const int MessageDialogType = 0;
-    private const int InputDialogType = 1;
+    private const int InputDialogType = 2;
     private readonly PerPlayerCooldown _reportCooldown = new(30_000);
     private readonly Dictionary<string, ReportForm> _reportForms = new(StringComparer.Ordinal);
 
