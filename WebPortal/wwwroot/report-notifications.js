@@ -1,39 +1,53 @@
-window.reportNotifications = {
-    isEnabled: () => {
+(() => {
+    const preferenceKey = "reportNotifications.enabled";
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let enabled = true;
+    let audio;
+
+    function unlockAudio() {
+        if (!AudioContext || audio?.state === "running") return;
         try {
-            return localStorage.getItem("reportNotifications.enabled") !== "false";
-        } catch {
-            return true;
-        }
-    },
-    setEnabled: async (enabled) => {
-        window.reportNotifications.enabled = enabled;
-        try {
-            localStorage.setItem("reportNotifications.enabled", String(enabled));
+            audio ??= new AudioContext();
+            audio.resume().catch(() => {});
         } catch {
         }
-        if (enabled) await window.reportNotifications.enable();
-    },
-    initialize: async () => {
-        const enabled = window.reportNotifications.isEnabled();
-        window.reportNotifications.enabled = enabled;
-        if (enabled) await window.reportNotifications.enable();
-        return enabled;
-    },
-    permission: () => "Notification" in window ? Notification.permission : "unsupported",
-    enable: async () => {
-        if ("Notification" in window && Notification.permission === "default") {
-            await Notification.requestPermission();
-        }
-    },
-    show: (title, body) => {
-        if (window.reportNotifications.enabled === false || !window.reportNotifications.isEnabled() ||
-            !("Notification" in window) || Notification.permission !== "granted") return;
-        const notification = new Notification(title, { body });
-        notification.onclick = () => {
-            window.focus();
-            window.location.assign(new URL("reports", document.baseURI).href);
-            notification.close();
-        };
     }
-};
+
+    window.addEventListener("click", unlockAudio, true);
+    window.addEventListener("keydown", unlockAudio, true);
+
+    window.reportNotifications = {
+        isEnabled: () => {
+            try {
+                return localStorage.getItem(preferenceKey) !== "false";
+            } catch {
+                return enabled;
+            }
+        },
+        setEnabled: (value) => {
+            enabled = value;
+            try {
+                localStorage.setItem(preferenceKey, String(value));
+            } catch {
+            }
+        },
+        playSound: () => {
+            if (audio?.state !== "running") return;
+            const start = audio.currentTime;
+            const tone = audio.createOscillator();
+            const gain = audio.createGain();
+            tone.frequency.value = 880;
+            gain.gain.setValueAtTime(0, start);
+            gain.gain.linearRampToValueAtTime(0.12, start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+            tone.connect(gain);
+            gain.connect(audio.destination);
+            tone.onended = () => {
+                tone.disconnect();
+                gain.disconnect();
+            };
+            tone.start(start);
+            tone.stop(start + 0.25);
+        }
+    };
+})();
