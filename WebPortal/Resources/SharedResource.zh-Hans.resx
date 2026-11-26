@@ -366,6 +366,8 @@
   </data>
   <data name="AuditDetails" xml:space="preserve"><value>详情</value>
   </data>
+  <data name="AuditIpAddress" xml:space="preserve"><value>IP 地址</value>
+  </data>
   <data name="AuditActionLogin" xml:space="preserve"><value>登录</value>
   </data>
   <data name="AuditActionLoginFailed" xml:space="preserve"><value>登录失败</value>

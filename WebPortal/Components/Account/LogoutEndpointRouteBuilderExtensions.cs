@@ -13,13 +13,14 @@ internal static class LogoutEndpointRouteBuilderExtensions
 
         return endpoints.MapPost("/Account/Logout", async (
             ClaimsPrincipal user,
+            HttpContext httpContext,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromServices] AuditLogger auditLogger,
             [FromForm] string returnUrl) =>
         {
             await signInManager.SignOutAsync();
             if (user.Identity?.IsAuthenticated == true)
-                await auditLogger.WriteAsync(AuditActions.Logout, userName: user.Identity.Name);
+                await auditLogger.WriteAsync(AuditActions.Logout, userName: user.Identity.Name, httpContext: httpContext);
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
     }

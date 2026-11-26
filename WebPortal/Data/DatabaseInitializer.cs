@@ -25,6 +25,8 @@ public static class DatabaseInitializer
 
         await dbContext.Database.EnsureCreatedAsync();
         await dbContext.Database.ExecuteSqlRawAsync(ApplicationDbContext.CreateAuditLogsSql);
+        if (await dbContext.Database.SqlQueryRaw<int>(ApplicationDbContext.HasAuditLogsIpAddressSql).SingleAsync() == 0)
+            await dbContext.Database.ExecuteSqlRawAsync(ApplicationDbContext.AddAuditLogsIpAddressSql);
         await IdentitySeeder.SeedAdminAsync(scope.ServiceProvider);
     }
 }

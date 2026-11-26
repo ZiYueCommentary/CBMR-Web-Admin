@@ -27,10 +27,16 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             "user_name" TEXT NOT NULL,
             "action" TEXT NOT NULL,
             "target" TEXT NULL,
-            "details" TEXT NULL
+            "details" TEXT NULL,
+            "ip_address" TEXT NULL
         );
         CREATE INDEX IF NOT EXISTS "IX_audit_logs_timestamp_utc" ON "audit_logs" ("timestamp_utc");
         """;
+
+    public const string HasAuditLogsIpAddressSql =
+        """SELECT COUNT(*) AS "Value" FROM pragma_table_info('audit_logs') WHERE "name" = 'ip_address'""";
+
+    public const string AddAuditLogsIpAddressSql = """ALTER TABLE "audit_logs" ADD COLUMN "ip_address" TEXT NULL""";
 
     public DbSet<AuditLogEntry> AuditLogs => Set<AuditLogEntry>();
 
@@ -48,6 +54,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(entry => entry.Action).HasColumnName("action").IsRequired();
             entity.Property(entry => entry.Target).HasColumnName("target");
             entity.Property(entry => entry.Details).HasColumnName("details");
+            entity.Property(entry => entry.IpAddress).HasColumnName("ip_address");
             entity.HasIndex(entry => entry.TimestampUtc);
         });
     }

@@ -28,4 +28,6 @@ public class AuditLogEntry
     public string? Target { get; set; }
 
     public string? Details { get; set; }
+
+    public string? IpAddress { get; set; }
 }

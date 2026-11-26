@@ -91,11 +91,12 @@
             }
 
                 </td>
+                <td>@entry.IpAddress</td>
             </tr>
         }
         @if (_entries.Count == 0)
         {
-            <tr><td colspan="5">@Localizer["AuditNoResults"]</td></tr>
+            <tr><td colspan="6">@Localizer["AuditNoResults"]</td></tr>
         }
     </tbody>
 </table>
@@ -120,7 +121,7 @@
     private static readonly (string Key, string Label)[] Columns =
     [
         ("TimestampUtc", "Time"), ("UserName", "Username"), ("Action", "AuditAction"),
-        ("Target", "AuditTarget"), ("Details", "AuditDetails")
+        ("Target", "AuditTarget"), ("Details", "AuditDetails"), ("IpAddress", "AuditIpAddress")
     ];
     private static readonly string[] Actions = typeof(AuditActions).GetFields()
         .Where(field => field.IsLiteral).Select(field => (string)field.GetRawConstantValue()!).Order().ToArray();
@@ -181,7 +182,8 @@
             if (_appliedAction.Length > 0) query = query.Where(entry => entry.Action == _appliedAction);
             if (_appliedSearch.Length > 0)
                 query = query.Where(entry => (entry.Target != null && entry.Target.Contains(_appliedSearch)) ||
-                    (entry.Details != null && entry.Details.Contains(_appliedSearch)));
+                    (entry.Details != null && entry.Details.Contains(_appliedSearch)) ||
+                    (entry.IpAddress != null && entry.IpAddress.Contains(_appliedSearch)));
             _total = await query.CountAsync();
             _page = Math.Clamp(page, 1, PageCount);
             IOrderedQueryable<AuditLogEntry> ordered = (_sort, _descending) switch
@@ -194,6 +196,8 @@
                 ("Target", true) => query.OrderByDescending(entry => entry.Target),
                 ("Details", false) => query.OrderBy(entry => entry.Details),
                 ("Details", true) => query.OrderByDescending(entry => entry.Details),
+                ("IpAddress", false) => query.OrderBy(entry => entry.IpAddress),
+                ("IpAddress", true) => query.OrderByDescending(entry => entry.IpAddress),
                 (_, false) => query.OrderBy(entry => entry.TimestampUtc),
                 _ => query.OrderByDescending(entry => entry.TimestampUtc)
             };

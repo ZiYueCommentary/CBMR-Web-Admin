@@ -256,6 +256,7 @@ If you are server admin, please log in first.</value></data>
   <data name="AuditAction" xml:space="preserve"><value>Action</value></data>
   <data name="AuditTarget" xml:space="preserve"><value>Target</value></data>
   <data name="AuditDetails" xml:space="preserve"><value>Details</value></data>
+  <data name="AuditIpAddress" xml:space="preserve"><value>IP address</value></data>
   <data name="AuditActionLogin" xml:space="preserve"><value>Logged in</value></data>
   <data name="AuditActionLoginFailed" xml:space="preserve"><value>Failed login</value></data>
   <data name="AuditActionLockedOut" xml:space="preserve"><value>Locked out</value></data>

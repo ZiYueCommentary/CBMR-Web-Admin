@@ -22,7 +22,8 @@ public sealed class AuditLogger(
     IServiceProvider services,
     ILogger<AuditLogger> logger)
 {
-    public async Task WriteAsync(string action, string? target = null, string? details = null, string? userName = null)
+    public async Task WriteAsync(string action, string? target = null, string? details = null, string? userName = null,
+        HttpContext? httpContext = null)
     {
         try
         {
@@ -35,7 +36,8 @@ public sealed class AuditLogger(
                 UserName = string.IsNullOrWhiteSpace(userName) ? "?" : userName,
                 Action = action,
                 Target = target,
-                Details = details
+                Details = details,
+                IpAddress = GetIpAddress(httpContext)
             });
             await dbContext.SaveChangesAsync();
         }
@@ -43,6 +45,13 @@ public sealed class AuditLogger(
         {
             logger.LogError(exception, "Could not write audit log entry {Action} by {UserName}", action, userName);
         }
+    }
+
+    private static string? GetIpAddress(HttpContext? httpContext)
+    {
+        System.Net.IPAddress? address = httpContext?.Connection.RemoteIpAddress;
+        if (address is null) return null;
+        return (address.IsIPv4MappedToIPv6 ? address.MapToIPv4() : address).ToString();
     }
 
     private async Task<string?> GetCurrentUserNameAsync()
