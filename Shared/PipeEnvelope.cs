@@ -59,7 +59,8 @@ public enum PipeMessageType : byte
     QueryBans,
     QueryReports,
     ListExpiredMutes,
-    ListAnnouncementReaders
+    ListAnnouncementReaders,
+    CountUnhandledReports
 }
 
 [MessagePackObject]

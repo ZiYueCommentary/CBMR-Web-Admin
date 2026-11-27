@@ -88,6 +88,13 @@ public static partial class Listener
         return PipeEnvelope.CreateResponse(request, reports.Select(ToRecord).ToList());
     }
 
+    private static async Task<PipeEnvelope> HandleCountUnhandledReportsAsync(PipeEnvelope request, string path, CancellationToken token)
+    {
+        await using WebPortalDbContext database = WebPortalDbContext.Create(path);
+        int count = await database.Reports.CountAsync(report => !report.Handled, token);
+        return PipeEnvelope.CreateResponse(request, count);
+    }
+
     private static async Task<PipeEnvelope> HandleReplyReportAsync(PipeEnvelope request, string path,
         PlayerLanguageSettings language, CancellationToken token)
     {

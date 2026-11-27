@@ -86,9 +86,8 @@
         _checking = true;
         try
         {
-            var reports = await ServerBinding.SendAsync<List<ReportRecord>>(PipeMessageType.ListReports);
+            int count = await ServerBinding.SendAsync<int>(PipeMessageType.CountUnhandledReports);
             if (_disposed) return;
-            int count = reports.Count(report => !report.Handled);
             if (count > 0)
                 await ShowAsync(Localizer["PendingReportNotification", count].Value, Localizer["ReviewPendingReports"].Value);
             _initialChecked = true;

@@ -54,6 +54,7 @@ public static partial class Listener
                     PipeMessageType.WhereAreYou => HandleWhereAreYou(request),
                     PipeMessageType.Heartbeat => PipeEnvelope.CreateResponse(request),
                     PipeMessageType.ListReports => await HandleListReportsAsync(request, databasePath, cancellationToken),
+                    PipeMessageType.CountUnhandledReports => await HandleCountUnhandledReportsAsync(request, databasePath, cancellationToken),
                     PipeMessageType.QueryReports => await HandleQueryReportsAsync(request, databasePath, cancellationToken),
                     PipeMessageType.ListAnnouncements => await HandleListAnnouncementsAsync(request, databasePath, cancellationToken),
                     PipeMessageType.ListAnnouncementReaders => await HandleListAnnouncementReadersAsync(request, databasePath, cancellationToken),
