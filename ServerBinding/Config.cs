@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using CCB;
+using CbmrWebAdmin.Shared;
 
 namespace CbmrWebAdmin.ServerBinding;
 
@@ -24,5 +25,5 @@ public record Config(string? PipeName)
 
     public string DatabasePath { get; init; } = "Data/webportal.db";
 
-    public static Config Default { get; } = new Config("CbmrWebAdmin");
+    public static Config Default { get; } = new Config(PipeNames.Default);
 }

@@ -197,8 +197,7 @@ The queue is single-reader. `PipeBackgroundService` writes one request, waits fo
 
 ## Pipe Lifecycle and Failure Behavior
 
-- Pipe name on the WebPortal defaults to `CbmrWebAdmin` and can be overridden by `PipeName` configuration.
-- `ServerBinding/EntryPoint.cs` currently creates the server pipe with the literal name `CbmrWebAdmin`.
+- The binding and portal read `PipeName` from `webadmin.json` and `appsettings.json` respectively. An omitted or blank value defaults to `CbmrWebAdmin`, and the events pipe adds `.Events`.
 - The WebPortal retries after a configurable delay from `PipeReconnectDelaySeconds`; default is 5 seconds and values below 1 second are clamped to 1 second.
 - A failed handshake is treated like a failed connection. The client logs a warning and retries.
 - A failed in-flight queued request receives the exception before the connection loop retries.

@@ -35,7 +35,6 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
     private CancellationTokenSource? _listenerCancellation;
     private Thread? _listenerThread;
     private NamedPipeServerStream? _pipeServer;
-    private const string PipeName = "CbmrWebAdmin";
     private Task? _eventsTask;
     internal static readonly ChatEventPublisher ChatEvents = new();
     internal static readonly ServerChatList ServerChatList = new();
@@ -53,10 +52,11 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
         _muteAttemptLog = new MuteAttemptLog(_config.DatabasePath, logger);
         _playerSessionLog = new PlayerSessionLog(_config.DatabasePath, logger);
 
+        string pipeName = PipeNames.Resolve(_config.PipeName);
         _listenerCancellation = new CancellationTokenSource();
-        _eventsTask = ChatEvents.RunAsync(PipeName, logger, _listenerCancellation.Token);
+        _eventsTask = ChatEvents.RunAsync(pipeName, logger, _listenerCancellation.Token);
         _listenerThread = new Thread(() =>
-                ListenForConnectionsAsync(_listenerCancellation.Token).GetAwaiter().GetResult())
+                ListenForConnectionsAsync(pipeName, _listenerCancellation.Token).GetAwaiter().GetResult())
         {
             IsBackground = true,
             Name = "CbmrWebAdmin.ServerBinding pipe listener"
@@ -199,11 +199,11 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
         });
     }
 
-    private async Task ListenForConnectionsAsync(CancellationToken cancellationToken)
+    private async Task ListenForConnectionsAsync(string pipeName, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await using NamedPipeServerStream pipeServer = DeploymentAccountPipe.Create(PipeName); //todo dyna
+            await using NamedPipeServerStream pipeServer = DeploymentAccountPipe.Create(pipeName);
             _pipeServer = pipeServer;
 
             try

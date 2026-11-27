@@ -34,7 +34,7 @@ public class PipeBackgroundService(
         {
             using NamedPipeClientStream pipe = new(
                 ".",
-                configuration["PipeName"] ?? "CbmrWebAdmin",
+                PipeNames.Resolve(configuration["PipeName"]),
                 PipeDirection.InOut,
                 PipeOptions.Asynchronous);
             try

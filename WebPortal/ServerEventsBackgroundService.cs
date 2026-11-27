@@ -31,7 +31,7 @@ public sealed class ServerEventsBackgroundService(
             try
             {
                 using NamedPipeClientStream pipe = new(".",
-                    (configuration["PipeName"] ?? "CbmrWebAdmin") + PipeEnvelope.EventsPipeSuffix,
+                    PipeNames.Resolve(configuration["PipeName"]) + PipeEnvelope.EventsPipeSuffix,
                     PipeDirection.In, PipeOptions.Asynchronous);
                 using (CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken))
                 {

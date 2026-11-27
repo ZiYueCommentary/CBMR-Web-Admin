@@ -92,6 +92,7 @@ dotnet publish WebPortal/WebPortal.csproj -c Release -o publish/portal
          "Http": { "Url": "http://*:5000" }
        }
      },
+     "PipeName": "",
      "PipeReconnectDelaySeconds": 5
    }
    ```
@@ -101,6 +102,8 @@ dotnet publish WebPortal/WebPortal.csproj -c Release -o publish/portal
 4. On first start the portal creates the primary admin account (`admin` by default). Set `InitialAdmin__Password` (or `InitialAdmin:Password` in configuration, and optionally `InitialAdmin__UserName`) to inject the password at deployment; otherwise a random password is written to `Data/initial-admin-credentials.txt` (or `InitialAdmin:CredentialsFilePath`) instead of the log. Sign in at `http://<host>:5000`, delete the credentials file if generated, and add other accounts from the *Accounts* page.
 
 The portal reconnects to the binding automatically; until the game server is running it shows a "No connection with server" banner.
+
+To change the pipe name, set the same top-level `PipeName` in the binding's `webadmin.json` and the portal's `appsettings.json`, then restart both. An omitted or blank value uses `CbmrWebAdmin`. The events pipe always appends `.Events` to that name.
 
 ### Configure Force Restart
 
