@@ -20,7 +20,8 @@ namespace CbmrWebAdmin.WebPortal.Data;
 
 public static class IdentitySeeder
 {
-    private const string AdminUserName = "admin";
+    private const string DefaultAdminUserName = "admin";
+    private const string DefaultCredentialsFileName = "initial-admin-credentials.txt";
     private const int PasswordLength = 24;
     private const string PasswordCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!#$%&*+-=?@";
 
@@ -29,7 +30,14 @@ public static class IdentitySeeder
         await using AsyncServiceScope scope = services.CreateAsyncScope();
         UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         if (await userManager.Users.AnyAsync(user => user.IsPrimaryAdmin)) return;
-        ApplicationUser? admin = await userManager.FindByNameAsync(AdminUserName);
+
+        IConfiguration configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        string? configuredUserName = configuration["InitialAdmin:UserName"];
+        string adminUserName = string.IsNullOrWhiteSpace(configuredUserName)
+            ? DefaultAdminUserName
+            : configuredUserName.Trim();
+
+        ApplicationUser? admin = await userManager.FindByNameAsync(adminUserName);
         if (admin is not null)
         {
             if (admin.IsPrimaryAdmin) return;
@@ -38,13 +46,14 @@ public static class IdentitySeeder
             if (updateResult.Succeeded) return;
             string errors = string.Join(", ", updateResult.Errors.Select(error => error.Description));
             throw new InvalidOperationException($"Could not mark the initial admin account: {errors}");
-
         }
 
-        string password = GeneratePassword();
+        string? configuredPassword = configuration["InitialAdmin:Password"];
+        bool hasConfiguredPassword = !string.IsNullOrWhiteSpace(configuredPassword);
+        string password = hasConfiguredPassword ? configuredPassword! : GeneratePassword();
         admin = new ApplicationUser
         {
-            UserName = AdminUserName,
+            UserName = adminUserName,
             IsPrimaryAdmin = true
         };
 
@@ -57,10 +66,75 @@ public static class IdentitySeeder
 
         ILogger logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger(nameof(IdentitySeeder));
+
+        if (hasConfiguredPassword)
+        {
+            logger.LogInformation(
+                "Initial admin account '{Username}' created from configuration.",
+                adminUserName);
+            return;
+        }
+
+        IHostEnvironment environment = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+        string credentialsPath = ResolveCredentialsFilePath(configuration, environment);
+        try
+        {
+            await WriteCredentialsFileAsync(credentialsPath, adminUserName, password);
+        }
+        catch
+        {
+            await userManager.DeleteAsync(admin);
+            throw;
+        }
+
         logger.LogWarning(
-            "Initial admin account created. Username: {Username}; Password: {Password}. Store this password securely.",
-            AdminUserName,
-            password);
+            "Initial admin account '{Username}' created. One-time credentials written to '{CredentialsPath}'. Read the password, change it after signing in, and delete this file.",
+            adminUserName,
+            credentialsPath);
+    }
+
+    private static string ResolveCredentialsFilePath(IConfiguration configuration, IHostEnvironment environment)
+    {
+        string? configuredPath = configuration["InitialAdmin:CredentialsFilePath"];
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            return Path.GetFullPath(configuredPath.Trim(), environment.ContentRootPath);
+        }
+
+        return Path.Combine(environment.ContentRootPath, "Data", DefaultCredentialsFileName);
+    }
+
+    private static async Task WriteCredentialsFileAsync(string path, string userName, string password)
+    {
+        string? directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        FileStreamOptions options = new()
+        {
+            Mode = FileMode.Create,
+            Access = FileAccess.Write,
+            Share = FileShare.None
+        };
+
+        if (!OperatingSystem.IsWindows())
+        {
+            options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        }
+
+        await using FileStream stream = new(path, options);
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+
+        await using StreamWriter writer = new(stream);
+        await writer.WriteLineAsync($"Username: {userName}");
+        await writer.WriteLineAsync($"Password: {password}");
+        await writer.WriteLineAsync();
+        await writer.WriteLineAsync("Sign in, change this password, and delete this file.");
     }
 
     public static string GeneratePassword(int length = PasswordLength)

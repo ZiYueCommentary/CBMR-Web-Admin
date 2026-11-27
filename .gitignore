@@ -37,3 +37,4 @@ appsettings.local.json
 *.pfx
 *.publishsettings
 secrets.json
+initial-admin-credentials.txt

@@ -98,7 +98,7 @@ dotnet publish WebPortal/WebPortal.csproj -c Release -o publish/portal
 
    Keep the existing `Logging` and `AllowedHosts` entries. Create the `Data` folder if it does not exist.
 3. Run `CbmrWebAdmin.WebPortal.exe` (or `dotnet CbmrWebAdmin.WebPortal.dll`) from that folder.
-4. On first start the portal creates the primary admin account `admin` and prints its random password once in the console log. Save it, sign in at `http://<host>:5000`, and add other accounts from the *Accounts* page.
+4. On first start the portal creates the primary admin account (`admin` by default). Set `InitialAdmin__Password` (or `InitialAdmin:Password` in configuration, and optionally `InitialAdmin__UserName`) to inject the password at deployment; otherwise a random password is written to `Data/initial-admin-credentials.txt` (or `InitialAdmin:CredentialsFilePath`) instead of the log. Sign in at `http://<host>:5000`, delete the credentials file if generated, and add other accounts from the *Accounts* page.
 
 The portal reconnects to the binding automatically; until the game server is running it shows a "No connection with server" banner.
 
