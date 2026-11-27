@@ -35,6 +35,7 @@ public class Program
             WebRootPath = Directory.Exists(bundledWebRoot) ? bundledWebRoot : null
         });
         bool useStaticAssetEndpoints = ConfigureStaticWebAssets(builder);
+        HttpsSettings httpsSettings = HttpsSettings.Apply(builder);
 
         builder.Services.AddLocalization();
         builder.Services.AddRazorComponents()
@@ -85,12 +86,9 @@ public class Program
         app.UseRequestLocalization(localizationOptions);
 
         if (!app.Environment.IsDevelopment())
-        {
             app.UseExceptionHandler("/Error");
-            app.UseHsts();
-        }
 
-        app.UseHttpsRedirection();
+        httpsSettings.UseHttps(app);
         if (useStaticAssetEndpoints)
             app.MapStaticAssets();
         else

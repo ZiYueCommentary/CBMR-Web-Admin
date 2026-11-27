@@ -105,6 +105,25 @@ The portal reconnects to the binding automatically; until the game server is run
 
 To change the pipe name, set the same top-level `PipeName` in the binding's `webadmin.json` and the portal's `appsettings.json`, then restart both. An omitted or blank value uses `CbmrWebAdmin`. The events pipe always appends `.Events` to that name.
 
+### HTTPS and Domain
+
+All settings in the portal's `Https` section of `appsettings.json` are optional; restart the portal after changing them.
+
+```json
+"Https": {
+  "Enabled": true,
+  "Port": 5001,
+  "CertificatePath": "certs/fullchain.pem",
+  "CertificateKeyPath": "certs/privkey.pem",
+  "CertificatePassword": "",
+  "Domain": "admin.example.com"
+}
+```
+
+- `Enabled`: also listen for HTTPS on `Port` (default `5001`) and redirect HTTP requests there. The HTTP endpoint in `Kestrel` stays as configured.
+- `CertificatePath`: a `.pfx`/`.p12` file, or a PEM certificate with its key in `CertificateKeyPath` (or in the same file). `CertificatePassword` unlocks a protected `.pfx` or an encrypted PEM key. Relative paths start from the portal folder. Leave it blank to use a self-signed certificate created in `Data/https-self-signed.pfx`; browsers warn about it until you trust it.
+- `Domain`: only answer requests for this host name (plus `localhost`), and use it as the self-signed certificate's name. Leave it blank to answer any host name or IP address.
+
 ### Force Restart
 
 Force Restart finds the running Windows game server through its command pipe; no launch configuration is needed. Run the portal and server under the same Windows account and with the same elevation. If the portal cannot verify the running process, it will not launch anything. If the server has already stopped, start it as you normally would.
