@@ -56,17 +56,35 @@ public class PipeGateway(PipeMessageQueue queue)
         PipeEnvelope envelope,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         TaskCompletionSource<PipeEnvelope> completion =
             new TaskCompletionSource<PipeEnvelope>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(RequestTimeout);
-        using CancellationTokenRegistration registration = timeout.Token.Register(() => completion.TrySetCanceled(timeout.Token));
+
+        PipeRequest request = new(envelope, completion, timeout.Token);
+        if (!queue.TryEnqueue(request, out PipeQueueHandle handle, out PipeQueueRejectReason rejectReason))
+        {
+            throw rejectReason switch
+            {
+                PipeQueueRejectReason.Disconnected => new InvalidOperationException("Not connected to the game server."),
+                PipeQueueRejectReason.Full => new InvalidOperationException(
+                    $"Pipe command queue is full (capacity {queue.Capacity})."),
+                _ => new InvalidOperationException($"Pipe request '{envelope.MessageType}' could not be queued.")
+            };
+        }
+
+        using CancellationTokenRegistration registration = timeout.Token.Register(() =>
+        {
+            queue.Remove(handle);
+            completion.TrySetCanceled(timeout.Token);
+        });
 
         PipeEnvelope response;
         try
         {
-            await queue.Channel.Writer.WriteAsync(new PipeRequest(envelope, completion, timeout.Token), timeout.Token);
             response = await completion.Task;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)

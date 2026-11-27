@@ -44,6 +44,7 @@ public class PipeBackgroundService(
                     timeout.CancelAfter(PipeGateway.RequestTimeout);
                     await pipe.ConnectAsync(timeout.Token);
                     await RequestServerLocationAsync(pipe, timeout.Token);
+                    queue.MarkConnected();
                     connectionState.IsConnected = true;
                 }
                 await ProcessRequestsAsync(pipe, stoppingToken);
@@ -59,6 +60,7 @@ public class PipeBackgroundService(
             finally
             {
                 connectionState.IsConnected = false;
+                queue.MarkDisconnected();
                 pipe.Dispose();
             }
 
@@ -77,7 +79,7 @@ public class PipeBackgroundService(
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            PipeRequest request = await queue.Channel.Reader.ReadAsync(stoppingToken);
+            PipeRequest request = await queue.DequeueAsync(stoppingToken);
             if (request.CancellationToken.IsCancellationRequested)
             {
                 continue;
