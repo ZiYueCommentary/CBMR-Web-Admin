@@ -178,6 +178,12 @@
   <data name="ItemsCleared" xml:space="preserve">
     <value>所有未被捡起的物品已经清除。</value>
   </data>
+  <data name="FixElevatorFailed" xml:space="preserve">
+    <value>无法确认电梯是否已修复，请检查服务器连接。</value>
+  </data>
+  <data name="ClearItemsFailed" xml:space="preserve">
+    <value>无法确认地面物品是否已清理，请检查服务器连接。</value>
+  </data>
   <data name="Index" xml:space="preserve">
     <value>索引</value>
   </data>

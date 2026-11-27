@@ -123,6 +123,12 @@ If you are server admin, please log in first.</value></data>
   <data name="ItemsCleared" xml:space="preserve">
     <value>All items not picked has been cleared.</value>
   </data>
+  <data name="FixElevatorFailed" xml:space="preserve">
+    <value>Could not confirm the elevators were fixed. Check the server connection.</value>
+  </data>
+  <data name="ClearItemsFailed" xml:space="preserve">
+    <value>Could not confirm the ground items were cleared. Check the server connection.</value>
+  </data>
   <data name="Index" xml:space="preserve">
     <value>Index</value>
   </data>
