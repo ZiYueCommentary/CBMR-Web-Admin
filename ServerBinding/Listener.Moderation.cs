@@ -43,9 +43,12 @@ public static partial class Listener
     {
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
         DateTime utcNow = DateTime.UtcNow;
-        IQueryable<Mute> query = request.MessageType == PipeMessageType.ListExpiredMutes
-            ? database.Mutes.AsNoTracking().Where(mute => mute.ExpiresAt != null && mute.ExpiresAt <= utcNow)
-            : database.ActiveMutes(utcNow);
+        IQueryable<Mute> query = request.MessageType switch
+        {
+            PipeMessageType.ListExpiredMutes => database.ExpiredMutes(utcNow),
+            PipeMessageType.ListRevokedMutes => database.RevokedMutes(),
+            _ => database.ActiveMutes(utcNow)
+        };
         List<Mute> mutes = await query.OrderByDescending(mute => mute.Id).ToListAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request, mutes
             .Select(mute => new MuteRecord
@@ -55,7 +58,8 @@ public static partial class Listener
                 Reason = mute.Reason,
                 StartedAtUtc = DateTime.SpecifyKind(mute.StartedAt, DateTimeKind.Utc),
                 ExpiresAtUtc = mute.ExpiresAt,
-                Kind = mute.Kind == MuteKind.Voice ? MuteRecordKind.Voice : MuteRecordKind.Chat
+                Kind = mute.Kind == MuteKind.Voice ? MuteRecordKind.Voice : MuteRecordKind.Chat,
+                RevokedAtUtc = mute.RevokedAt
             }).ToList());
     }
 
@@ -73,6 +77,7 @@ public static partial class Listener
         {
             Mute? mute = await database.Mutes.SingleOrDefaultAsync(mute => mute.Id == update.Id, cancellationToken);
             if (mute is null) return PipeEnvelope.CreateError(request, "Mute record not found.");
+            if (mute.RevokedAt is not null) return PipeEnvelope.CreateError(request, PipeEnvelope.ModerationRevokedError);
             mute.Reason = update.Reason.Trim();
             mute.Duration = update.ExpiresAtUtc - mute.StartedAt;
             mute.ExpiresAt = update.ExpiresAtUtc;
@@ -83,6 +88,7 @@ public static partial class Listener
         {
             Ban? ban = await database.Bans.SingleOrDefaultAsync(ban => ban.Id == update.Id, cancellationToken);
             if (ban is null) return PipeEnvelope.CreateError(request, "Ban record not found.");
+            if (ban.RevokedAt is not null) return PipeEnvelope.CreateError(request, PipeEnvelope.ModerationRevokedError);
             if (ban.ExpiresAt <= DateTime.UtcNow) return PipeEnvelope.CreateError(request, PipeEnvelope.BanExpiredError);
             ban.Reason = update.Reason.Trim();
             ban.Duration = update.ExpiresAtUtc - ban.StartedAt;
@@ -103,7 +109,8 @@ public static partial class Listener
         {
             Mute? mute = await database.Mutes.SingleOrDefaultAsync(mute => mute.Id == id, cancellationToken);
             if (mute is null) return PipeEnvelope.CreateError(request, "Moderation record not found.");
-            database.Mutes.Remove(mute);
+            if (mute.RevokedAt is not null) return PipeEnvelope.CreateError(request, PipeEnvelope.ModerationRevokedError);
+            mute.RevokedAt = DateTime.UtcNow;
             await database.SaveChangesAsync(cancellationToken);
             moderationCache.Remove(mute);
         }
@@ -111,8 +118,10 @@ public static partial class Listener
         {
             Ban? ban = await database.Bans.SingleOrDefaultAsync(ban => ban.Id == id, cancellationToken);
             if (ban is null) return PipeEnvelope.CreateError(request, "Moderation record not found.");
-            if (ban.ExpiresAt <= DateTime.UtcNow) return PipeEnvelope.CreateError(request, PipeEnvelope.BanExpiredError);
-            database.Bans.Remove(ban);
+            if (ban.RevokedAt is not null) return PipeEnvelope.CreateError(request, PipeEnvelope.ModerationRevokedError);
+            DateTime utcNow = DateTime.UtcNow;
+            if (ban.ExpiresAt <= utcNow) return PipeEnvelope.CreateError(request, PipeEnvelope.BanExpiredError);
+            ban.RevokedAt = utcNow;
             await database.SaveChangesAsync(cancellationToken);
             moderationCache.Remove(ban);
         }

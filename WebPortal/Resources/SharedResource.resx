@@ -292,6 +292,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ModerationRefresh" xml:space="preserve"><value>Refresh</value></data>
   <data name="NoActiveModeration" xml:space="preserve"><value>No active records.</value></data>
   <data name="NoExpiredModeration" xml:space="preserve"><value>No expired records.</value></data>
+  <data name="NoRevokedModeration" xml:space="preserve"><value>No cancelled records.</value></data>
   <data name="ModerationId" xml:space="preserve"><value>Record ID</value></data>
   <data name="MuteKind" xml:space="preserve"><value>Mute kind</value></data>
   <data name="MuteKindVoice" xml:space="preserve"><value>Voice</value></data>
@@ -299,6 +300,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ModerationReason" xml:space="preserve"><value>Reason</value></data>
   <data name="ModerationStartedAt" xml:space="preserve"><value>Started at</value></data>
   <data name="ModerationExpiresAt" xml:space="preserve"><value>Expires at</value></data>
+  <data name="ModerationRevokedAt" xml:space="preserve"><value>Cancelled at</value></data>
   <data name="ModerationPermanent" xml:space="preserve"><value>Permanent</value></data>
   <data name="Unban" xml:space="preserve"><value>Unban</value></data>
   <data name="UnbanConfirmation" xml:space="preserve"><value>Are you sure you want to unban the player with Steam ID {0}?</value></data>
@@ -312,6 +314,7 @@ If you are server admin, please log in first.</value></data>
   <data name="ModerationRemoveFailed" xml:space="preserve"><value>Could not confirm removal. Refresh the list and check the server connection and logs.</value></data>
   <data name="ModerationUpdateFailed" xml:space="preserve"><value>Could not confirm the changes were saved. Check the server connection and logs.</value></data>
   <data name="BanExpired" xml:space="preserve"><value>This ban has expired and can no longer be changed or removed.</value></data>
+  <data name="ModerationRevoked" xml:space="preserve"><value>This record has been cancelled and can no longer be changed or removed.</value></data>
   <data name="AuditActionUnbanPlayer" xml:space="preserve"><value>Unban player</value></data>
   <data name="AuditActionUnmutePlayer" xml:space="preserve"><value>Unmute player</value></data>
   <data name="AuditActionModifyBan" xml:space="preserve"><value>Modify ban</value></data>
@@ -406,6 +409,7 @@ If you are server admin, please log in first.</value></data>
   <data name="BanListStatusAll" xml:space="preserve"><value>All bans</value></data>
   <data name="BanListStatusActive" xml:space="preserve"><value>Active</value></data>
   <data name="BanListStatusExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="BanListStatusRevoked" xml:space="preserve"><value>Cancelled</value></data>
   <data name="BanListNoResults" xml:space="preserve"><value>No matching bans.</value></data>
   <data name="BanListPages" xml:space="preserve"><value>Banned players pages</value></data>
   <data name="ReportListDescription" xml:space="preserve"><value>Filter reports by creation time, reporter, reported player and content.</value></data>

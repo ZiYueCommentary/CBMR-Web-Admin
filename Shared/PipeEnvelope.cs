@@ -60,7 +60,8 @@ public enum PipeMessageType : byte
     QueryReports,
     ListExpiredMutes,
     ListAnnouncementReaders,
-    CountUnhandledReports
+    CountUnhandledReports,
+    ListRevokedMutes
 }
 
 [MessagePackObject]
@@ -69,6 +70,7 @@ public sealed class PipeEnvelope
     public const byte CurrentVersion = 1;
     public const string EventsPipeSuffix = ".Events";
     public const string BanExpiredError = "BanExpired";
+    public const string ModerationRevokedError = "ModerationRevoked";
 
     [Key(0)] public byte Version { get; init; }
 

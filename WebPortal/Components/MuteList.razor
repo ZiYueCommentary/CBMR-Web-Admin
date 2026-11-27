@@ -17,7 +17,12 @@ else if (_records is not null)
 {
     @if (_records.Count == 0)
     {
-        <p>@Localizer[Expired ? "NoExpiredModeration" : "NoActiveModeration"]</p>
+        <p>@Localizer[Status switch
+        {
+            BanStatus.Expired => "NoExpiredModeration",
+            BanStatus.Revoked => "NoRevokedModeration",
+            _ => "NoActiveModeration"
+        }]</p>
     }
     else
     {
@@ -31,7 +36,14 @@ else if (_records is not null)
                     <th>@Localizer["ModerationReason"]</th>
                     <th>@Localizer["ModerationStartedAt"]</th>
                     <th>@Localizer["ModerationExpiresAt"]</th>
-                    <th>@Localizer["Operations"]</th>
+                    @if (Status == BanStatus.Revoked)
+                    {
+                        <th>@Localizer["ModerationRevokedAt"]</th>
+                    }
+                    else
+                    {
+                        <th>@Localizer["Operations"]</th>
+                    }
                 </tr>
                 </thead>
                 <tbody>
@@ -53,13 +65,23 @@ else if (_records is not null)
                                 @Localizer["ModerationPermanent"]
                             }
                         </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unmute"]</button>
-                                <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
-                                    ExpiresAtUtc="row.ExpiresAtUtc" IsMute="true" Kind="row.Kind" Disabled="_busy" OnSaved="LoadAsync" />
-                            </div>
-                        </td>
+                        @if (Status == BanStatus.Revoked)
+                        {
+                            <td>@if (row.RevokedAtUtc is { } revokedAt) { <BrowserTimestamp Utc="revokedAt" /> }</td>
+                        }
+                        else
+                        {
+                            <td>
+                                <div class="d-flex gap-2">
+                                    @if (Status == BanStatus.Active)
+                                    {
+                                        <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unmute"]</button>
+                                    }
+                                    <ModifyModerationModalButton Id="row.Id" SteamId="@row.SteamId" Reason="@row.Reason"
+                                        ExpiresAtUtc="row.ExpiresAtUtc" IsMute="true" Kind="row.Kind" Disabled="_busy" OnSaved="LoadAsync" />
+                                </div>
+                            </td>
+                        }
                     </tr>
                 }
                 </tbody>
@@ -69,7 +91,7 @@ else if (_records is not null)
 }
 
 @code {
-    [Parameter] public bool Expired { get; set; }
+    [Parameter] public BanStatus Status { get; set; } = BanStatus.Active;
 
     private List<MuteRecord>? _records;
     private bool _loading = true;
@@ -86,11 +108,16 @@ else if (_records is not null)
         try
         {
             _records = await ServerBinding.SendAsync<List<MuteRecord>>(
-                Expired ? PipeMessageType.ListExpiredMutes : PipeMessageType.ListMutes);
+                Status switch
+                {
+                    BanStatus.Expired => PipeMessageType.ListExpiredMutes,
+                    BanStatus.Revoked => PipeMessageType.ListRevokedMutes,
+                    _ => PipeMessageType.ListMutes
+                });
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Error loading mute records (Expired: {Expired})", Expired);
+            Log.Error(exception, "Error loading mute records (Status: {Status})", Status);
             _records = null;
             _errorMessage = Localizer["ModerationLoadFailed"];
         }
@@ -111,6 +138,10 @@ else if (_records is not null)
             await ServerBinding.SendAsync(PipeMessageType.RemoveMute, new RemoveModerationRequest { Id = row.Id });
             await AuditLogger.WriteAsync(AuditActions.UnmutePlayer, row.SteamId, $"Record {row.Id}; {row.Kind}");
             await LoadAsync();
+        }
+        catch (InvalidOperationException exception) when (exception.Message == PipeEnvelope.ModerationRevokedError)
+        {
+            _errorMessage = Localizer[PipeEnvelope.ModerationRevokedError];
         }
         catch (Exception exception)
         {

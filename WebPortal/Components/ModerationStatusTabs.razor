@@ -1,13 +1,23 @@
+@using CbmrWebAdmin.Shared.Requests
+
 <ul class="nav nav-tabs mb-3">
-    <li class="nav-item"><button type="button" class="nav-link @(!_expired ? "active" : "")" aria-pressed="@(!_expired)" @onclick="() => _expired = false">@Localizer["BanListStatusActive"]</button></li>
-    <li class="nav-item"><button type="button" class="nav-link @(_expired ? "active" : "")" aria-pressed="@_expired" @onclick="() => _expired = true">@Localizer["BanListStatusExpired"]</button></li>
+    @foreach (var (status, label) in Tabs)
+    {
+        <li class="nav-item"><button type="button" class="nav-link @(_status == status ? "active" : "")" aria-pressed="@(_status == status)" @onclick="() => _status = status">@Localizer[label]</button></li>
+    }
 </ul>
-<section @key="_expired" aria-label="@Localizer[_expired ? "BanListStatusExpired" : "BanListStatusActive"]">
-    @ChildContent(_expired)
+<section @key="_status" aria-label="@Localizer[Tabs.First(tab => tab.Status == _status).Label]">
+    @ChildContent(_status)
 </section>
 
 @code {
-    [Parameter, EditorRequired] public RenderFragment<bool> ChildContent { get; set; } = default!;
+    private static readonly (BanStatus Status, string Label)[] Tabs =
+    [
+        (BanStatus.Active, "BanListStatusActive"), (BanStatus.Expired, "BanListStatusExpired"),
+        (BanStatus.Revoked, "BanListStatusRevoked")
+    ];
 
-    private bool _expired;
+    [Parameter, EditorRequired] public RenderFragment<BanStatus> ChildContent { get; set; } = default!;
+
+    private BanStatus _status = BanStatus.Active;
 }

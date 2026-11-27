@@ -35,12 +35,14 @@ public static partial class Listener
             throw new InvalidDataException("Invalid ban status.");
 
         await using WebPortalDbContext database = WebPortalDbContext.Create(databasePath);
-        IQueryable<Ban> query = database.Bans.AsNoTracking();
         DateTime now = DateTime.UtcNow;
-        if (filter.Status == BanStatus.Active)
-            query = query.Where(ban => ban.ExpiresAt == null || ban.ExpiresAt > now);
-        else if (filter.Status == BanStatus.Expired)
-            query = query.Where(ban => ban.ExpiresAt != null && ban.ExpiresAt <= now);
+        IQueryable<Ban> query = filter.Status switch
+        {
+            BanStatus.Active => database.ActiveBans(now),
+            BanStatus.Expired => database.ExpiredBans(now),
+            BanStatus.Revoked => database.RevokedBans(),
+            _ => database.Bans.AsNoTracking()
+        };
         if (filter.FromUtc is { } from) query = query.Where(ban => ban.StartedAt >= from);
         if (filter.ToUtc is { } to) query = query.Where(ban => ban.StartedAt <= to);
         if (!string.IsNullOrWhiteSpace(filter.SteamId))
@@ -60,6 +62,7 @@ public static partial class Listener
             BanSortColumn.SteamId => SortBans(query, ban => ban.SteamId, filter.SortAscending),
             BanSortColumn.Reason => SortBans(query, ban => ban.Reason, filter.SortAscending),
             BanSortColumn.ExpiresAt => SortBans(query, ban => ban.ExpiresAt, filter.SortAscending),
+            BanSortColumn.RevokedAt => SortBans(query, ban => ban.RevokedAt, filter.SortAscending),
             _ => throw new InvalidDataException("Invalid ban sort column.")
         };
         ordered = filter.SortAscending ? ordered.ThenBy(ban => ban.Id) : ordered.ThenByDescending(ban => ban.Id);
@@ -68,7 +71,8 @@ public static partial class Listener
             .Select(ban => new BanRecord
             {
                 Id = ban.Id, SteamId = ban.SteamId, Reason = ban.Reason,
-                StartedAtUtc = DateTime.SpecifyKind(ban.StartedAt, DateTimeKind.Utc), ExpiresAtUtc = ban.ExpiresAt
+                StartedAtUtc = DateTime.SpecifyKind(ban.StartedAt, DateTimeKind.Utc), ExpiresAtUtc = ban.ExpiresAt,
+                RevokedAtUtc = ban.RevokedAt
             }).ToListAsync(cancellationToken);
         return PipeEnvelope.CreateResponse(request, new BanListResponse { Records = records, TotalCount = total });
     }

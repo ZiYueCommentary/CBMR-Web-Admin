@@ -426,6 +426,8 @@
   </data>
   <data name="NoExpiredModeration" xml:space="preserve"><value>暂无已过期的记录。</value>
   </data>
+  <data name="NoRevokedModeration" xml:space="preserve"><value>暂无已取消的记录。</value>
+  </data>
   <data name="ModerationId" xml:space="preserve"><value>记录 ID</value>
   </data>
   <data name="MuteKind" xml:space="preserve"><value>禁言类型</value>
@@ -439,6 +441,8 @@
   <data name="ModerationStartedAt" xml:space="preserve"><value>开始时间</value>
   </data>
   <data name="ModerationExpiresAt" xml:space="preserve"><value>到期时间</value>
+  </data>
+  <data name="ModerationRevokedAt" xml:space="preserve"><value>取消时间</value>
   </data>
   <data name="ModerationPermanent" xml:space="preserve"><value>永久</value>
   </data>
@@ -465,6 +469,8 @@
   <data name="ModerationUpdateFailed" xml:space="preserve"><value>无法确认更改是否已保存。请检查服务器连接和日志。</value>
   </data>
   <data name="BanExpired" xml:space="preserve"><value>此封禁已过期，无法修改或移除。</value>
+  </data>
+  <data name="ModerationRevoked" xml:space="preserve"><value>此记录已取消，无法修改或移除。</value>
   </data>
   <data name="AuditActionUnbanPlayer" xml:space="preserve"><value>解封玩家</value>
   </data>
@@ -653,6 +659,8 @@
   <data name="BanListStatusActive" xml:space="preserve"><value>生效中</value>
   </data>
   <data name="BanListStatusExpired" xml:space="preserve"><value>已过期</value>
+  </data>
+  <data name="BanListStatusRevoked" xml:space="preserve"><value>已取消</value>
   </data>
   <data name="BanListNoResults" xml:space="preserve"><value>没有匹配的封禁记录。</value>
   </data>

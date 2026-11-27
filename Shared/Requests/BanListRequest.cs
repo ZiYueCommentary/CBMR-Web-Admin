@@ -16,8 +16,8 @@ using MessagePack;
 
 namespace CbmrWebAdmin.Shared.Requests;
 
-public enum BanSortColumn { StartedAt, Id, SteamId, Reason, ExpiresAt }
-public enum BanStatus { All, Active, Expired }
+public enum BanSortColumn { StartedAt, Id, SteamId, Reason, ExpiresAt, RevokedAt }
+public enum BanStatus { All, Active, Expired, Revoked }
 
 [MessagePackObject]
 public sealed class BanListRequest

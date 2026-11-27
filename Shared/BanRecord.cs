@@ -24,4 +24,5 @@ public sealed class BanRecord
     [Key(2)] public required string Reason { get; init; }
     [Key(3)] public DateTime StartedAtUtc { get; init; }
     [Key(4)] public DateTime? ExpiresAtUtc { get; init; }
+    [Key(5)] public DateTime? RevokedAtUtc { get; init; }
 }

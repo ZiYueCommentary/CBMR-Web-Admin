@@ -31,4 +31,5 @@ public sealed class MuteRecord
     [Key(3)] public DateTime StartedAtUtc { get; init; }
     [Key(4)] public DateTime? ExpiresAtUtc { get; init; }
     [Key(5)] public MuteRecordKind Kind { get; init; }
+    [Key(6)] public DateTime? RevokedAtUtc { get; init; }
 }

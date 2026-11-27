@@ -3,7 +3,7 @@
 @using CbmrWebAdmin.WebPortal.Data
 @inject ILogger<BanList> Logger
 
-@if (!Expired)
+@if (Status == BanStatus.Active)
 {
     <UnbanPlayerDialog @ref="_unbanDialog" />
 }
@@ -57,7 +57,7 @@
                 </button>
             </th>
         }
-        @if (!Expired)
+        @if (Status == BanStatus.Active)
         {
             <th scope="col">@Localizer["Operations"]</th>
         }
@@ -79,7 +79,11 @@
                         @Localizer["ModerationPermanent"]
                     }
                 </td>
-                @if (!Expired)
+                @if (Status == BanStatus.Revoked)
+                {
+                    <td>@if (row.RevokedAtUtc is { } revokedAt) { <BrowserTimestamp Utc="revokedAt" /> }</td>
+                }
+                @if (Status == BanStatus.Active)
                 {
                     <td><div class="d-flex gap-2">
                         <button type="button" class="btn btn-danger" disabled="@_busy" @onclick="() => RemoveAsync(row)">@Localizer["Unban"]</button>
@@ -91,7 +95,7 @@
         }
         @if (_records.Count == 0)
         {
-            <tr><td colspan="@(Expired ? 5 : 6)">@Localizer[_busy ? "Loading" : "BanListNoResults"]</td></tr>
+            <tr><td colspan="@(Columns.Length + (Status == BanStatus.Active ? 1 : 0))">@Localizer[_busy ? "Loading" : "BanListNoResults"]</td></tr>
         }
     </tbody>
 </table>
@@ -107,14 +111,17 @@
 </nav>
 
 @code {
-    [Parameter] public bool Expired { get; set; }
+    [Parameter] public BanStatus Status { get; set; } = BanStatus.Active;
     [CascadingParameter] private BrowserTimeZone? TimeZone { get; set; }
-    private static readonly (BanSortColumn Key, string Label)[] Columns =
+    private static readonly (BanSortColumn Key, string Label)[] BaseColumns =
     [
         (BanSortColumn.Id, "ModerationId"), (BanSortColumn.SteamId, "SteamID"),
         (BanSortColumn.Reason, "ModerationReason"), (BanSortColumn.StartedAt, "ModerationStartedAt"),
         (BanSortColumn.ExpiresAt, "ModerationExpiresAt")
     ];
+    private static readonly (BanSortColumn Key, string Label)[] RevokedColumns =
+        [.. BaseColumns, (BanSortColumn.RevokedAt, "ModerationRevokedAt")];
+    private (BanSortColumn Key, string Label)[] Columns => Status == BanStatus.Revoked ? RevokedColumns : BaseColumns;
     private List<BanRecord> _records = [];
     private UnbanPlayerDialog _unbanDialog = default!;
     private DateTime? _from, _to, _fromUtc, _toUtc;
@@ -159,7 +166,7 @@
         {
             Offset = (page - 1) * _appliedSize, PageSize = _appliedSize,
             FromUtc = _fromUtc, ToUtc = _toUtc, SteamId = _appliedSteamId, Reason = _appliedReason,
-            Status = Expired ? BanStatus.Expired : BanStatus.Active, SortColumn = _sort, SortAscending = _ascending
+            Status = Status, SortColumn = _sort, SortAscending = _ascending
         });
 
     private async Task LoadAsync(int page)
@@ -198,9 +205,9 @@
             await ServerBinding.SendAsync(PipeMessageType.RemoveBan, new RemoveModerationRequest { Id = row.Id });
             await AuditLogger.WriteAsync(AuditActions.UnbanPlayer, row.SteamId, $"Record {row.Id}");
         }
-        catch (InvalidOperationException exception) when (exception.Message == PipeEnvelope.BanExpiredError)
+        catch (InvalidOperationException exception) when (exception.Message is PipeEnvelope.BanExpiredError or PipeEnvelope.ModerationRevokedError)
         {
-            _error = PipeEnvelope.BanExpiredError;
+            _error = exception.Message;
         }
         catch (Exception exception)
         {

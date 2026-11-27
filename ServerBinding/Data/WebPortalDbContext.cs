@@ -63,7 +63,8 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 "reason" TEXT NOT NULL,
                 "duration" INTEGER NULL,
                 "started_at" TEXT NOT NULL,
-                "expires_at" INTEGER NULL
+                "expires_at" INTEGER NULL,
+                "revoked_at" INTEGER NULL
             );
             CREATE INDEX IF NOT EXISTS "IX_mutes_steamid_kind" ON "mutes" ("steamid", "kind");
             CREATE TABLE IF NOT EXISTS "mute_attempts" (
@@ -86,19 +87,24 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 ON "player_session_log" ("occurred_at_utc" DESC, "id" DESC);
             """);
 
-        if (!HasExpiryColumn(transaction, "bans"))
+        if (!HasColumn(transaction, "bans", "expires_at"))
         {
             Database.ExecuteSqlRaw("""ALTER TABLE "bans" ADD COLUMN "expires_at" INTEGER NULL""");
             foreach (Ban ban in Bans.Where(ban => ban.Duration != null).ToList())
                 ban.ExpiresAt = ban.StartedAt + ban.Duration;
         }
 
-        if (!HasExpiryColumn(transaction, "mutes"))
+        if (!HasColumn(transaction, "mutes", "expires_at"))
         {
             Database.ExecuteSqlRaw("""ALTER TABLE "mutes" ADD COLUMN "expires_at" INTEGER NULL""");
             foreach (Mute mute in Mutes.Where(mute => mute.Duration != null).ToList())
                 mute.ExpiresAt = mute.StartedAt + mute.Duration;
         }
+
+        if (!HasColumn(transaction, "bans", "revoked_at"))
+            Database.ExecuteSqlRaw("""ALTER TABLE "bans" ADD COLUMN "revoked_at" INTEGER NULL""");
+        if (!HasColumn(transaction, "mutes", "revoked_at"))
+            Database.ExecuteSqlRaw("""ALTER TABLE "mutes" ADD COLUMN "revoked_at" INTEGER NULL""");
 
         using (DbCommand command = Database.GetDbConnection().CreateCommand())
         {
@@ -144,7 +150,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
         transaction.Commit();
     }
 
-    private bool HasExpiryColumn(IDbContextTransaction transaction, string table)
+    private bool HasColumn(IDbContextTransaction transaction, string table, string column)
     {
         using DbCommand command = Database.GetDbConnection().CreateCommand();
         command.Transaction = transaction.GetDbTransaction();
@@ -152,7 +158,7 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
         using DbDataReader reader = command.ExecuteReader();
         while (reader.Read())
         {
-            if (reader.GetString(1) == "expires_at") return true;
+            if (reader.GetString(1) == column) return true;
         }
         return false;
     }
@@ -222,6 +228,11 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 .HasConversion(
                     expiry => expiry.HasValue ? expiry.Value.Ticks : (long?)null,
                     ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
+            entity.Property(mute => mute.RevokedAt)
+                .HasColumnName("revoked_at")
+                .HasConversion(
+                    revokedAt => revokedAt.HasValue ? revokedAt.Value.Ticks : (long?)null,
+                    ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
             entity.HasIndex(mute => new { mute.SteamId, mute.Kind });
         });
 
@@ -250,16 +261,31 @@ public class WebPortalDbContext(DbContextOptions<WebPortalDbContext> options) : 
                 .HasConversion(
                     expiry => expiry.HasValue ? expiry.Value.Ticks : (long?)null,
                     ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
+            entity.Property(ban => ban.RevokedAt)
+                .HasColumnName("revoked_at")
+                .HasConversion(
+                    revokedAt => revokedAt.HasValue ? revokedAt.Value.Ticks : (long?)null,
+                    ticks => ticks.HasValue ? new DateTime(ticks.Value, DateTimeKind.Utc) : null);
 
             entity.HasIndex(ban => ban.SteamId);
         });
     }
 
     public IQueryable<Ban> ActiveBans(DateTime utcNow) =>
-        Bans.AsNoTracking().Where(ban => ban.ExpiresAt == null || ban.ExpiresAt > utcNow);
+        Bans.AsNoTracking().Where(ban => ban.RevokedAt == null && (ban.ExpiresAt == null || ban.ExpiresAt > utcNow));
+
+    public IQueryable<Ban> ExpiredBans(DateTime utcNow) =>
+        Bans.AsNoTracking().Where(ban => ban.RevokedAt == null && ban.ExpiresAt != null && ban.ExpiresAt <= utcNow);
+
+    public IQueryable<Ban> RevokedBans() => Bans.AsNoTracking().Where(ban => ban.RevokedAt != null);
 
     public IQueryable<Mute> ActiveMutes(DateTime utcNow) =>
-        Mutes.AsNoTracking().Where(mute => mute.ExpiresAt == null || mute.ExpiresAt > utcNow);
+        Mutes.AsNoTracking().Where(mute => mute.RevokedAt == null && (mute.ExpiresAt == null || mute.ExpiresAt > utcNow));
+
+    public IQueryable<Mute> ExpiredMutes(DateTime utcNow) =>
+        Mutes.AsNoTracking().Where(mute => mute.RevokedAt == null && mute.ExpiresAt != null && mute.ExpiresAt <= utcNow);
+
+    public IQueryable<Mute> RevokedMutes() => Mutes.AsNoTracking().Where(mute => mute.RevokedAt != null);
 
     public static WebPortalDbContext Create(string databasePath)
     {

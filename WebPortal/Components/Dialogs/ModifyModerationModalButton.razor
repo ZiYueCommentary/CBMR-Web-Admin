@@ -95,9 +95,9 @@
             await _modal.HideAsync();
             await OnSaved.InvokeAsync();
         }
-        catch (InvalidOperationException exception) when (exception.Message == PipeEnvelope.BanExpiredError)
+        catch (InvalidOperationException exception) when (exception.Message is PipeEnvelope.BanExpiredError or PipeEnvelope.ModerationRevokedError)
         {
-            _errorMessage = Localizer[PipeEnvelope.BanExpiredError];
+            _errorMessage = Localizer[exception.Message];
         }
         catch (Exception exception)
         {
