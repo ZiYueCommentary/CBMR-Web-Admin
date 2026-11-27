@@ -1,5 +1,5 @@
 @using CbmrWebAdmin.WebPortal.Data
-@inject IConfiguration Configuration
+@inject PipeConnectionState ConnectionState
 @inject ILogger<ForceRestartServerButton> Logger
 <ConfirmDialog @ref="dialog" />
 
@@ -12,13 +12,6 @@
     private async Task ShowConfirmationAsync()
     {
         if (_busy) return;
-
-        string? executable = Configuration["ForceRestart:ExecutablePath"];
-        if (string.IsNullOrWhiteSpace(executable))
-        {
-            ToastService.Notify(new(ToastType.Warning, Localizer["ForceRestartNotConfigured"]));
-            return;
-        }
 
         _busy = true;
         try
@@ -37,14 +30,14 @@
 
             if (!confirmation) return;
 
+            string executable;
             try
             {
-                await ServerProcess.ForceRestartAsync(executable, Configuration["ForceRestart:Arguments"],
-                    Configuration["ForceRestart:WorkingDirectory"]);
+                executable = await ServerProcess.ForceRestartAsync(ConnectionState.RestartTarget);
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Force restart failed for {ServerPath}.", executable);
+                Logger.LogWarning(ex, "Could not force restart the server.");
                 ToastService.Notify(new(ToastType.Danger, Localizer["ForceRestartFailed"]));
                 return;
             }

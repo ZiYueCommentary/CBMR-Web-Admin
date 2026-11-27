@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Diagnostics;
 using System.IO.Pipes;
 using CbmrWebAdmin.ServerBinding.Data;
 using CbmrWebAdmin.Shared;
@@ -51,7 +52,7 @@ public static partial class Listener
 
                 response = request.MessageType switch
                 {
-                    PipeMessageType.WhereAreYou => HandleWhereAreYou(request),
+                    PipeMessageType.WhereAreYou => HandleWhereAreYou(request, pipeServer),
                     PipeMessageType.Heartbeat => PipeEnvelope.CreateResponse(request),
                     PipeMessageType.ListReports => await HandleListReportsAsync(request, databasePath, cancellationToken),
                     PipeMessageType.CountUnhandledReports => await HandleCountUnhandledReportsAsync(request, databasePath, cancellationToken),
@@ -131,13 +132,18 @@ public static partial class Listener
         return PipeEnvelope.CreateResponse(request);
     }
 
-    private static PipeEnvelope HandleWhereAreYou(PipeEnvelope request)
+    private static PipeEnvelope HandleWhereAreYou(PipeEnvelope request, NamedPipeServerStream pipe)
     {
-        return PipeEnvelope.CreateResponse(request, new ServerLocation
+        using Process server = Process.GetCurrentProcess();
+        using Process? portal = OperatingSystem.IsWindows() ? WindowsPipePeer.TryOpenTrustedProcess(pipe) : null;
+        ServerLocation location = new()
         {
-            Path = System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName,
-            Version = AssemblyVersion.GetVersion(typeof(Listener).Assembly)
-        });
+            Path = server.MainModule!.FileName,
+            Version = AssemblyVersion.GetVersion(typeof(Listener).Assembly),
+            WorkingDirectory = portal is null ? null : Environment.CurrentDirectory,
+            Arguments = portal is null ? null : Environment.GetCommandLineArgs().Skip(1).ToArray()
+        };
+        return PipeEnvelope.CreateResponse(request, location);
     }
 
     private static PipeEnvelope HandleFixElevator(PipeEnvelope request)

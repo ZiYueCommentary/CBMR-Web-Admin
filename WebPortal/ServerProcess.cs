@@ -17,6 +17,9 @@ using System.Diagnostics;
 
 namespace CbmrWebAdmin.WebPortal;
 
+internal sealed record ServerRestartTarget(int ProcessId, DateTime StartedAt, string Path,
+    string? WorkingDirectory, string[]? Arguments);
+
 internal static class ServerProcess
 {
     private static readonly object CacheLock = new();
@@ -26,24 +29,18 @@ internal static class ServerProcess
     private static readonly Dictionary<string, int> ProcessIds = new(PathComparer);
     private static readonly SemaphoreSlim RestartLock = new(1, 1);
 
-    private static bool MatchesPath(Process process, string targetPath, bool requireInspection = false)
+    private static bool MatchesPath(Process process, string targetPath)
     {
         if (string.IsNullOrWhiteSpace(targetPath)) return false;
 
         try
         {
-            if (process.HasExited) return false;
-
             string? processPath = process.MainModule?.FileName;
-            if (processPath is null && requireInspection && !process.HasExited)
-                throw new InvalidOperationException("Could not inspect a process matching the server executable name.");
-
             return processPath is not null &&
                    PathComparer.Equals(Path.GetFullPath(processPath), Path.GetFullPath(targetPath));
         }
-        catch (Exception exception) when ((exception is Win32Exception or InvalidOperationException
+        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException
             or NotSupportedException or UnauthorizedAccessException or ArgumentException or IOException)
-            && (!requireInspection || process.HasExited))
         {
             return false;
         }
@@ -59,63 +56,51 @@ internal static class ServerProcess
         }
     }
 
-    public static async Task ForceRestartAsync(string executable, string? arguments, string? workingDirectory)
+    public static async Task<string> ForceRestartAsync(ServerRestartTarget? target)
     {
         if (!RestartLock.Wait(0))
             throw new InvalidOperationException("A force restart is already in progress.");
 
         try
         {
-            if (!Path.IsPathFullyQualified(executable) || !File.Exists(executable))
-                throw new InvalidOperationException("Force restart requires an existing absolute executable path.");
+            if (target is null)
+                throw new InvalidOperationException("The running server process could not be verified.");
 
-            executable = Path.GetFullPath(executable);
-            workingDirectory ??= Path.GetDirectoryName(executable)!;
+            using Process previous = Process.GetProcessById(target.ProcessId);
+            _ = previous.SafeHandle;
+            if (previous.HasExited || previous.StartTime != target.StartedAt)
+                throw new InvalidOperationException("The verified server process is no longer running.");
+
+            string executable = previous.MainModule?.FileName
+                                ?? throw new InvalidOperationException("The server executable could not be determined.");
+            if (!Path.IsPathFullyQualified(target.Path) ||
+                !PathComparer.Equals(Path.GetFullPath(executable), Path.GetFullPath(target.Path)))
+                throw new InvalidOperationException("The server process does not match the reported executable.");
+
+            using FileStream executableFile = File.Open(executable, FileMode.Open, FileAccess.Read, FileShare.Read);
+            string workingDirectory = target.WorkingDirectory ?? Path.GetDirectoryName(executable)!;
             if (!Path.IsPathFullyQualified(workingDirectory) || !Directory.Exists(workingDirectory))
-                throw new InvalidOperationException("The server working directory must be an existing absolute path.");
+                throw new InvalidOperationException("The server working directory does not exist.");
 
-            ProcessStartInfo startInfo = new(executable, arguments ?? string.Empty)
+            ProcessStartInfo startInfo = new(executable)
             {
                 WorkingDirectory = workingDirectory,
                 UseShellExecute = false
             };
 
-            bool canFilterByName = OperatingSystem.IsWindows();
-            Process[] processes = canFilterByName
-                ? Process.GetProcessesByName(Path.GetFileNameWithoutExtension(executable))
-                : Process.GetProcesses();
-            try
-            {
-                Process[] matches = processes.Where(process => MatchesPath(process, executable, canFilterByName)).ToArray();
-                if (matches.Any(process => process.Id == Environment.ProcessId))
-                    throw new InvalidOperationException("The portal cannot restart its own executable.");
-                if (matches.Length > 1)
-                    throw new InvalidOperationException("More than one process matches the configured server executable.");
+            foreach (string argument in target.Arguments ?? [])
+                startInfo.ArgumentList.Add(argument);
 
-                if (matches.Length == 1)
-                {
-                    Process previous = matches[0];
-                    if (!previous.HasExited)
-                    {
-                        previous.Kill(entireProcessTree: true);
-                        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(15));
-                        await previous.WaitForExitAsync(timeout.Token);
-                    }
-                }
-            }
-            finally
-            {
-                foreach (Process process in processes)
-                {
-                    process.Dispose();
-                }
-            }
+            previous.Kill(entireProcessTree: true);
+            using (CancellationTokenSource timeout = new(TimeSpan.FromSeconds(15)))
+                await previous.WaitForExitAsync(timeout.Token);
 
             using Process started = Process.Start(startInfo)
                                     ?? throw new InvalidOperationException("No server process was started.");
             await Task.Delay(TimeSpan.FromSeconds(2));
             if (started.HasExited)
                 throw new InvalidOperationException($"The server process exited during startup with code {started.ExitCode}.");
+            return executable;
         }
         finally
         {

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Pipes;
 using CbmrWebAdmin.Shared;
 
@@ -60,6 +62,7 @@ public class PipeBackgroundService(
             finally
             {
                 connectionState.IsConnected = false;
+                connectionState.RestartTarget = null;
                 queue.MarkDisconnected();
                 pipe.Dispose();
             }
@@ -136,6 +139,19 @@ public class PipeBackgroundService(
         ServerLocation location = response.DeserializePayload<ServerLocation>();
         serverLocation.Path = location.Path;
         serverLocation.Version = location.Version;
+        using Process? server = OperatingSystem.IsWindows() ? WindowsPipePeer.TryOpenTrustedProcess(pipe) : null;
+        if (server is not null)
+        {
+            try
+            {
+                connectionState.RestartTarget = new(server.Id, server.StartTime, location.Path,
+                    location.WorkingDirectory, location.Arguments);
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or Win32Exception)
+            {
+                logger.LogDebug(exception, "Could not determine the server process for force restart.");
+            }
+        }
         logger.LogInformation("Connected to server at {ServerPath}.", serverLocation.Path);
     }
 

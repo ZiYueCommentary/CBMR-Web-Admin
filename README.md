@@ -105,19 +105,11 @@ The portal reconnects to the binding automatically; until the game server is run
 
 To change the pipe name, set the same top-level `PipeName` in the binding's `webadmin.json` and the portal's `appsettings.json`, then restart both. An omitted or blank value uses `CbmrWebAdmin`. The events pipe always appends `.Events` to that name.
 
-### Configure Force Restart
+### Force Restart
 
-For a standalone game server, add the following section to the portal's `appsettings.json`:
+Force Restart finds the running Windows game server through its command pipe; no launch configuration is needed. Run the portal and server under the same Windows account and with the same elevation. If the portal cannot verify the running process, it will not launch anything. If the server has already stopped, start it as you normally would.
 
-```json
-"ForceRestart": {
-  "ExecutablePath": "C:\\Games\\CBMR\\Server.exe"
-}
-```
-
-Use the absolute path to the actual server executable, not a launcher or script. Optional `Arguments` and `WorkingDirectory` settings specify the command-line arguments and absolute working directory; by default the portal passes no arguments and starts in the executable's directory. The portal account must be able to inspect and stop the existing server process and start the new one.
-
-Without an executable configured, Force Restart does nothing and shows a warning. For servers managed by a service manager or watchdog, leave Force Restart unconfigured and restart through that manager instead. A successful Force Restart means the new process started, not that the game server is ready to accept connections.
+For a server managed by a service manager or watchdog, restart through that manager instead. A successful Force Restart means the new process started, not that the game server is ready to accept connections.
 
 ### Updating
 

@@ -17,10 +17,17 @@ namespace CbmrWebAdmin.WebPortal;
 public sealed class PipeConnectionState
 {
     private int _isConnected;
+    private ServerRestartTarget? _restartTarget;
 
     public bool IsConnected
     {
         get => Volatile.Read(ref _isConnected) != 0;
         internal set => Volatile.Write(ref _isConnected, value ? 1 : 0);
+    }
+
+    internal ServerRestartTarget? RestartTarget
+    {
+        get => Volatile.Read(ref _restartTarget);
+        set => Volatile.Write(ref _restartTarget, value);
     }
 }

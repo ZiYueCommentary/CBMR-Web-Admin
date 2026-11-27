@@ -21,4 +21,6 @@ public class ServerLocation
 {
     [Key(0)] public string Path { get; set; } = string.Empty;
     [Key(1)] public string Version { get; set; } = string.Empty;
+    [Key(2)] public string? WorkingDirectory { get; set; }
+    [Key(3)] public string[]? Arguments { get; set; }
 }

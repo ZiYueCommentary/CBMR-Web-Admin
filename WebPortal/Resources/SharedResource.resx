@@ -148,13 +148,10 @@ If you are server admin, please log in first.</value></data>
     <value>Force restart server?</value>
   </data>
   <data name="ForceRestartDescription" xml:space="preserve">
-    <value>This will stop the server process if it is running, then start the configured server executable. Players will not be notified.</value>
-  </data>
-  <data name="ForceRestartNotConfigured" xml:space="preserve">
-    <value>Force restart is not configured. Set the server executable path in the portal configuration.</value>
+    <value>This will stop the running server process and launch it again. Players will not be notified.</value>
   </data>
   <data name="ForceRestartFailed" xml:space="preserve">
-    <value>Could not complete the force restart. Check the portal logs and server status.</value>
+    <value>Could not complete the force restart. Check that the server is running and review the portal logs.</value>
   </data>
   <data name="ForceRestartProcessStarted" xml:space="preserve">
     <value>The server process started. Check the server status to see when it is ready.</value>
