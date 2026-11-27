@@ -1,63 +1,60 @@
-@using System.Diagnostics
 @using CbmrWebAdmin.WebPortal.Data
-@inject ServerLocation Location
+@inject IConfiguration Configuration
+@inject ILogger<ForceRestartServerButton> Logger
 <ConfirmDialog @ref="dialog" />
 
-<button class="btn btn-danger" @onclick="ShowConfirmationAsync">@Localizer["ForceRestart"]</button>
+<button class="btn btn-danger" @onclick="ShowConfirmationAsync" disabled="@_busy">@Localizer["ForceRestart"]</button>
 
 @code {
     private ConfirmDialog dialog = default!;
+    private bool _busy;
 
     private async Task ShowConfirmationAsync()
     {
-        bool confirmation = await dialog.ShowAsync(
-            title: Localizer["ForceRestartServer"],
-            message1: Localizer["ForceRestartDescription"],
-            message2: Localizer["DoYouWantProceed"],
-            new ConfirmDialogOptions
-            {
-                AutoFocusYesButton = false,
-                Dismissable = true,
-                NoButtonText = Localizer["No"],
-                YesButtonText = Localizer["Yes"]
-            });
+        if (_busy) return;
 
-        if (confirmation)
+        string? executable = Configuration["ForceRestart:ExecutablePath"];
+        if (string.IsNullOrWhiteSpace(executable))
         {
-            KillProcessByPath(Location.Path);
-            await AuditLogger.WriteAsync(AuditActions.ForceRestartServer, Location.Path);
-            ToastService.Notify(new(ToastType.Success, Localizer["Success"]));
+            ToastService.Notify(new(ToastType.Warning, Localizer["ForceRestartNotConfigured"]));
+            return;
         }
-    }
 
-    private static void KillProcessByPath(string targetPath)
-    {
-        if (string.IsNullOrWhiteSpace(targetPath)) return;
-
-        Process[] processes = Process.GetProcesses();
-
-        foreach (Process process in processes)
+        _busy = true;
+        try
         {
+            bool confirmation = await dialog.ShowAsync(
+                title: Localizer["ForceRestartServer"],
+                message1: Localizer["ForceRestartDescription"],
+                message2: Localizer["DoYouWantProceed"],
+                new ConfirmDialogOptions
+                {
+                    AutoFocusYesButton = false,
+                    Dismissable = true,
+                    NoButtonText = Localizer["No"],
+                    YesButtonText = Localizer["Yes"]
+                });
+
+            if (!confirmation) return;
+
             try
             {
-                if (!ServerProcess.MatchesPath(process, targetPath)) continue;
-                process.Kill(entireProcessTree: true);
-                process.WaitForExit();
-            }
-            catch (System.ComponentModel.Win32Exception)
-            {
-            }
-            catch (InvalidOperationException)
-            {
+                await ServerProcess.ForceRestartAsync(executable, Configuration["ForceRestart:Arguments"],
+                    Configuration["ForceRestart:WorkingDirectory"]);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"检查进程时出错: {ex.Message}");
+                Logger.LogWarning(ex, "Force restart failed for {ServerPath}.", executable);
+                ToastService.Notify(new(ToastType.Danger, Localizer["ForceRestartFailed"]));
+                return;
             }
-            finally
-            {
-                process.Dispose();
-            }
+
+            await AuditLogger.WriteAsync(AuditActions.ForceRestartServer, executable);
+            ToastService.Notify(new(ToastType.Success, Localizer["ForceRestartProcessStarted"]));
+        }
+        finally
+        {
+            _busy = false;
         }
     }
 }

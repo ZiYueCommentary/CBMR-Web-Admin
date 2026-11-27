@@ -102,6 +102,20 @@ dotnet publish WebPortal/WebPortal.csproj -c Release -o publish/portal
 
 The portal reconnects to the binding automatically; until the game server is running it shows a "No connection with server" banner.
 
+### Configure Force Restart
+
+For a standalone game server, add the following section to the portal's `appsettings.json`:
+
+```json
+"ForceRestart": {
+  "ExecutablePath": "C:\\Games\\CBMR\\Server.exe"
+}
+```
+
+Use the absolute path to the actual server executable, not a launcher or script. Optional `Arguments` and `WorkingDirectory` settings specify the command-line arguments and absolute working directory; by default the portal passes no arguments and starts in the executable's directory. The portal account must be able to inspect and stop the existing server process and start the new one.
+
+Without an executable configured, Force Restart does nothing and shows a warning. For servers managed by a service manager or watchdog, leave Force Restart unconfigured and restart through that manager instead. A successful Force Restart means the new process started, not that the game server is ready to accept connections.
+
 ### Updating
 
 Stop the portal and the server, replace the files of both with published output from the same version, then start them again. Your `appsettings.json`, `webadmin.json` and both databases are kept.

@@ -148,7 +148,16 @@ If you are server admin, please log in first.</value></data>
     <value>Force restart server?</value>
   </data>
   <data name="ForceRestartDescription" xml:space="preserve">
-    <value>This will instantly kill the server process and will not send reason to players. It is designed to restart server when it is already crashed or unresponded.</value>
+    <value>This will stop the server process if it is running, then start the configured server executable. Players will not be notified.</value>
+  </data>
+  <data name="ForceRestartNotConfigured" xml:space="preserve">
+    <value>Force restart is not configured. Set the server executable path in the portal configuration.</value>
+  </data>
+  <data name="ForceRestartFailed" xml:space="preserve">
+    <value>Could not complete the force restart. Check the portal logs and server status.</value>
+  </data>
+  <data name="ForceRestartProcessStarted" xml:space="preserve">
+    <value>The server process started. Check the server status to see when it is ready.</value>
   </data>
   <data name="DoYouWantProceed" xml:space="preserve">
     <value>Do you want to proceed?</value>

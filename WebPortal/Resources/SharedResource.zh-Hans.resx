@@ -203,7 +203,16 @@
     <value>强制重启服务器？</value>
   </data>
   <data name="ForceRestartDescription" xml:space="preserve">
-    <value>这会立刻杀死服务器进程，并且不会向玩家发送重启原因。该功能主要用于在服务器已崩溃或未响应时重启。</value>
+    <value>此操作会终止正在运行的服务器进程，然后启动已配置的服务器程序。此操作不会通知玩家。</value>
+  </data>
+  <data name="ForceRestartNotConfigured" xml:space="preserve">
+    <value>尚未配置强制重启。请在管理面板的配置中设置服务器程序路径。</value>
+  </data>
+  <data name="ForceRestartFailed" xml:space="preserve">
+    <value>未能完成强制重启。请查看管理面板日志和服务器状态。</value>
+  </data>
+  <data name="ForceRestartProcessStarted" xml:space="preserve">
+    <value>服务器进程已启动。请查看服务器状态，确认何时可以连接。</value>
   </data>
   <data name="DoYouWantProceed" xml:space="preserve">
     <value>你想要继续吗？</value>
