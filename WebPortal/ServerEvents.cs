@@ -16,6 +16,14 @@ namespace CbmrWebAdmin.WebPortal;
 
 public sealed class ServerEvents(ILogger<ServerEvents> logger)
 {
+    private int _isConnected;
+
+    public bool IsConnected
+    {
+        get => Volatile.Read(ref _isConnected) != 0;
+        internal set => Volatile.Write(ref _isConnected, value ? 1 : 0);
+    }
+
     public event Action? ChatUpdated;
     public event Action<CbmrWebAdmin.Shared.ReportRecord?>? ReportsUpdated;
 

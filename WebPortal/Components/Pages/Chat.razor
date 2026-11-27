@@ -17,85 +17,120 @@
 }
 else
 {
-    <Grid TItem="WebChat"
-          @ref="_grid"
-          AllowSorting="true"
-          Class="table table-hover table-bordered table-striped"
-          DataProvider="ChatDataProvider"
-          Responsive="true">
-
-        <GridColumns>
-            <GridColumn TItem="WebChat" HeaderText="@Localizer["Time"]" SortKeySelector="item => item.When">
-                <BrowserTimestamp Utc="context.When" Format="HH:mm:ss" />
-            </GridColumn>
-            <GridColumn TItem="WebChat" HeaderText="@Localizer["Player"]">
-                @context.PlayerName
-            </GridColumn>
-            <GridColumn TItem="WebChat" HeaderText="@Localizer["Message"]">
-                @context.Message
-            </GridColumn>
-        </GridColumns>
-
-    </Grid>
-
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th scope="col" aria-sort="@(_sortAscending ? "ascending" : "descending")">
+                        <button type="button" class="btn btn-link p-0" @onclick="ToggleSort">
+                            @Localizer["Time"] @(_sortAscending ? "▲" : "▼")
+                        </button>
+                    </th>
+                    <th scope="col">@Localizer["Player"]</th>
+                    <th scope="col">@Localizer["Message"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (WebChat chat in DisplayedMessages)
+                {
+                    <tr @key="chat">
+                        <td><BrowserTimestamp Utc="chat.When" Format="HH:mm:ss" /></td>
+                        <td>@chat.PlayerName</td>
+                        <td>@chat.Message</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
 
     private List<WebChat>? _outputs;
     private readonly CancellationTokenSource _refreshCancellationTokenSource = new();
-    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private readonly PeriodicTimer _fallbackTimer = new(TimeSpan.FromSeconds(3));
     private CancellationToken _refreshToken;
-    private Grid<WebChat>? _grid;
     private long _lastSequence;
     private Guid _streamId;
+    private bool _sortAscending;
+    private bool _busy;
+    private bool _refreshPending;
+    private bool _disposed;
 
-    private async Task<GridDataProviderResult<WebChat>> ChatDataProvider(GridDataProviderRequest<WebChat> request)
-    {
-        return await Task.FromResult(request.ApplyTo(_outputs));
-    }
+    private IEnumerable<WebChat> DisplayedMessages =>
+        _outputs is null ? [] : (_sortAscending ? Enumerable.Reverse(_outputs) : _outputs);
 
     protected override async Task OnInitializedAsync()
     {
         _refreshToken = _refreshCancellationTokenSource.Token;
         ServerEvents.ChatUpdated += OnChatUpdated;
-        await RefreshSafelyAsync();
+        await RefreshAsync();
+        _ = PollWhenEventsDisconnectedAsync(_refreshToken);
     }
+
+    private void ToggleSort() => _sortAscending = !_sortAscending;
 
     private void OnChatUpdated()
     {
-        _ = RefreshSafelyAsync();
+        if (_disposed) return;
+        _ = InvokeAsync(RefreshAsync);
     }
 
-    private async Task RefreshSafelyAsync()
+    private async Task PollWhenEventsDisconnectedAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await _refreshLock.WaitAsync(_refreshToken);
-            try
+            while (await _fallbackTimer.WaitForNextTickAsync(cancellationToken))
             {
-                await InvokeAsync(async () =>
+                if (!ServerEvents.IsConnected || _outputs is null)
                 {
-                    _refreshToken.ThrowIfCancellationRequested();
-                    await RefreshAsync(_refreshToken);
-                    StateHasChanged();
-                });
-            }
-            finally
-            {
-                _refreshLock.Release();
+                    await InvokeAsync(RefreshAsync);
+                }
             }
         }
-        catch (OperationCanceledException) when (_refreshToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_disposed) return;
+        if (_busy)
+        {
+            _refreshPending = true;
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            do
+            {
+                _refreshPending = false;
+                await FetchAsync(_refreshToken);
+            }
+            while (_refreshPending && !_disposed);
+        }
+        catch (OperationCanceledException) when (_refreshToken.IsCancellationRequested || _disposed)
         {
         }
         catch (Exception exception)
         {
             Logger.LogDebug(exception, "Could not refresh chat messages.");
         }
+        finally
+        {
+            _busy = false;
+        }
+
+        if (!_disposed)
+        {
+            StateHasChanged();
+        }
     }
 
-    private async Task RefreshAsync(CancellationToken cancellationToken)
+    private async Task FetchAsync(CancellationToken cancellationToken)
     {
         ChatsResponse response = await ServerBinding.SendAsync<ChatsRequest, ChatsResponse>(
             PipeMessageType.Chats,
@@ -115,17 +150,14 @@ else
             response.Messages.Reverse();
             _outputs.InsertRange(0, initialLoad ? response.Messages.Take(30) : response.Messages);
         }
-
-        if (_grid is not null)
-        {
-            await _grid.RefreshDataAsync();
-        }
     }
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         ServerEvents.ChatUpdated -= OnChatUpdated;
         await _refreshCancellationTokenSource.CancelAsync();
+        _fallbackTimer.Dispose();
         _refreshCancellationTokenSource.Dispose();
     }
 

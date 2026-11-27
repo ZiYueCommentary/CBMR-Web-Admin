@@ -26,8 +26,11 @@ internal sealed class ChatEventPublisher
 
     public void Publish()
     {
-        if (Interlocked.Exchange(ref _chatPending, 1) == 0)
-            PublishEvent(PipeEnvelope.CreateEvent(PipeMessageType.ChatUpdated));
+        Channel<PipeEnvelope>? notifications = Volatile.Read(ref _notifications);
+        if (notifications is null) return;
+        if (Interlocked.Exchange(ref _chatPending, 1) != 0) return;
+        if (!notifications.Writer.TryWrite(PipeEnvelope.CreateEvent(PipeMessageType.ChatUpdated)))
+            Interlocked.Exchange(ref _chatPending, 0);
     }
 
     public void PublishEvent(PipeEnvelope envelope) =>
@@ -41,21 +44,46 @@ internal sealed class ChatEventPublisher
             {
                 await using NamedPipeServerStream pipe = new(
                     pipeName + PipeEnvelope.EventsPipeSuffix,
-                    PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                    PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
                 await pipe.WaitForConnectionAsync(cancellationToken);
                 Channel<PipeEnvelope> notifications = Channel.CreateUnbounded<PipeEnvelope>(new UnboundedChannelOptions
                 {
                     SingleReader = true
                 });
+                using CancellationTokenSource connectionCancellation =
+                    CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                Task disconnectWatcher = WaitForDisconnectAsync(pipe, connectionCancellation);
                 Volatile.Write(ref _notifications, notifications);
                 Interlocked.Exchange(ref _chatPending, 0);
                 Publish();
                 notifications.Writer.TryWrite(PipeEnvelope.CreateEvent(PipeMessageType.ReportsUpdated));
-                await foreach (PipeEnvelope notification in notifications.Reader.ReadAllAsync(cancellationToken))
+                try
                 {
-                    if (notification.MessageType == PipeMessageType.ChatUpdated)
-                        Interlocked.Exchange(ref _chatPending, 0);
-                    await PipeProtocol.WriteAsync(pipe, notification, cancellationToken);
+                    await foreach (PipeEnvelope notification in notifications.Reader.ReadAllAsync(connectionCancellation.Token))
+                    {
+                        if (notification.MessageType == PipeMessageType.ChatUpdated)
+                            Interlocked.Exchange(ref _chatPending, 0);
+                        await PipeProtocol.WriteAsync(pipe, notification, connectionCancellation.Token);
+                    }
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    logger.LogDebug("Events pipe client disconnected; waiting for a new connection.");
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref _notifications, null)?.Writer.TryComplete();
+                    await connectionCancellation.CancelAsync();
+                    try
+                    {
+                        await disconnectWatcher;
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (IOException)
+                    {
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -75,10 +103,31 @@ internal sealed class ChatEventPublisher
                     break;
                 }
             }
-            finally
+        }
+    }
+
+    private static async Task WaitForDisconnectAsync(
+        NamedPipeServerStream pipe,
+        CancellationTokenSource connectionCancellation)
+    {
+        byte[] buffer = new byte[1];
+        try
+        {
+            while (await pipe.ReadAsync(buffer, connectionCancellation.Token) > 0)
             {
-                Interlocked.Exchange(ref _notifications, null)?.Writer.TryComplete();
             }
         }
+        catch (OperationCanceledException) when (connectionCancellation.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (IOException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        await connectionCancellation.CancelAsync();
     }
 }

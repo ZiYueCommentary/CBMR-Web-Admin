@@ -38,6 +38,8 @@ public sealed class ServerEventsBackgroundService(
                     timeout.CancelAfter(PipeGateway.RequestTimeout);
                     await pipe.ConnectAsync(timeout.Token);
                 }
+                events.IsConnected = true;
+                logger.LogInformation("Connected to server events pipe.");
                 events.NotifyChatUpdated();
                 events.NotifyReportsUpdated();
                 while (await PipeProtocol.ReadAsync(pipe, stoppingToken) is { } envelope)
@@ -59,6 +61,10 @@ public sealed class ServerEventsBackgroundService(
             catch (Exception exception)
             {
                 logger.LogDebug(exception, "Events pipe connection failed; retrying in {ReconnectDelay}.", reconnectDelay);
+            }
+            finally
+            {
+                events.IsConnected = false;
             }
 
             try
