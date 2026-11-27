@@ -42,9 +42,8 @@ internal sealed class ChatEventPublisher
         {
             try
             {
-                await using NamedPipeServerStream pipe = new(
-                    pipeName + PipeEnvelope.EventsPipeSuffix,
-                    PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+                await using NamedPipeServerStream pipe =
+                    DeploymentAccountPipe.Create(pipeName + PipeEnvelope.EventsPipeSuffix);
                 await pipe.WaitForConnectionAsync(cancellationToken);
                 Channel<PipeEnvelope> notifications = Channel.CreateUnbounded<PipeEnvelope>(new UnboundedChannelOptions
                 {

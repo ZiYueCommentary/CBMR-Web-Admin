@@ -53,6 +53,7 @@ CBMR Web Admin has two parts that talk to each other over a local named pipe (`C
 - **ServerBinding**: a [CCB](https://github.com/EasyT-T/ccb) plugin that applies admin actions in game and runs player-facing features like `/report`. It stores game-side records in a separate SQLite database.
 
 Always deploy the portal and the binding from the same version; a newer portal may send requests an older binding does not understand.
+Run WebPortal and the game server under the same OS account: only the account running ServerBinding can connect to its command and events pipes.
 
 ## Installation
 

@@ -203,12 +203,7 @@ public partial class EntryPoint(ILogger<Metadata> logger, IConfigProvider<Config
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await using NamedPipeServerStream pipeServer = new NamedPipeServerStream(
-                PipeName, //todo dyna
-                PipeDirection.InOut,
-                1,
-                PipeTransmissionMode.Byte,
-                PipeOptions.Asynchronous);
+            await using NamedPipeServerStream pipeServer = DeploymentAccountPipe.Create(PipeName); //todo dyna
             _pipeServer = pipeServer;
 
             try
